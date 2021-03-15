@@ -46,7 +46,7 @@ class SamuraiMovieFile:
 
 
 @dataclass(frozen=True)
-class SamuraiMovieTitle:
+class SamuraiMovieLinkedTitle:
     id: str
     name: str
     icon_url: Optional[str]
@@ -84,7 +84,7 @@ _TRating = TypeVar('_TRating', bound=common.SamuraiRating)
 class _SamuraiListMovieOptionalMixin(Generic[_TRating]):
     icon_url: Optional[str] = None
     banner_url: Optional[str] = None
-    title: Optional[SamuraiMovieTitle] = None
+    title: Optional[SamuraiMovieLinkedTitle] = None
     rating_info: Optional[_TRating] = None
 
     @classmethod
@@ -95,7 +95,7 @@ class _SamuraiListMovieOptionalMixin(Generic[_TRating]):
             vals.banner_url = text
         elif tag == 'title':
             utils.xml.validate_schema(child, {'name': None, 'icon_url': None, 'banner_url': None}, True)
-            vals.title = SamuraiMovieTitle(
+            vals.title = SamuraiMovieLinkedTitle(
                 child.get('id'),
                 child.name.text,
                 utils.xml.get_text(child, 'icon_url'),
