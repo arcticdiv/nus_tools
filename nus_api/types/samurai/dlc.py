@@ -109,7 +109,7 @@ class SamuraiDlcsWiiU(_SamuraiDlcs[SamuraiDlcWiiU]):
     description: Optional[str]
 
     def _read_dlcs(self, title):
-        assert {el.tag for el in title.getchildren()} <= {'name', 'aocs_banner_url', 'aocs_description', 'aocs'}
+        assert utils.xml.get_child_tags(title) <= {'name', 'aocs_banner_url', 'aocs_description', 'aocs'}
         self.name = title.name.text
         self.banner_url = utils.xml.get_text(title, 'aocs_banner_url')
         self.description = utils.xml.get_text(title, 'description')
@@ -149,5 +149,5 @@ class SamuraiDlc3DS:
 class SamuraiDlcs3DS(_SamuraiDlcs[SamuraiDlc3DS]):
     def _read_dlcs(self, title):
         # some titles have `aoc_available = True`, but the aoc XML doesn't contain anything :/
-        assert {el.tag for el in title.getchildren()} <= {'aocs'}
+        assert utils.xml.get_child_tags(title) <= {'aocs'}
         self.dlcs = [SamuraiDlc3DS._parse(dlc) for dlc in title.aocs.aoc] if hasattr(title, 'aocs') else []

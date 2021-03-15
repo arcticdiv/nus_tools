@@ -1,7 +1,12 @@
-from typing import Iterator, Type, TypeVar, Union
+from typing import Iterator, Type, TypeVar, Union, List
 
 from ._base import BaseSource
-from ..types.samurai import SamuraiContentsList, SamuraiMovie, SamuraiMoviesList, SamuraiTitle, SamuraiTitlesList, SamuraiDlcsWiiU, SamuraiDlcs3DS
+from ..types.samurai import \
+    SamuraiContentsList, \
+    SamuraiMovie, SamuraiMoviesList, \
+    SamuraiTitle, SamuraiTitlesList, \
+    SamuraiDlcsWiiU, SamuraiDlcs3DS, \
+    SamuraiDemo
 from ..types.samurai._base import SamuraiListBaseType
 from ..types.samurai.title_list import SamuraiListTitle
 from ..types.samurai.title import SamuraiTitleElement
@@ -69,6 +74,15 @@ class Samurai(BaseSource):
             return SamuraiDlcs3DS(self, content_id).load()
         else:
             return SamuraiDlcsWiiU(self, content_id).load()
+
+    # demos
+    def get_demo(self, content_id: str) -> SamuraiDemo:
+        return SamuraiDemo(self, content_id).load()
+
+    def get_demos(self, title: SamuraiTitleElement) -> List[SamuraiDemo]:
+        if not title.demos:
+            return []
+        return [self.get_demo(demo.content_id) for demo in title.demos]
 
     # abstract lists
     def _get_list(self, list_type: Type[_TList], offset: int, limit: int, other_params: dict) -> _TList:

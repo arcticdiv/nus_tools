@@ -2,7 +2,7 @@ import io
 import os
 import lxml.objectify
 from xml.etree import ElementTree as ET
-from typing import Callable, Iterator, Optional, Tuple, Dict
+from typing import Callable, Iterator, Optional, Tuple, Dict, Set
 
 
 class BytesIterator(Iterator[bytes]):
@@ -125,3 +125,7 @@ class xml:
         h = cls.get_tag_schema(xml)
         if (not superset and target_hierarchy != h) or (superset and not is_dict_subset_deep(h, target_hierarchy)):
             raise RuntimeError(f'unexpected XML structure\nexpected{" subset of" if superset else ""}:\n\t{target_hierarchy}\ngot:\n\t{h}')
+
+    @classmethod
+    def get_child_tags(cls, xml) -> Set[str]:
+        return {el.tag for el in xml.getchildren()}

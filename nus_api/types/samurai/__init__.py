@@ -4,3 +4,4 @@ from .movie_list import SamuraiMoviesList
 from .title import SamuraiTitle
 from .title_list import SamuraiTitlesList
 from .dlc import SamuraiDlcsWiiU, SamuraiDlcs3DS
+from .demo import SamuraiDemo
