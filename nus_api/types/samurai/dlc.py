@@ -25,12 +25,8 @@ class _SamuraiDlcs(Generic[_TDlc], BaseType['sources.Samurai']):
         )
 
     def _read(self, iterator):
-        data = iterator.read_all()
-        xml = utils.xml.read_object(data)
-        assert len(xml.getchildren()) == 1
-        title = xml.title
-
-        self._read_dlcs(title)
+        title_xml = utils.xml.read_iterator_object(iterator, 'title')
+        self._read_dlcs(title_xml)
 
     @abc.abstractmethod
     def _read_dlcs(self, title):

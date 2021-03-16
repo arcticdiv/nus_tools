@@ -21,10 +21,7 @@ class SamuraiDemo(BaseType['sources.Samurai']):
         )
 
     def _read(self, iterator):
-        data = iterator.read_all()
-        xml = utils.xml.read_object(data)
-        assert len(xml.getchildren()) == 1
-        content = xml.content
+        content = utils.xml.read_iterator_object(iterator, 'content')
         assert len(content.getchildren()) == 1
         demo = content.demo
 

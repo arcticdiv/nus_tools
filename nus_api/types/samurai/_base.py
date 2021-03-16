@@ -16,11 +16,7 @@ class SamuraiListBaseType(BaseType['sources.Samurai'], abc.ABC):
         )
 
     def _read(self, iterator):
-        data = iterator.read_all()
-        xml = utils.xml.read_object(data)
-        children = xml.getchildren()
-        assert len(children) == 1
-        el = children[0]
+        el = utils.xml.read_iterator_object(iterator)
         self.length = int(el.get('length'))
         self.offset = int(el.get('offset'))
         self.total = int(el.get('total'))

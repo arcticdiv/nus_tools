@@ -100,6 +100,16 @@ class xml:
         return lxml.objectify.parse(io.BytesIO(data)).getroot()
 
     @staticmethod
+    def read_iterator_object(it: BytesIterator, root_tag: Optional[str] = None) -> lxml.objectify.ObjectifiedElement:
+        data = it.read_all()
+        tree = xml.read_object(data)
+        children = tree.getchildren()
+        assert len(children) == 1
+        if root_tag:
+            assert children[0].tag == root_tag
+        return children[0]
+
+    @staticmethod
     def get_text(xml, attr: str) -> Optional[str]:
         val = getattr(xml, attr, None)
         return val.text if val is not None else None

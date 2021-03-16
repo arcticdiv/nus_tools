@@ -302,9 +302,5 @@ class SamuraiTitle(BaseType['sources.Samurai']):
         )
 
     def _read(self, iterator):
-        data = iterator.read_all()
-        xml = utils.xml.read_object(data)
-        assert len(xml.getchildren()) == 1
-        title = xml.title
-
-        self.title = SamuraiTitleElement._parse(title)
+        title_xml = utils.xml.read_iterator_object(iterator, 'title')
+        self.title = SamuraiTitleElement._parse(title_xml)

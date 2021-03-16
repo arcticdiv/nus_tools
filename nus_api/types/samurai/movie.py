@@ -58,9 +58,5 @@ class SamuraiMovie(BaseType['sources.Samurai']):
         )
 
     def _read(self, iterator):
-        data = iterator.read_all()
-        xml = utils.xml.read_object(data)
-        assert len(xml.getchildren()) == 1
-        movie = xml.movie
-
-        self.movie = SamuraiMovieElement._parse(movie)
+        movie_xml = utils.xml.read_iterator_object(iterator, 'movie')
+        self.movie = SamuraiMovieElement._parse(movie_xml)
