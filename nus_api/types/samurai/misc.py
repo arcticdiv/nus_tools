@@ -5,6 +5,10 @@ from .._base import BaseType
 from ... import reqdata, sources, utils
 
 
+#####
+# /news
+#####
+
 @dataclass
 class SamuraiNewsImage:
     url: str
@@ -55,3 +59,22 @@ class SamuraiNews(BaseType['sources.Samurai']):
                 entry.date.text,
                 images
             ))
+
+
+#####
+# /telops
+#####
+
+class SamuraiTelops(BaseType['sources.Samurai']):
+    entries: List[str]
+
+    def __init__(self, source: 'sources.Samurai'):
+        super().__init__(
+            source,
+            reqdata.ReqData(path=f'telops')
+        )
+
+    def _read(self, iterator):
+        telops_xml = utils.xml.read_iterator_object(iterator, 'telops')
+        utils.xml.validate_schema(telops_xml, {'telop': None}, True)
+        self.entries = [el.text for el in getattr(telops_xml, 'telop', [])]

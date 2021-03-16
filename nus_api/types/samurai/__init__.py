@@ -5,4 +5,4 @@ from .title import SamuraiTitle
 from .title_list import SamuraiTitlesList
 from .dlc import SamuraiDlcsWiiU, SamuraiDlcs3DS
 from .demo import SamuraiDemo
-from .misc import SamuraiNews
+from .misc import SamuraiNews, SamuraiTelops

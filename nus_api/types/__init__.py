@@ -4,4 +4,4 @@ from .samurai import \
     SamuraiTitle, SamuraiTitlesList, \
     SamuraiDlcsWiiU, SamuraiDlcs3DS, \
     SamuraiDemo, \
-    SamuraiNews
+    SamuraiNews, SamuraiTelops
