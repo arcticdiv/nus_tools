@@ -3,4 +3,5 @@ from .samurai import \
     SamuraiMovie, SamuraiMoviesList, \
     SamuraiTitle, SamuraiTitlesList, \
     SamuraiDlcsWiiU, SamuraiDlcs3DS, \
-    SamuraiDemo
+    SamuraiDemo, \
+    SamuraiNews

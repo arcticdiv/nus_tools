@@ -6,7 +6,8 @@ from ..types.samurai import \
     SamuraiMovie, SamuraiMoviesList, \
     SamuraiTitle, SamuraiTitlesList, \
     SamuraiDlcsWiiU, SamuraiDlcs3DS, \
-    SamuraiDemo
+    SamuraiDemo, \
+    SamuraiNews
 from ..types.samurai._base import SamuraiListBaseType
 from ..types.samurai.title_list import SamuraiListTitle
 from ..types.samurai.title import SamuraiTitleElement
@@ -84,7 +85,11 @@ class Samurai(BaseSource):
             return []
         return [self.get_demo(demo.content_id) for demo in title.demos]
 
-    # abstract lists
+    # misc
+    def get_news(self) -> SamuraiNews:
+        return SamuraiNews(self).load()
+
+    # abstract list funcs
     def _get_list(self, list_type: Type[_TList], offset: int, limit: int, other_params: dict) -> _TList:
         return list_type(self, offset, limit, other_params).load()
 
