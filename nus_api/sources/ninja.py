@@ -1,6 +1,6 @@
 from ._base import BaseSource
 from .. import reqdata
-from ..types import NinjaEcInfo
+from ..types.ninja import NinjaEcInfo
 
 
 class Ninja(BaseSource):
