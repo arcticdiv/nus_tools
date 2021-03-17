@@ -5,3 +5,5 @@ from .samurai import \
     SamuraiDlcsWiiU, SamuraiDlcs3DS, \
     SamuraiDemo, \
     SamuraiNews, SamuraiTelops
+from .ninja import \
+    NinjaEcInfo
