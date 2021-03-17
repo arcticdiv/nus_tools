@@ -1,2 +1,3 @@
 from .all import \
-    NinjaEcInfo
+    NinjaEcInfo, \
+    NinjaIDPair
