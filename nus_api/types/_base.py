@@ -29,7 +29,8 @@ class BaseType(Generic[_TSource], abc.ABC):
         res = self._source._get(
             path=self._reqdata.path,
             params=self._reqdata.params,
-            headers=self._reqdata.headers
+            headers=self._reqdata.headers,
+            cert=self._reqdata.cert
         )
         res.raise_for_status()
         return res
