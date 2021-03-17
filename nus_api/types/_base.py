@@ -1,9 +1,9 @@
-from dataclasses import dataclass
 import os
 import abc
 import contextlib
 import requests
 import lxml.objectify
+from dataclasses import dataclass
 from typing import Iterator, Optional, Tuple, Type, TypeVar, Generic, Dict, Any
 
 from ..sources import _base
@@ -26,12 +26,7 @@ class BaseType(Generic[_TSource], abc.ABC):
         pass
 
     def _download(self) -> requests.Response:
-        res = self._source._get(
-            path=self._reqdata.path,
-            params=self._reqdata.params,
-            headers=self._reqdata.headers,
-            cert=self._reqdata.cert
-        )
+        res = self._source._get(self)
         res.raise_for_status()
         return res
 
@@ -46,7 +41,7 @@ class BaseType(Generic[_TSource], abc.ABC):
 
     @contextlib.contextmanager
     def get_iterator(self, load_cached: bool, chunk_size: int) -> Iterator[utils.BytesIterator]:
-        cache_path = self.cache_path
+        cache_path = self._cache_path
         if load_cached and os.path.isfile(cache_path):
             with open(cache_path, 'rb') as f:
                 yield utils.BytesIterator(lambda: f.read(chunk_size))
@@ -57,9 +52,13 @@ class BaseType(Generic[_TSource], abc.ABC):
                 with utils.CachingIterator(cache_path, lambda: next(res_it)) as it:
                     yield it
 
-    @property
-    def cache_path(self) -> str:
-        return cachemanager.get_path_for_type(self)
+    @utils.cached_property
+    def _merged_reqdata(self) -> ReqData:
+        return self._source._base_reqdata + self._reqdata
+
+    @utils.cached_property
+    def _cache_path(self) -> str:
+        return cachemanager.get_path(self._merged_reqdata)
 
 
 _TXml = TypeVar('_TXml', bound='XmlBaseType')

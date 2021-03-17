@@ -2,7 +2,7 @@ import io
 import os
 import lxml.objectify
 from xml.etree import ElementTree as ET
-from typing import Callable, Iterator, Optional, Tuple, Dict, Set
+from typing import Callable, Iterator, Optional, Tuple, Dict, Set, Generic, Any, TypeVar
 
 
 class BytesIterator(Iterator[bytes]):
@@ -139,3 +139,18 @@ class xml:
     @classmethod
     def get_child_tags(cls, xml) -> Set[str]:
         return {el.tag for el in xml.getchildren()}
+
+
+_TCached = TypeVar('_TCached')
+
+
+# adapted from https://stackoverflow.com/a/4037979/5080607
+class cached_property(Generic[_TCached]):
+    def __init__(self, factory: Callable[[Any], _TCached]):
+        self._factory = factory
+        self.__doc__ = getattr(factory, '__doc__')
+
+    def __get__(self, obj, objtype):
+        val = self._factory(obj)
+        setattr(obj, self._factory.__name__, val)
+        return val

@@ -4,8 +4,8 @@ import functools
 import pathvalidate
 from typing import Iterable, Tuple, Any
 
-from . import sources, types
 from .config import Configuration
+from .reqdata import ReqData
 
 
 __sanitize_fn = functools.partial(pathvalidate.sanitize_filename, replacement_text='_')
@@ -16,26 +16,29 @@ def __fmt_pairs(it: Iterable[Tuple[Any, Any]]):
     return '--'.join(f'{k}+{v}' for k, v in it)
 
 
-def get_path_for_source(src: 'sources._base.BaseSource') -> str:
-    url = urllib.parse.urlparse(src._base_url)
-    return os.path.join(
+def get_path(reqdata: ReqData) -> str:
+    # split up request url into parts
+    url = urllib.parse.urlparse(reqdata.path)
+    url_path = url.path.lstrip('/')
+    url_dirname = os.path.dirname(url_path)
+    url_filename = os.path.basename(url_path)
+
+    # build cache directory path
+    base_path = os.path.join(
         Configuration.cache_path,
         __sanitize_fn(f'{url.scheme}__{url.netloc}'),
-        __sanitize_fp(url.path.lstrip('/'))
+        __sanitize_fp(url_dirname)
     )
 
-
-def get_path_for_type(inst: 'types._base.BaseType') -> str:
-    base_path = get_path_for_source(inst._source)
-
-    dirname = os.path.dirname(inst._reqdata.path)
-    filename = os.path.basename(inst._reqdata.path)
-
-    base_path = os.path.join(base_path, __sanitize_fp(dirname))
-    name = filename
-    for vals in [{**inst._source._default_params, **inst._reqdata.params}, inst._reqdata.headers]:
-        if vals:
-            name += '---'
-            name += __fmt_pairs(vals.items())
+    # build cache filename
+    name = url_filename
+    if reqdata.params:
+        fmt = __fmt_pairs(reqdata.params.items())
+        if fmt:
+            name += f'---{fmt}'
+    if reqdata.headers:
+        fmt = __fmt_pairs((k, v) for k, v in reqdata.headers.items() if k.lower() != 'user-agent')
+        if fmt:
+            name += f'---{fmt}'
 
     return os.path.join(base_path, __sanitize_fn(name))

@@ -142,4 +142,6 @@ cython_debug/
 venv*/
 
 cache/
+*.crt
+*.key
 __test__.py
