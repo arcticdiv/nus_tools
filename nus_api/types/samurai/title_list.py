@@ -23,7 +23,7 @@ class _SamuraiListTitleBaseMixin:
     sales_retail: bool
     sales_eshop: bool
     has_demo: bool
-    has_dlc: bool
+    has_dlc__inaccurate: bool  # this value is sometimes false even though the title has DLCs
     has_iap: bool
 
     @classmethod
@@ -53,7 +53,7 @@ class _SamuraiListTitleBaseMixin:
         elif tag == 'demo_available':
             vals.has_demo = utils.get_bool(text)
         elif tag == 'aoc_available':
-            vals.has_dlc = utils.get_bool(text)
+            vals.has_dlc__inaccurate = utils.get_bool(text)
         elif tag == 'in_app_purchase':
             vals.has_iap = utils.get_bool(text)
         elif tag == 'release_date_on_original':
