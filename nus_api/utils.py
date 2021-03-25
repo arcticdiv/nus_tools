@@ -45,7 +45,7 @@ class CachingIterator(BytesIterator):
 
         # move tmp file if successful
         if exc_type is None:
-            os.rename(self.tmp_filename, self.filename)
+            os.replace(self.tmp_filename, self.filename)
 
 
 def get_bool(text: str) -> bool:
