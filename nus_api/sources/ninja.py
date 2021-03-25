@@ -1,15 +1,16 @@
-from ._base import BaseSource
+from ._base import BaseSource, SourceConfig
 from .. import reqdata
 from ..types.ninja import NinjaEcInfo, NinjaIDPair
 
 
 class Ninja(BaseSource):
-    def __init__(self, region: str, cert: reqdata.CertType):
+    def __init__(self, region: str, cert: reqdata.CertType, config: SourceConfig = None):
         super().__init__(
             reqdata.ReqData(
                 path=f'https://ninja.wup.shop.nintendo.net/ninja/ws/',
                 cert=cert
             ),
+            config,
             verify_tls=False
         )
         self.region = region

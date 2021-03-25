@@ -1,10 +1,8 @@
-import os
 import abc
-import contextlib
 import requests
 import lxml.objectify
 from dataclasses import dataclass
-from typing import Iterator, Optional, Tuple, Type, TypeVar, Generic, Dict, Any
+from typing import Optional, Tuple, Type, TypeVar, Generic, Dict, Any
 
 from ..sources import _base
 from ..reqdata import ReqData
@@ -30,27 +28,17 @@ class BaseType(Generic[_TSource], abc.ABC):
         res.raise_for_status()
         return res
 
-    def load(self: _T, load_cached: bool = True, chunk_size: int = 4096) -> _T:
+    def load(self: _T) -> _T:
         if self.__loaded:
             return self
 
-        with self.get_iterator(load_cached, chunk_size) as it:
+        with self.get_iterator() as it:
             self._read(it)
         self.__loaded = True
         return self
 
-    @contextlib.contextmanager
-    def get_iterator(self, load_cached: bool, chunk_size: int) -> Iterator[utils.BytesIterator]:
-        cache_path = self._cache_path
-        if load_cached and os.path.isfile(cache_path):
-            with open(cache_path, 'rb') as f:
-                yield utils.BytesIterator(lambda: f.read(chunk_size))
-        else:
-            with self._download() as res:
-                res_it = res.iter_content(chunk_size)
-                # TODO: save response headers as well?
-                with utils.CachingIterator(cache_path, lambda: next(res_it)) as it:
-                    yield it
+    def get_iterator(self):
+        return self._source.get_iterator(self)
 
     @utils.cached_property
     def _merged_reqdata(self) -> ReqData:

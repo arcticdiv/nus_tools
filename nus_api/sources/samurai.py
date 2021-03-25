@@ -1,6 +1,6 @@
 from typing import Iterator, Type, TypeVar, Union, List
 
-from ._base import BaseSource
+from ._base import BaseSource, SourceConfig
 from ..reqdata import ReqData
 from ..types.samurai import \
     SamuraiContentsList, \
@@ -18,12 +18,13 @@ _TList = TypeVar('_TList', bound=SamuraiListBaseType)
 
 
 class Samurai(BaseSource):
-    def __init__(self, region: str, shop_id: int, lang: str):
+    def __init__(self, region: str, shop_id: int, lang: str, config: SourceConfig = None):
         super().__init__(
             ReqData(
                 path=f'https://samurai.wup.shop.nintendo.net/samurai/ws/{region}/',
                 params={'shop_id': shop_id, 'lang': lang}
             ),
+            config,
             verify_tls=False
         )
         self.region = region
