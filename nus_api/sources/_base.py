@@ -30,7 +30,7 @@ class BaseSource(abc.ABC):
         self._verify_tls = verify_tls
 
     # TODO: ratelimit by hostname
-    def _get(self, data: Union[ReqData, BaseType], **kwargs) -> requests.Response:
+    def _get(self, data: Union[ReqData, BaseType]) -> requests.Response:
         if isinstance(data, BaseType):
             reqdata = data._merged_reqdata
         else:
@@ -42,7 +42,7 @@ class BaseSource(abc.ABC):
             cert=reqdata.cert,
             verify=self._verify_tls,
             stream=True,
-            **kwargs
+            allow_redirects=False
         )
 
     @contextlib.contextmanager
