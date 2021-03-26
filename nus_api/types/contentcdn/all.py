@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Any
 
 from .._base import BaseType
 from ... import reqdata, structs
@@ -10,6 +10,8 @@ from ...sources import contentcdn as source_contentcdn
 #####
 
 class CETK(BaseType['source_contentcdn._BaseContentSource']):
+    struct: Any
+
     def __init__(self, source: 'source_contentcdn._BaseContentSource', title_id: str):
         super().__init__(
             source,
@@ -26,6 +28,8 @@ class CETK(BaseType['source_contentcdn._BaseContentSource']):
 #####
 
 class TMD(BaseType['source_contentcdn._BaseContentSource']):
+    struct: Any
+
     def __init__(self, source: 'source_contentcdn._BaseContentSource', title_id: str, version: Optional[int]):
         super().__init__(
             source,
@@ -35,3 +39,33 @@ class TMD(BaseType['source_contentcdn._BaseContentSource']):
     def _read(self, iterator):
         raw_data = iterator.read_all()
         self.struct = structs.tmd.parse(raw_data)
+
+
+#####
+# /<title id>/<content id>
+#####
+
+class APP(BaseType['source_contentcdn._BaseContentSource']):
+    def __init__(self, source: 'source_contentcdn._BaseContentSource', title_id: str, content_id: int):
+        super().__init__(
+            source,
+            reqdata.ReqData(path=f'{title_id}/{content_id:08x}')
+        )
+
+    def _read(self, iterator):
+        pass  # TODO (?)
+
+
+#####
+# /<title id>/<content id>.h3
+#####
+
+class H3(BaseType['source_contentcdn._BaseContentSource']):
+    def __init__(self, source: 'source_contentcdn._BaseContentSource', title_id: str, content_id: int):
+        super().__init__(
+            source,
+            reqdata.ReqData(path=f'{title_id}/{content_id:08x}.h3')
+        )
+
+    def _read(self, iterator):
+        pass  # TODO

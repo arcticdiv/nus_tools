@@ -2,7 +2,7 @@ from typing import Optional
 
 from ._base import BaseSource, SourceConfig
 from .. import reqdata
-from ..types.contentcdn import CETK, TMD
+from ..types.contentcdn import CETK, TMD, APP, H3
 
 
 class _BaseContentSource(BaseSource):
@@ -11,6 +11,12 @@ class _BaseContentSource(BaseSource):
 
     def get_tmd(self, title_id: str, version: Optional[int] = None) -> TMD:
         return TMD(self, title_id, version).load()
+
+    def get_app(self, title_id: str, content_id: int) -> APP:
+        return APP(self, title_id, content_id).load()
+
+    def get_h3(self, title_id: str, content_id: int) -> H3:
+        return H3(self, title_id, content_id).load()
 
 
 # there are multiple different servers, their purpose isn't entirely clear
