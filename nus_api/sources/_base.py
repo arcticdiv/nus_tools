@@ -41,6 +41,7 @@ class BaseSource(abc.ABC):
             params=reqdata.params,
             cert=reqdata.cert,
             verify=self._verify_tls,
+            stream=True,
             **kwargs
         )
 

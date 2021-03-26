@@ -29,12 +29,10 @@ class BaseType(Generic[_TSource], abc.ABC):
         return res
 
     def load(self: _T) -> _T:
-        if self.__loaded:
-            return self
-
-        with self.get_iterator() as it:
-            self._read(it)
-        self.__loaded = True
+        if not self.__loaded:
+            with self.get_iterator() as it:
+                self._read(it)
+            self.__loaded = True
         return self
 
     def get_iterator(self):

@@ -20,8 +20,8 @@ class BytesIterator(Iterator[bytes]):
 
 
 class CachingIterator(BytesIterator):
-    def __init__(self, filename: str, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, filename: str, read_func: Callable[[], bytes]):
+        super().__init__(read_func)
         self.filename = filename
         self.tmp_filename = f'{filename}.tmp'
         self.__file = None
@@ -39,7 +39,7 @@ class CachingIterator(BytesIterator):
     def __exit__(self, exc_type, exc_value, traceback):
         # finish writing in case not everything was read
         for data in self:
-            self.__file.write(data)
+            pass
         self.__file.close()
         self.__file = None
 
