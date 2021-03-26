@@ -32,7 +32,7 @@ class CachingIterator(BytesIterator):
         return data
 
     def __enter__(self):
-        os.makedirs(os.path.dirname(self.tmp_filename), exist_ok=True)
+        create_dirs_for_file(self.tmp_filename)
         self.__file = open(self.tmp_filename, 'wb')
         return self
 
@@ -77,6 +77,10 @@ def is_dict_subset_deep(a: Optional[Dict], b: Optional[Dict]) -> bool:
     except KeyError:
         return False
     return True
+
+
+def create_dirs_for_file(file_path: str) -> None:
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
 
 class dotdict(dict):
