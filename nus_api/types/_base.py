@@ -1,3 +1,4 @@
+import os
 import abc
 import requests
 import lxml.objectify
@@ -37,6 +38,9 @@ class BaseType(Generic[_TSource], abc.ABC):
 
     def get_iterator(self):
         return self._source.get_iterator(self)
+
+    def is_cached(self) -> bool:
+        return os.path.isfile(self._cache_path)
 
     @utils.cached_property
     def _merged_reqdata(self) -> ReqData:

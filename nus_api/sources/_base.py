@@ -48,7 +48,7 @@ class BaseSource(abc.ABC):
     @contextlib.contextmanager
     def get_iterator(self, type_inst: BaseType) -> Iterator[utils.BytesIterator]:
         cache_path = type_inst._cache_path
-        if self._config.load_from_cache and os.path.isfile(cache_path):
+        if self._config.load_from_cache and type_inst.is_cached():
             with open(cache_path, 'rb') as f:
                 yield utils.BytesIterator(lambda: f.read(self._config.chunk_size))
         else:
