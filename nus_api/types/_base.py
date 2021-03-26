@@ -25,9 +25,7 @@ class BaseType(Generic[_TSource], abc.ABC):
         pass
 
     def _download(self) -> requests.Response:
-        res = self._source._get(self)
-        res.raise_for_status()
-        return res
+        return self._source._get(self)
 
     def load(self: _T) -> _T:
         if not self.__loaded:

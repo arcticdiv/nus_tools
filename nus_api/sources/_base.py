@@ -1,6 +1,7 @@
 import abc
 import requests
 import contextlib
+from enum import Enum
 from dataclasses import dataclass
 from typing import Union, Optional, Iterator
 
@@ -10,12 +11,17 @@ from ..types._base import BaseType
 from .. import utils
 
 
+class StatusCheckMode(Enum):
+    NONE, CHECK_ERROR, REQUIRE_200 = range(3)
+
+
 @dataclass(frozen=True)
 class SourceConfig:
     load_from_cache: bool = True
     store_to_cache: bool = True
     chunk_size: int = 4096
     cache_headers: bool = True
+    response_status_checking: StatusCheckMode = StatusCheckMode.REQUIRE_200
 
 
 class BaseSource(abc.ABC):
@@ -35,7 +41,8 @@ class BaseSource(abc.ABC):
             reqdata = data._merged_reqdata
         else:
             reqdata = self._base_reqdata + data
-        return requests.get(
+
+        res = requests.get(
             url=reqdata.path,
             headers=reqdata.headers,
             params=reqdata.params,
@@ -44,6 +51,18 @@ class BaseSource(abc.ABC):
             stream=True,
             allow_redirects=False
         )
+
+        status_check = self._config.response_status_checking
+        if status_check is StatusCheckMode.NONE:
+            pass
+        elif status_check in (StatusCheckMode.CHECK_ERROR, StatusCheckMode.REQUIRE_200):
+            res.raise_for_status()
+            if status_check is StatusCheckMode.REQUIRE_200 and res.status_code != 200:
+                raise requests.HTTPError(f'expected status code 200, got {res.status_code}', response=res)
+        else:
+            assert False  # should never happen
+
+        return res
 
     @contextlib.contextmanager
     def get_iterator(self, type_inst: BaseType) -> Iterator[utils.BytesIterator]:
