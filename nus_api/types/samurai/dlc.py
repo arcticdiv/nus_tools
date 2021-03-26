@@ -111,7 +111,7 @@ class SamuraiDlcsWiiU(_SamuraiDlcs[SamuraiDlcWiiU]):
         self.description = utils.xml.get_text(title, 'description')
 
         assert int(title.aocs.get('length')) == int(title.aocs.get('total'))  # sanity check, results could technically be paginated, but there's probably no title with >200 DLCs
-        self.dlcs = [SamuraiDlcWiiU._parse(dlc) for dlc in title.aocs.aoc]
+        self.dlcs = [SamuraiDlcWiiU._parse(dlc) for dlc in title.aocs.aoc] if hasattr(title.aocs, 'aoc') else []
 
 
 #####
