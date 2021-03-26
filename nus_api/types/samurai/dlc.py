@@ -60,8 +60,8 @@ class SamuraiDlcWiiU:
 
     @classmethod
     def _parse(cls, xml) -> 'SamuraiDlcWiiU':
-        vals = utils.dotdict()
-        vals.is_new = utils.get_bool(xml.get('new'))
+        vals = utils.dicts.dotdict()
+        vals.is_new = utils.misc.get_bool(xml.get('new'))
         vals.content_id = xml.get('id')
         assert vals.content_id
 
@@ -92,7 +92,7 @@ class SamuraiDlcWiiU:
             elif tag == 'disclaimer':
                 vals.disclaimer = text
             elif tag == 'allow_overlap':
-                vals.allow_overlap = utils.get_bool(text)
+                vals.allow_overlap = utils.misc.get_bool(text)
             else:
                 raise ValueError(f'unknown tag: {tag}')
 
@@ -125,7 +125,7 @@ class SamuraiDlc3DS:
 
     @classmethod
     def _parse(cls, xml) -> 'SamuraiDlc3DS':
-        vals = utils.dotdict()
+        vals = utils.dicts.dotdict()
 
         for child, tag, text in utils.xml.iter_children(xml):
             if tag == 'name':

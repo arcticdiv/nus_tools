@@ -21,7 +21,7 @@ class BaseType(Generic[_TSource], abc.ABC):
         self.__loaded = False
 
     @abc.abstractmethod
-    def _read(self, iterator: utils.BytesIterator) -> None:
+    def _read(self, iterator: utils.iterator.BytesIterator) -> None:
         pass
 
     def _download(self) -> requests.Response:
@@ -40,11 +40,11 @@ class BaseType(Generic[_TSource], abc.ABC):
     def is_cached(self) -> bool:
         return os.path.isfile(self._cache_path)
 
-    @utils.cached_property
+    @utils.misc.cached_property
     def _merged_reqdata(self) -> ReqData:
         return self._source._base_reqdata + self._reqdata
 
-    @utils.cached_property
+    @utils.misc.cached_property
     def _cache_path(self) -> str:
         return cachemanager.get_path(self._merged_reqdata)
 

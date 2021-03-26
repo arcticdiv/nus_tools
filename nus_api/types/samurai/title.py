@@ -39,7 +39,7 @@ class SamuraiTitleFeature(XmlBaseType):
     def _parse_internal(cls, xml):
         # TODO: icons, description unhandled
         return {
-            'required': utils.get_bool(xml.get('required')),
+            'required': utils.misc.get_bool(xml.get('required')),
             'type': int(xml.get('type')),
             'id': xml.id.text,
             'name': xml.name.text
@@ -127,10 +127,10 @@ class _SamuraiTitleBaseMixin(title_list._SamuraiListTitleBaseMixin):
     sales_download_card: bool
 
     @classmethod
-    def _try_parse_value(cls, vals: utils.dotdict, child, tag, text, custom_types: Dict[str, Type]) -> bool:
+    def _try_parse_value(cls, vals: utils.dicts.dotdict, child, tag, text, custom_types: Dict[str, Type]) -> bool:
         if 'is_public' not in vals:
             xml = child.getparent()
-            vals.is_public = utils.get_bool(xml.get('public'))
+            vals.is_public = utils.misc.get_bool(xml.get('public'))
 
         if tag == 'formal_name':
             vals.formal_name = text
@@ -142,12 +142,12 @@ class _SamuraiTitleBaseMixin(title_list._SamuraiListTitleBaseMixin):
         elif tag == 'keywords':
             vals.keywords = [keyword.text for keyword in getattr(child, 'keyword', [])]
         elif tag == 'ticket_available':
-            vals.has_ticket = utils.get_bool(text)
+            vals.has_ticket = utils.misc.get_bool(text)
         elif tag == 'download_code_sales':
-            vals.sales_download_code = utils.get_bool(text)
+            vals.sales_download_code = utils.misc.get_bool(text)
         elif tag == 'download_card_sales':
             utils.xml.validate_schema(child, None, False)
-            vals.sales_download_card = utils.get_bool(child.get('available'))
+            vals.sales_download_card = utils.misc.get_bool(child.get('available'))
         else:
             return super()._try_parse_value(vals, child, tag, text, custom_types)
         return True
@@ -177,9 +177,9 @@ class _SamuraiTitleOptionalMixin(title_list._SamuraiListTitleOptionalMixin[commo
     size: Optional[int] = None
 
     @classmethod
-    def _try_parse_value(cls, vals: utils.dotdict, child, tag, text, custom_types: Dict[str, Type]) -> bool:
+    def _try_parse_value(cls, vals: utils.dicts.dotdict, child, tag, text, custom_types: Dict[str, Type]) -> bool:
         if tag == 'web_sales':
-            vals.sales_web = utils.get_bool(text)
+            vals.sales_web = utils.misc.get_bool(text)
         elif tag == 'top_image':
             utils.xml.validate_schema(child, {'type': None, 'url': None}, False)
             vals.top_image_type = child.type.text
@@ -196,7 +196,7 @@ class _SamuraiTitleOptionalMixin(title_list._SamuraiListTitleOptionalMixin[commo
             for play_style in child.play_style:
                 controllers = [
                     SamuraiTitleController(
-                        utils.get_bool(controller.get('required')),
+                        utils.misc.get_bool(controller.get('required')),
                         int(controller.get('type')),
                         controller.id.text,
                         controller.name.text
@@ -244,7 +244,7 @@ class _SamuraiTitleOptionalMixin(title_list._SamuraiListTitleOptionalMixin[commo
                 vals.websites.append(SamuraiTitleWebsite(
                     website.name.text,
                     website.url.text,
-                    utils.get_bool(website.official.text)
+                    utils.misc.get_bool(website.official.text)
                 ))
         elif tag == 'movies':
             vals.movies = [movie.SamuraiMovieElement._parse(m) for m in child.movie]
@@ -273,7 +273,7 @@ class _SamuraiTitleOptionalMixin(title_list._SamuraiListTitleOptionalMixin[commo
 class SamuraiTitleElement(_SamuraiTitleOptionalMixin, _SamuraiTitleBaseMixin):
     @classmethod
     def _parse(cls, xml) -> 'SamuraiTitleElement':
-        vals = utils.dotdict()
+        vals = utils.dicts.dotdict()
 
         for child, tag, text in utils.xml.iter_children(xml):
             if _SamuraiTitleBaseMixin._try_parse_value(vals, child, tag, text, {}):

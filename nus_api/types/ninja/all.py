@@ -27,7 +27,7 @@ class NinjaEcInfo(BaseType['sources.Ninja']):
         self.title_id = ec_info.title_id.text
         self.content_size = int(ec_info.content_size.text)
         self.version = int(ec_info.title_version.text)
-        self.download_disabled = utils.get_bool(ec_info.disable_download.text)
+        self.download_disabled = utils.misc.get_bool(ec_info.disable_download.text)
 
 
 #####

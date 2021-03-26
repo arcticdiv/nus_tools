@@ -65,28 +65,28 @@ class BaseSource(abc.ABC):
         return res
 
     @contextlib.contextmanager
-    def get_iterator(self, type_inst: BaseType) -> Iterator[utils.BytesIterator]:
+    def get_iterator(self, type_inst: BaseType) -> Iterator[utils.iterator.BytesIterator]:
         cache_path = type_inst._cache_path
         if self._config.load_from_cache and type_inst.is_cached():
             with open(cache_path, 'rb') as f:
-                yield utils.BytesIterator(lambda: f.read(self._config.chunk_size))
+                yield utils.iterator.BytesIterator(lambda: f.read(self._config.chunk_size))
         else:
             with type_inst._download() as res:
                 res_it = res.iter_content(self._config.chunk_size)
                 if self._config.store_to_cache:
                     if self._config.cache_headers:
                         self.__cache_headers(res, f'{cache_path}.headers')
-                    with utils.CachingIterator(cache_path, lambda: next(res_it)) as it:
+                    with utils.iterator.CachingIterator(cache_path, lambda: next(res_it)) as it:
                         yield it
                 else:
-                    yield utils.BytesIterator(lambda: next(res_it))
+                    yield utils.iterator.BytesIterator(lambda: next(res_it))
 
     @staticmethod
     def __cache_headers(response: requests.Response, path: str) -> None:
         # it's surprisingly difficult to get raw response headers
         # this code is partially based on requests-toolbelt: https://github.com/requests/toolbelt/blob/69e2487494b7f8a5951ed92ed014137b8381814c/requests_toolbelt/utils/dump.py#L88
 
-        utils.create_dirs_for_file(path)
+        utils.misc.create_dirs_for_file(path)
         with open(path, 'wb') as f:
             f.write(b'HTTP/' + {9: b'0.9', 10: b'1.0', 11: b'1.1'}[response.raw.version])
             f.write(b' ' + str(response.status_code).encode() + b' ' + response.reason.encode())

@@ -27,11 +27,11 @@ class _SamuraiListTitleBaseMixin:
     has_iap: bool
 
     @classmethod
-    def _try_parse_value(cls, vals: utils.dotdict, child, tag, text, custom_types: Dict[str, Type]) -> bool:
+    def _try_parse_value(cls, vals: utils.dicts.dotdict, child, tag, text, custom_types: Dict[str, Type]) -> bool:
         # kind of hacky, but it works
         if 'is_new' not in vals:
             xml = child.getparent()
-            vals.is_new = utils.get_bool(xml.get('new'))
+            vals.is_new = utils.misc.get_bool(xml.get('new'))
             vals.content_id = xml.get('id')
             assert vals.content_id
 
@@ -47,15 +47,15 @@ class _SamuraiListTitleBaseMixin:
         elif tag == 'display_genre':
             vals.genre = text
         elif tag == 'retail_sales':
-            vals.sales_retail = utils.get_bool(text)
+            vals.sales_retail = utils.misc.get_bool(text)
         elif tag == 'eshop_sales':
-            vals.sales_eshop = utils.get_bool(text)
+            vals.sales_eshop = utils.misc.get_bool(text)
         elif tag == 'demo_available':
-            vals.has_demo = utils.get_bool(text)
+            vals.has_demo = utils.misc.get_bool(text)
         elif tag == 'aoc_available':
-            vals.has_dlc__inaccurate = utils.get_bool(text)
+            vals.has_dlc__inaccurate = utils.misc.get_bool(text)
         elif tag == 'in_app_purchase':
-            vals.has_iap = utils.get_bool(text)
+            vals.has_iap = utils.misc.get_bool(text)
         elif tag == 'release_date_on_original':
             pass  # unused
         elif tag == 'price_on_retail':
@@ -84,7 +84,7 @@ class _SamuraiListTitleOptionalMixin(Generic[_TRating, _TStars]):
     # have to specify generic parameters twice: in base class definition and in custom_types parameter;
     # classmethods don't have access to the generic parameters of their classes for some reason, see https://github.com/python/typing/issues/629
     @classmethod
-    def _try_parse_value(cls, vals: utils.dotdict, child, tag, text, custom_types: Dict[str, Type]) -> bool:
+    def _try_parse_value(cls, vals: utils.dicts.dotdict, child, tag, text, custom_types: Dict[str, Type]) -> bool:
         if tag == 'icon_url':
             vals.icon_url = text
         elif tag == 'banner_url':
@@ -112,7 +112,7 @@ class _SamuraiListTitleOptionalMixin(Generic[_TRating, _TStars]):
 class SamuraiListTitle(_SamuraiListTitleOptionalMixin[common.SamuraiRating, common.SamuraiStars], _SamuraiListTitleBaseMixin):
     @classmethod
     def _parse(cls, xml) -> 'SamuraiListTitle':
-        vals = utils.dotdict()
+        vals = utils.dicts.dotdict()
 
         for child, tag, text in utils.xml.iter_children(xml):
             if _SamuraiListTitleBaseMixin._try_parse_value(vals, child, tag, text, {}):

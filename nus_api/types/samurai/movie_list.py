@@ -23,7 +23,7 @@ class SamuraiMovieFile:
 
     @classmethod
     def _parse(cls, xml) -> 'SamuraiMovieFile':
-        vals = utils.dotdict()
+        vals = utils.dicts.dotdict()
         vals.quality = xml.get('quality')
 
         for child, tag, text in utils.xml.iter_children(xml):
@@ -61,10 +61,10 @@ class _SamuraiListMovieBaseMixin:
     files: List[SamuraiMovieFile]
 
     @classmethod
-    def _try_parse_value(cls, vals: utils.dotdict, child, tag, text, custom_types: Dict[str, Type]) -> bool:
+    def _try_parse_value(cls, vals: utils.dicts.dotdict, child, tag, text, custom_types: Dict[str, Type]) -> bool:
         if 'is_new' not in vals:
             xml = child.getparent()
-            vals.is_new = utils.get_bool(xml.get('new'))
+            vals.is_new = utils.misc.get_bool(xml.get('new'))
             vals.content_id = xml.get('id')
             assert vals.content_id
 
@@ -88,7 +88,7 @@ class _SamuraiListMovieOptionalMixin(Generic[_TRating]):
     rating_info: Optional[_TRating] = None
 
     @classmethod
-    def _try_parse_value(cls, vals: utils.dotdict, child, tag, text, custom_types: Dict[str, Type]) -> bool:
+    def _try_parse_value(cls, vals: utils.dicts.dotdict, child, tag, text, custom_types: Dict[str, Type]) -> bool:
         if tag == 'icon_url':
             vals.icon_url = text
         elif tag == 'banner_url':
@@ -112,7 +112,7 @@ class _SamuraiListMovieOptionalMixin(Generic[_TRating]):
 class SamuraiListMovie(_SamuraiListMovieOptionalMixin[common.SamuraiRating], _SamuraiListMovieBaseMixin):
     @classmethod
     def _parse(cls, xml) -> 'SamuraiListMovie':
-        vals = utils.dotdict()
+        vals = utils.dicts.dotdict()
 
         for child, tag, text in utils.xml.iter_children(xml):
             if _SamuraiListMovieBaseMixin._try_parse_value(vals, child, tag, text, {}):
