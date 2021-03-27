@@ -24,8 +24,8 @@ class _SamuraiDlcs(Generic[_TDlc], BaseType['sources.Samurai']):
             reqdata.ReqData(path=f'title/{content_id}/aocs', params={'limit': 200})  # assuming a maximum of 200 DLCs per title, seems reasonable
         )
 
-    def _read(self, iterator):
-        title_xml = utils.xml.read_iterator_object(iterator, 'title')
+    def _read(self, reader):
+        title_xml = utils.xml.load_from_reader(reader, 'title')
         self._read_dlcs(title_xml)
 
     @abc.abstractmethod

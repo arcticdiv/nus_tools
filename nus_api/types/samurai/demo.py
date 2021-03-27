@@ -20,8 +20,8 @@ class SamuraiDemo(BaseType['sources.Samurai']):
             reqdata.ReqData(path=f'demo/{content_id}')
         )
 
-    def _read(self, iterator):
-        content = utils.xml.read_iterator_object(iterator, 'content')
+    def _read(self, reader):
+        content = utils.xml.load_from_reader(reader, 'content')
         assert len(content.getchildren()) == 1
         demo = content.demo
 

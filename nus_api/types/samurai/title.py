@@ -301,6 +301,6 @@ class SamuraiTitle(BaseType['sources.Samurai']):
             reqdata.ReqData(path=f'title/{content_id}')
         )
 
-    def _read(self, iterator):
-        title_xml = utils.xml.read_iterator_object(iterator, 'title')
+    def _read(self, reader):
+        title_xml = utils.xml.load_from_reader(reader, 'title')
         self.title = SamuraiTitleElement._parse(title_xml)

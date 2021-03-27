@@ -18,8 +18,8 @@ class CETK(BaseType['source_contentcdn._BaseContentSource']):
             reqdata.ReqData(path=f'{title_id}/cetk')
         )
 
-    def _read(self, iterator):
-        raw_data = iterator.read_all()
+    def _read(self, reader):
+        raw_data = reader.read_all()
         self.struct = structs.cetk.parse(raw_data)
 
 
@@ -36,8 +36,8 @@ class TMD(BaseType['source_contentcdn._BaseContentSource']):
             reqdata.ReqData(path=f'{title_id}/tmd' + (f'.{version}' if version is not None else ''))
         )
 
-    def _read(self, iterator):
-        raw_data = iterator.read_all()
+    def _read(self, reader):
+        raw_data = reader.read_all()
         self.struct = structs.tmd.parse(raw_data)
 
 
@@ -52,7 +52,7 @@ class APP(BaseType['source_contentcdn._BaseContentSource']):
             reqdata.ReqData(path=f'{title_id}/{content_id:08x}')
         )
 
-    def _read(self, iterator):
+    def _read(self, reader):
         pass  # TODO (?)
 
 
@@ -67,5 +67,5 @@ class H3(BaseType['source_contentcdn._BaseContentSource']):
             reqdata.ReqData(path=f'{title_id}/{content_id:08x}.h3')
         )
 
-    def _read(self, iterator):
+    def _read(self, reader):
         pass  # TODO

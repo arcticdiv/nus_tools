@@ -1,1 +1,1 @@
-from . import dicts, iterator, misc, xml
+from . import dicts, reader, misc, xml

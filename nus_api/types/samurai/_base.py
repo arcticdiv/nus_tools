@@ -15,8 +15,8 @@ class SamuraiListBaseType(BaseType['sources.Samurai'], abc.ABC):
             reqdata.ReqData(path=self._get_req_path(), params={'offset': offset, 'limit': limit, **other_params})
         )
 
-    def _read(self, iterator):
-        el = utils.xml.read_iterator_object(iterator)
+    def _read(self, reader):
+        el = utils.xml.load_from_reader(reader)
         self.length = int(el.get('length'))
         self.offset = int(el.get('offset'))
         self.total = int(el.get('total'))

@@ -3,7 +3,7 @@ import lxml.objectify
 from xml.etree import ElementTree as ET
 from typing import Tuple, Set, Dict, Optional, Iterator
 
-from . import dicts, iterator
+from . import dicts, reader
 
 
 def read(data: bytes) -> ET.ElementTree:
@@ -14,8 +14,8 @@ def read_object(data: bytes) -> lxml.objectify.ObjectifiedElement:
     return lxml.objectify.parse(io.BytesIO(data)).getroot()
 
 
-def read_iterator_object(it: iterator.DataReader, root_tag: Optional[str] = None) -> lxml.objectify.ObjectifiedElement:
-    data = it.read_all()
+def load_from_reader(reader: reader.DataReader, root_tag: Optional[str] = None) -> lxml.objectify.ObjectifiedElement:
+    data = reader.read_all()
     tree = read_object(data)
     children = tree.getchildren()
     assert len(children) == 1

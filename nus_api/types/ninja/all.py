@@ -20,8 +20,8 @@ class NinjaEcInfo(BaseType['sources.Ninja']):
             reqdata.ReqData(path=f'{source.region}/title/{content_id}/ec_info')
         )
 
-    def _read(self, iterator):
-        ec_info = utils.xml.read_iterator_object(iterator, 'title_ec_info')
+    def _read(self, reader):
+        ec_info = utils.xml.load_from_reader(reader, 'title_ec_info')
         utils.xml.validate_schema(ec_info, {'title_id': None, 'content_size': None, 'title_version': None, 'disable_download': None}, False)
 
         self.title_id = ec_info.title_id.text
@@ -50,8 +50,8 @@ class NinjaIDPair(BaseType['sources.Ninja']):
             )
         )
 
-    def _read(self, iterator):
-        pairs = utils.xml.read_iterator_object(iterator, 'title_id_pairs')
+    def _read(self, reader):
+        pairs = utils.xml.load_from_reader(reader, 'title_id_pairs')
         assert len(pairs.getchildren()) == 1
         utils.xml.validate_schema(pairs, {'title_id_pair': {'ns_uid': None, 'title_id': None, 'type': None}}, False)
         pair = pairs.title_id_pair

@@ -57,6 +57,6 @@ class SamuraiMovie(BaseType['sources.Samurai']):
             reqdata.ReqData(path=f'movie/{content_id}')
         )
 
-    def _read(self, iterator):
-        movie_xml = utils.xml.read_iterator_object(iterator, 'movie')
+    def _read(self, reader):
+        movie_xml = utils.xml.load_from_reader(reader, 'movie')
         self.movie = SamuraiMovieElement._parse(movie_xml)

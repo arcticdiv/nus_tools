@@ -52,11 +52,11 @@ class BaseSource(abc.ABC):
         return res
 
     @contextlib.contextmanager
-    def get_iterator(self, type_inst: BaseType) -> Iterator[utils.iterator.DataReader]:
-        with self.__get_iterator_internal(type_inst) as it:
-            if it.metadata:  # if this is None, request was loaded from cache and successful
-                self.__check_status(it.metadata)
-            yield it
+    def get_reader(self, type_inst: BaseType) -> Iterator[utils.reader.DataReader]:
+        with self.__get_reader_internal(type_inst) as reader:
+            if reader.metadata:  # if this is None, request was loaded from cache and successful
+                self.__check_status(reader.metadata)
+            yield reader
 
     # TODO: ratelimit by hostname
     def __get_internal(self, data: Union[ReqData, BaseType]) -> requests.Response:
@@ -76,7 +76,7 @@ class BaseSource(abc.ABC):
         return res
 
     @contextlib.contextmanager
-    def __get_iterator_internal(self, type_inst: BaseType) -> Iterator[utils.iterator.DataReader]:
+    def __get_reader_internal(self, type_inst: BaseType) -> Iterator[utils.reader.DataReader]:
         cache_path = type_inst._cache_path
         meta_path = cachemanager.get_metadata_path(cache_path)
 
@@ -85,14 +85,14 @@ class BaseSource(abc.ABC):
             metadata = None
             if os.path.isfile(meta_path):
                 with open(meta_path, 'r') as fm:
-                    metadata = utils.iterator.Metadata.from_json(fm.read())
+                    metadata = utils.reader.Metadata.from_json(fm.read())
 
             with open(cache_path, 'rb') as fc:
-                yield utils.iterator.DataReader(lambda: fc.read(self._config.chunk_size), metadata)
+                yield utils.reader.DataReader(lambda: fc.read(self._config.chunk_size), metadata)
         else:
             with self.__get_internal(type_inst) as res:
-                # create metadata and iterator
-                metadata = utils.iterator.Metadata.from_response(res)
+                # create metadata and reader
+                metadata = utils.reader.Metadata.from_response(res)
                 res_it = res.iter_content(self._config.chunk_size)
 
                 # cache data if configured, return basic reader otherwise
@@ -109,12 +109,12 @@ class BaseSource(abc.ABC):
                     # FIXME: remove once dependencies between options are implemented
                     store_on_status_error = self._config.store_metadata and self._config.store_failed_requests
 
-                    with utils.iterator.CachingReader(cache_path, store_on_status_error, lambda: next(res_it), metadata) as it:
-                        yield it
+                    with utils.reader.CachingReader(cache_path, store_on_status_error, lambda: next(res_it), metadata) as reader:
+                        yield reader
                 else:
-                    yield utils.iterator.DataReader(lambda: next(res_it), metadata)
+                    yield utils.reader.DataReader(lambda: next(res_it), metadata)
 
-    def __check_status(self, obj: Union[requests.Response, utils.iterator.Metadata]) -> None:
+    def __check_status(self, obj: Union[requests.Response, utils.reader.Metadata]) -> None:
         status_check = self._config.response_status_checking
         if status_check is StatusCheckMode.NONE:
             pass

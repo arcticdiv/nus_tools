@@ -35,8 +35,8 @@ class SamuraiNews(BaseType['sources.Samurai']):
             reqdata.ReqData(path=f'news')
         )
 
-    def _read(self, iterator):
-        news_xml = utils.xml.read_iterator_object(iterator, 'news')
+    def _read(self, reader):
+        news_xml = utils.xml.load_from_reader(reader, 'news')
         utils.xml.validate_schema(news_xml, {'news_entry': {'headline': None, 'description': None, 'date': None, 'images': {'image': None}}}, True)
         self.entries = []
         for entry in news_xml.news_entry:
@@ -74,7 +74,7 @@ class SamuraiTelops(BaseType['sources.Samurai']):
             reqdata.ReqData(path=f'telops')
         )
 
-    def _read(self, iterator):
-        telops_xml = utils.xml.read_iterator_object(iterator, 'telops')
+    def _read(self, reader):
+        telops_xml = utils.xml.load_from_reader(reader, 'telops')
         utils.xml.validate_schema(telops_xml, {'telop': None}, True)
         self.entries = [el.text for el in getattr(telops_xml, 'telop', [])]
