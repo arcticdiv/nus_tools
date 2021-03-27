@@ -1,3 +1,4 @@
+import os
 import abc
 import requests
 import contextlib
@@ -8,20 +9,30 @@ from typing import Union, Optional, Iterator
 from ..config import Configuration
 from ..reqdata import ReqData
 from ..types._base import BaseType
-from .. import utils
+from .. import utils, cachemanager
 
 
 class StatusCheckMode(Enum):
     NONE, CHECK_ERROR, REQUIRE_200 = range(3)
 
 
+class ResponseStatusError(Exception):
+    status: int
+
+    def __init__(self, message: str, status: int):
+        super().__init__(message)
+        self.status = status
+
+
+# TODO: implement dependencies between options
 @dataclass(frozen=True)
 class SourceConfig:
     load_from_cache: bool = True
     store_to_cache: bool = True
     chunk_size: int = 4096
-    cache_headers: bool = True
     response_status_checking: StatusCheckMode = StatusCheckMode.REQUIRE_200
+    store_failed_requests: bool = True
+    store_metadata: bool = True
 
 
 class BaseSource(abc.ABC):
@@ -35,13 +46,24 @@ class BaseSource(abc.ABC):
         self._config = config if config is not None else SourceConfig()
         self._verify_tls = verify_tls
 
+    def get(self, data: Union[ReqData, BaseType]) -> requests.Response:
+        res = self.__get_internal(data)
+        self.__check_status(res)
+        return res
+
+    @contextlib.contextmanager
+    def get_iterator(self, type_inst: BaseType) -> Iterator[utils.iterator.DataReader]:
+        with self.__get_iterator_internal(type_inst) as it:
+            if it.metadata:  # if this is None, request was loaded from cache and successful
+                self.__check_status(it.metadata)
+            yield it
+
     # TODO: ratelimit by hostname
-    def _get(self, data: Union[ReqData, BaseType]) -> requests.Response:
+    def __get_internal(self, data: Union[ReqData, BaseType]) -> requests.Response:
         if isinstance(data, BaseType):
             reqdata = data._merged_reqdata
         else:
             reqdata = self._base_reqdata + data
-
         res = requests.get(
             url=reqdata.path,
             headers=reqdata.headers,
@@ -51,49 +73,62 @@ class BaseSource(abc.ABC):
             stream=True,
             allow_redirects=False
         )
+        return res
 
+    @contextlib.contextmanager
+    def __get_iterator_internal(self, type_inst: BaseType) -> Iterator[utils.iterator.DataReader]:
+        cache_path = type_inst._cache_path
+        meta_path = cachemanager.get_metadata_path(cache_path)
+
+        # try loading from cache if configured and file exists
+        if self._config.load_from_cache and type_inst.is_cached():
+            metadata = None
+            if os.path.isfile(meta_path):
+                with open(meta_path, 'r') as fm:
+                    metadata = utils.iterator.Metadata.from_json(fm.read())
+
+            with open(cache_path, 'rb') as fc:
+                yield utils.iterator.DataReader(lambda: fc.read(self._config.chunk_size), metadata)
+        else:
+            with self.__get_internal(type_inst) as res:
+                # create metadata and iterator
+                metadata = utils.iterator.Metadata.from_response(res)
+                res_it = res.iter_content(self._config.chunk_size)
+
+                # cache data if configured, return basic reader otherwise
+                if self._config.store_to_cache:
+                    # additionally store metadata to separate file
+                    if self._config.store_metadata:
+                        utils.misc.create_dirs_for_file(meta_path)
+                        with open(meta_path, 'w') as fm:
+                            fm.write(metadata.to_json())
+
+                    # avoid creating a cache file if the request failed and metadata wasn't stored.
+                    # if the file were to be kept regardless of errors, it would later be impossible
+                    # to distinguish successful and failed requests, as metadata wasn't written
+                    # FIXME: remove once dependencies between options are implemented
+                    store_on_status_error = self._config.store_metadata and self._config.store_failed_requests
+
+                    with utils.iterator.CachingReader(cache_path, store_on_status_error, lambda: next(res_it), metadata) as it:
+                        yield it
+                else:
+                    yield utils.iterator.DataReader(lambda: next(res_it), metadata)
+
+    def __check_status(self, obj: Union[requests.Response, utils.iterator.Metadata]) -> None:
         status_check = self._config.response_status_checking
         if status_check is StatusCheckMode.NONE:
             pass
         elif status_check in (StatusCheckMode.CHECK_ERROR, StatusCheckMode.REQUIRE_200):
-            res.raise_for_status()
-            if status_check is StatusCheckMode.REQUIRE_200 and res.status_code != 200:
-                raise requests.HTTPError(f'expected status code 200, got {res.status_code}', response=res)
+            if isinstance(obj, requests.Response):
+                status = obj.status_code
+            else:
+                status = obj.status
+
+            # simple error check
+            if status >= 400:
+                raise ResponseStatusError(f'got status code {status} for url {obj.url}', status=status)
+            # more restrictive check for status code 200
+            if status_check is StatusCheckMode.REQUIRE_200 and status != 200:
+                raise ResponseStatusError(f'expected status code 200, got {status} for url {obj.url}', status=status)
         else:
             assert False  # should never happen
-
-        return res
-
-    @contextlib.contextmanager
-    def get_iterator(self, type_inst: BaseType) -> Iterator[utils.iterator.BytesIterator]:
-        cache_path = type_inst._cache_path
-        if self._config.load_from_cache and type_inst.is_cached():
-            with open(cache_path, 'rb') as f:
-                yield utils.iterator.BytesIterator(lambda: f.read(self._config.chunk_size))
-        else:
-            with type_inst._download() as res:
-                res_it = res.iter_content(self._config.chunk_size)
-                if self._config.store_to_cache:
-                    if self._config.cache_headers:
-                        self.__cache_headers(res, f'{cache_path}.headers')
-                    with utils.iterator.CachingIterator(cache_path, lambda: next(res_it)) as it:
-                        yield it
-                else:
-                    yield utils.iterator.BytesIterator(lambda: next(res_it))
-
-    @staticmethod
-    def __cache_headers(response: requests.Response, path: str) -> None:
-        # it's surprisingly difficult to get raw response headers
-        # this code is partially based on requests-toolbelt: https://github.com/requests/toolbelt/blob/69e2487494b7f8a5951ed92ed014137b8381814c/requests_toolbelt/utils/dump.py#L88
-
-        utils.misc.create_dirs_for_file(path)
-        with open(path, 'wb') as f:
-            f.write(b'HTTP/' + {9: b'0.9', 10: b'1.0', 11: b'1.1'}[response.raw.version])
-            f.write(b' ' + str(response.status_code).encode() + b' ' + response.reason.encode())
-            f.write(b'\r\n')
-
-            headers = response.raw.headers
-            for key in headers:
-                for value in headers.getlist(key):
-                    f.write(key.encode() + b': ' + value.encode() + b'\r\n')
-            f.write(b'\r\n')

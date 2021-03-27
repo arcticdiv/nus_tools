@@ -42,3 +42,7 @@ def get_path(reqdata: ReqData) -> str:
             name += f'---{fmt}'
 
     return os.path.join(base_path, __sanitize_fn(name))
+
+
+def get_metadata_path(file_path: str) -> str:
+    return f'{file_path}.meta'

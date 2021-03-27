@@ -21,21 +21,21 @@ class BaseType(Generic[_TSource], abc.ABC):
         self.__loaded = False
 
     @abc.abstractmethod
-    def _read(self, iterator: utils.iterator.BytesIterator) -> None:
+    def _read(self, iterator: utils.iterator.DataReader) -> None:
         pass
 
     def _download(self) -> requests.Response:
-        return self._source._get(self)
+        return self._source.get(self)
+
+    def _get_iterator(self):
+        return self._source.get_iterator(self)
 
     def load(self: _T) -> _T:
         if not self.__loaded:
-            with self.get_iterator() as it:
+            with self._get_iterator() as it:
                 self._read(it)
             self.__loaded = True
         return self
-
-    def get_iterator(self):
-        return self._source.get_iterator(self)
 
     def is_cached(self) -> bool:
         return os.path.isfile(self._cache_path)
