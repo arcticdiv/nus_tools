@@ -23,8 +23,9 @@ class _SamuraiListTitleBaseMixin:
     sales_retail: bool
     sales_eshop: bool
     has_demo: bool
-    has_dlc__inaccurate: bool  # this value is sometimes false even though the title has DLCs
-    has_iap: bool
+    # these values are sometimes false even though the title has aocs
+    has_dlc__inaccurate: bool
+    has_iap__inaccurate: bool
 
     @classmethod
     def _try_parse_value(cls, vals: utils.dicts.dotdict, child, tag, text, custom_types: Dict[str, Type]) -> bool:
@@ -55,7 +56,7 @@ class _SamuraiListTitleBaseMixin:
         elif tag == 'aoc_available':
             vals.has_dlc__inaccurate = utils.misc.get_bool(text)
         elif tag == 'in_app_purchase':
-            vals.has_iap = utils.misc.get_bool(text)
+            vals.has_iap__inaccurate = utils.misc.get_bool(text)
         elif tag == 'release_date_on_original':
             pass  # unused
         elif tag == 'price_on_retail':
