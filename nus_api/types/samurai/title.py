@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Dict, List, Optional, Type, Tuple
 
 from . import common, movie, title_list
-from .._base import BaseType, XmlBaseType, IDName
+from .._base import BaseTypeLoadable, XmlBaseType, IDName
 from ... import reqdata, sources, utils
 
 
@@ -292,7 +292,7 @@ class SamuraiTitleElement(_SamuraiTitleOptionalMixin, _SamuraiTitleBaseMixin):
         return cls(**vals)
 
 
-class SamuraiTitle(BaseType['sources.Samurai']):
+class SamuraiTitle(BaseTypeLoadable['sources.Samurai']):
     title: SamuraiTitleElement
 
     def __init__(self, source: 'sources.Samurai', content_id: str):

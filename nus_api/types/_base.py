@@ -10,32 +10,20 @@ from ..reqdata import ReqData
 from .. import utils, cachemanager
 
 
-_T = TypeVar('_T', bound='BaseType')
 _TSource = TypeVar('_TSource', bound='_base.BaseSource')
 
 
-class BaseType(Generic[_TSource], abc.ABC):
+class BaseType(Generic[_TSource]):
     def __init__(self, source: _TSource, reqdata: ReqData):
         self._source = source
         self._reqdata = reqdata
         self.__loaded = False
-
-    @abc.abstractmethod
-    def _read(self, reader: utils.reader.DataReader) -> None:
-        pass
 
     def _download(self) -> requests.Response:
         return self._source.get(self)
 
     def _get_reader(self):
         return self._source.get_reader(self)
-
-    def load(self: _T) -> _T:
-        if not self.__loaded:
-            with self._get_reader() as reader:
-                self._read(reader)
-            self.__loaded = True
-        return self
 
     def is_cached(self) -> bool:
         return os.path.isfile(self._cache_path)
@@ -47,6 +35,26 @@ class BaseType(Generic[_TSource], abc.ABC):
     @utils.misc.cached_property
     def _cache_path(self) -> str:
         return cachemanager.get_path(self._merged_reqdata)
+
+
+_T = TypeVar('_T', bound='BaseTypeLoadable')
+
+
+class BaseTypeLoadable(BaseType[_TSource], abc.ABC):
+    def __init__(self, source: _TSource, reqdata: ReqData):
+        super().__init__(source, reqdata)
+        self.__loaded = False
+
+    @abc.abstractmethod
+    def _read(self, reader: utils.reader.DataReader) -> None:
+        pass
+
+    def load(self: _T) -> _T:
+        if not self.__loaded:
+            with self._get_reader() as reader:
+                self._read(reader)
+            self.__loaded = True
+        return self
 
 
 _TXml = TypeVar('_TXml', bound='XmlBaseType')

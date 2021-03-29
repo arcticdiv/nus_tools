@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Dict, Type, Optional
 
 from . import common, movie_list
-from .._base import BaseType
+from .._base import BaseTypeLoadable
 from ... import reqdata, sources, utils
 
 
@@ -48,7 +48,7 @@ class SamuraiMovieElement(_SamuraiMovieOptionalMixin, _SamuraiMovieBaseMixin):
         return cls(**vals)
 
 
-class SamuraiMovie(BaseType['sources.Samurai']):
+class SamuraiMovie(BaseTypeLoadable['sources.Samurai']):
     movie: SamuraiMovieElement
 
     def __init__(self, source: 'sources.Samurai', content_id: str):

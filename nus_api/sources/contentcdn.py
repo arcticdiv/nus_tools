@@ -13,10 +13,10 @@ class _BaseContentSource(BaseSource):
         return TMD(self, title_id, version).load()
 
     def get_app(self, title_id: str, content_id: int) -> APP:
-        return APP(self, title_id, content_id).load()
+        return APP(self, title_id, content_id)
 
     def get_h3(self, title_id: str, content_id: int) -> H3:
-        return H3(self, title_id, content_id).load()
+        return H3(self, title_id, content_id)
 
 
 # there are multiple different servers, their purpose isn't entirely clear

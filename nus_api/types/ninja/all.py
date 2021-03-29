@@ -1,6 +1,6 @@
 from typing import Optional
 
-from .._base import BaseType
+from .._base import BaseTypeLoadable
 from ... import reqdata, sources, utils
 
 
@@ -8,7 +8,7 @@ from ... import reqdata, sources, utils
 # /<region>/title/<id>ec_info
 #####
 
-class NinjaEcInfo(BaseType['sources.Ninja']):
+class NinjaEcInfo(BaseTypeLoadable['sources.Ninja']):
     title_id: str
     content_size: int
     version: int
@@ -34,7 +34,7 @@ class NinjaEcInfo(BaseType['sources.Ninja']):
 # /titles/id_pair
 #####
 
-class NinjaIDPair(BaseType['sources.Ninja']):
+class NinjaIDPair(BaseTypeLoadable['sources.Ninja']):
     content_id: str
     title_id: str
 

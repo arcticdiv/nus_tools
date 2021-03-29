@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import List, Optional, Generic, TypeVar
 
 from . import common
-from .._base import BaseType
+from .._base import BaseTypeLoadable
 from ... import reqdata, sources, utils
 
 
@@ -15,7 +15,7 @@ from ... import reqdata, sources, utils
 _TDlc = TypeVar('_TDlc')
 
 
-class _SamuraiDlcs(Generic[_TDlc], BaseType['sources.Samurai']):
+class _SamuraiDlcs(Generic[_TDlc], BaseTypeLoadable['sources.Samurai']):
     dlcs: List[_TDlc]
 
     def __init__(self, source: 'sources.Samurai', content_id: str):

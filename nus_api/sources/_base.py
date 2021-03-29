@@ -8,7 +8,7 @@ from typing import Union, Optional, Iterator
 
 from ..config import Configuration
 from ..reqdata import ReqData
-from ..types._base import BaseType
+from ..types._base import BaseType, BaseTypeLoadable
 from .. import utils, cachemanager
 
 
@@ -29,7 +29,7 @@ class ResponseStatusError(Exception):
 class SourceConfig:
     load_from_cache: bool = True
     store_to_cache: bool = True
-    chunk_size: int = 4096
+    chunk_size: int = 4096  # note: with streamed requests, this value is the size of compressed chunks (i.e. the size of returned chunks may be larger)
     response_status_checking: StatusCheckMode = StatusCheckMode.REQUIRE_200
     store_failed_requests: bool = True
     store_metadata: bool = True

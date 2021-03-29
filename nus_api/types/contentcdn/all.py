@@ -1,6 +1,6 @@
 from typing import Optional, Any
 
-from .._base import BaseType
+from .._base import BaseType, BaseTypeLoadable
 from ... import reqdata, structs
 from ...sources import contentcdn as source_contentcdn
 
@@ -9,7 +9,7 @@ from ...sources import contentcdn as source_contentcdn
 # /<title id>/cetk
 #####
 
-class CETK(BaseType['source_contentcdn._BaseContentSource']):
+class CETK(BaseTypeLoadable['source_contentcdn._BaseContentSource']):
     struct: Any
 
     def __init__(self, source: 'source_contentcdn._BaseContentSource', title_id: str):
@@ -27,7 +27,7 @@ class CETK(BaseType['source_contentcdn._BaseContentSource']):
 # /<title id>/tmd[.<version>]
 #####
 
-class TMD(BaseType['source_contentcdn._BaseContentSource']):
+class TMD(BaseTypeLoadable['source_contentcdn._BaseContentSource']):
     struct: Any
 
     def __init__(self, source: 'source_contentcdn._BaseContentSource', title_id: str, version: Optional[int]):
@@ -52,9 +52,6 @@ class APP(BaseType['source_contentcdn._BaseContentSource']):
             reqdata.ReqData(path=f'{title_id}/{content_id:08x}')
         )
 
-    def _read(self, reader):
-        pass  # TODO (?)
-
 
 #####
 # /<title id>/<content id>.h3
@@ -66,6 +63,3 @@ class H3(BaseType['source_contentcdn._BaseContentSource']):
             source,
             reqdata.ReqData(path=f'{title_id}/{content_id:08x}.h3')
         )
-
-    def _read(self, reader):
-        pass  # TODO

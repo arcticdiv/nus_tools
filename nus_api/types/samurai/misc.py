@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List
 
-from .._base import BaseType
+from .._base import BaseTypeLoadable
 from ... import reqdata, sources, utils
 
 
@@ -26,7 +26,7 @@ class SamuraiNewsEntry:
     images: List[SamuraiNewsImage]
 
 
-class SamuraiNews(BaseType['sources.Samurai']):
+class SamuraiNews(BaseTypeLoadable['sources.Samurai']):
     entries: List[SamuraiNewsEntry]
 
     def __init__(self, source: 'sources.Samurai'):
@@ -65,7 +65,7 @@ class SamuraiNews(BaseType['sources.Samurai']):
 # /telops
 #####
 
-class SamuraiTelops(BaseType['sources.Samurai']):
+class SamuraiTelops(BaseTypeLoadable['sources.Samurai']):
     entries: List[str]
 
     def __init__(self, source: 'sources.Samurai'):

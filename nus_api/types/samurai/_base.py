@@ -1,10 +1,10 @@
 import abc
 
-from .._base import BaseType
+from .._base import BaseTypeLoadable
 from ... import reqdata, sources, utils
 
 
-class SamuraiListBaseType(BaseType['sources.Samurai'], abc.ABC):
+class SamuraiListBaseType(BaseTypeLoadable['sources.Samurai'], abc.ABC):
     length: int
     offset: int
     total: int

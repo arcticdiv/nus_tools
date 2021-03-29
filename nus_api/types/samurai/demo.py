@@ -1,7 +1,7 @@
 from typing import Optional
 
 from . import common
-from .._base import BaseType
+from .._base import BaseTypeLoadable
 from ... import reqdata, sources, utils
 
 
@@ -9,7 +9,7 @@ from ... import reqdata, sources, utils
 # /demo/<id>
 #####
 
-class SamuraiDemo(BaseType['sources.Samurai']):
+class SamuraiDemo(BaseTypeLoadable['sources.Samurai']):
     name: str
     rating_info: common.SamuraiRatingDetailed
     icon_url: Optional[str] = None
