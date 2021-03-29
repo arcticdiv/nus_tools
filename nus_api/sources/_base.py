@@ -63,8 +63,8 @@ class BaseSource(abc.ABC):
         self._session.mount('http://', adapter)
         self._session.mount('https://', adapter)
 
-    def get(self, data: Union[ReqData, BaseType]) -> requests.Response:
-        res = self.__get_internal(data)
+    def get_nocache(self, data: Union[ReqData, BaseType]) -> requests.Response:
+        res = self.__get_nocache_internal(data)
         self.__check_status(res)
         return res
 
@@ -76,7 +76,7 @@ class BaseSource(abc.ABC):
             yield reader
 
     # TODO: ratelimit by hostname
-    def __get_internal(self, data: Union[ReqData, BaseType]) -> requests.Response:
+    def __get_nocache_internal(self, data: Union[ReqData, BaseType]) -> requests.Response:
         if isinstance(data, BaseType):
             reqdata = data._merged_reqdata
         else:
@@ -106,7 +106,7 @@ class BaseSource(abc.ABC):
             with open(cache_path, 'rb') as fc:
                 yield utils.reader.DataReader(fc, self._config.chunk_size, metadata)
         else:
-            with self.__get_internal(type_inst) as res:
+            with self.__get_nocache_internal(type_inst) as res:
                 metadata = utils.reader.Metadata.from_response(res)
 
                 # cache data if configured, return basic reader otherwise

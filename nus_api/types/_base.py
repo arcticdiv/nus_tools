@@ -19,8 +19,8 @@ class BaseType(Generic[_TSource]):
         self._reqdata = reqdata
         self.__loaded = False
 
-    def _download(self) -> requests.Response:
-        return self._source.get(self)
+    def _download_nocache(self) -> requests.Response:
+        return self._source.get_nocache(self)
 
     def _get_reader(self):
         return self._source.get_reader(self)
