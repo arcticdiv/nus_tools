@@ -17,7 +17,6 @@ class BaseType(Generic[_TSource]):
     def __init__(self, source: _TSource, reqdata: ReqData):
         self._source = source
         self._reqdata = reqdata
-        self.__loaded = False
 
     def _download_nocache(self) -> requests.Response:
         return self._source.get_nocache(self)

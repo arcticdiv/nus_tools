@@ -6,7 +6,7 @@ import urllib3
 from requests.adapters import HTTPAdapter
 from enum import Enum
 from dataclasses import dataclass
-from typing import Union, Optional, Iterator
+from typing import Union, Optional
 
 from ..config import Configuration
 from ..reqdata import ReqData
@@ -36,18 +36,22 @@ class SourceConfig:
     store_failed_requests: bool = True
     store_metadata: bool = True
     http_retries: int = 3
+    requests_per_second: float = 5.0
 
 
 class BaseSource(abc.ABC):
     def __init__(self, base_reqdata: ReqData, config: Optional[SourceConfig], *, verify_tls: bool = True):
+        # build base request data
         self._base_reqdata = ReqData(
             path='',
             headers={'User-Agent': Configuration.default_user_agent}
         )
         self._base_reqdata += base_reqdata
 
+        # use supplied config or default
         self._config = config if config is not None else SourceConfig()
 
+        # set up retries
         self._session = requests.Session()
         self._session.verify = verify_tls
         adapter = HTTPAdapter(
@@ -69,13 +73,13 @@ class BaseSource(abc.ABC):
         return res
 
     @contextlib.contextmanager
-    def get_reader(self, type_inst: BaseType) -> Iterator[utils.reader.DataReader]:
+    def get_reader(self, type_inst: BaseType):
         with self.__get_reader_internal(type_inst) as reader:
             if reader.metadata:  # if this is None, request was loaded from cache and successful
                 self.__check_status(reader.metadata)
             yield reader
 
-    # TODO: ratelimit by hostname
+    @utils.ratelimit.limit(lambda self: self._config.requests_per_second)
     def __get_nocache_internal(self, data: Union[ReqData, BaseType]) -> requests.Response:
         if isinstance(data, BaseType):
             reqdata = data._merged_reqdata
@@ -92,7 +96,7 @@ class BaseSource(abc.ABC):
         return res
 
     @contextlib.contextmanager
-    def __get_reader_internal(self, type_inst: BaseType) -> Iterator[utils.reader.DataReader]:
+    def __get_reader_internal(self, type_inst: BaseType):
         cache_path = type_inst._cache_path
         meta_path = cachemanager.get_metadata_path(cache_path)
 
