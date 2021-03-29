@@ -70,7 +70,7 @@ class Samurai(BaseSource):
         return self._get_all_lists(SamuraiMoviesList, max_page_size, other_params)
 
     # dlcs
-    def get_dlc(self, title: Union[str, SamuraiListTitle, SamuraiTitleElement]) -> Union[SamuraiDlcsWiiU, SamuraiDlcs3DS]:
+    def get_dlcs(self, title: Union[str, SamuraiListTitle, SamuraiTitleElement]) -> Union[SamuraiDlcsWiiU, SamuraiDlcs3DS]:
         if isinstance(title, str):
             content_id = title
         else:
