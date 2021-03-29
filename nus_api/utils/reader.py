@@ -2,7 +2,7 @@ import os
 import json
 import requests
 from dataclasses import asdict, dataclass
-from typing import Callable, Iterator, Optional, Dict, List
+from typing import Iterator, Optional, Dict, List, Union, BinaryIO
 
 from . import misc
 from .. import sources
@@ -37,24 +37,42 @@ class Metadata:
 
 class DataReader(Iterator[bytes]):
     metadata: Optional[Metadata]
+    size: Optional[int]  # *compressed* size (for HTTP responses), see `SourceConfig.chunk_size`
 
-    def __init__(self, read_func: Callable[[], bytes], meta: Optional[Metadata]):
-        self.__read_func = read_func
+    def __init__(self, resource: Union[requests.Response, BinaryIO], chunk_size: int, meta: Optional[Metadata]):
         self.metadata = meta
 
+        if isinstance(resource, requests.Response):
+            res_it = resource.iter_content(chunk_size)
+            self.__func_read = lambda: next(res_it)
+            self.__func_get_offset = resource.raw.tell
+            self.size = resource.raw.length_remaining
+        else:
+            _resource = resource  # https://mypy.readthedocs.io/en/latest/common_issues.html#narrowing-and-inner-functions
+            self.__func_read = lambda: _resource.read(chunk_size)
+            self.__func_get_offset = resource.tell
+            orig_offset = resource.tell()
+            self.size = resource.seek(0, os.SEEK_END)
+            resource.seek(orig_offset, os.SEEK_SET)
+
     def __next__(self):
-        data = self.__read_func()
+        data = self.__func_read()
         if data == b'':
             raise StopIteration
         return data
 
-    def read_all(self):
+    def read_all(self) -> bytes:
         return b''.join(self)
+
+    @property
+    def current_offset(self) -> int:
+        # *compressed* size (for HTTP responses), see `SourceConfig.chunk_size`
+        return self.__func_get_offset()
 
 
 class CachingReader(DataReader):
-    def __init__(self, filename: str, store_on_status_error: bool, read_func: Callable[[], bytes], meta: Optional[Metadata]):
-        super().__init__(read_func, meta)
+    def __init__(self, filename: str, store_on_status_error: bool, resource: Union[requests.Response, BinaryIO], chunk_size: int, meta: Optional[Metadata]):
+        super().__init__(resource, chunk_size, meta)
         self.filename = filename
         self.store_on_status_error = store_on_status_error
 

@@ -88,12 +88,10 @@ class BaseSource(abc.ABC):
                     metadata = utils.reader.Metadata.from_json(fm.read())
 
             with open(cache_path, 'rb') as fc:
-                yield utils.reader.DataReader(lambda: fc.read(self._config.chunk_size), metadata)
+                yield utils.reader.DataReader(fc, self._config.chunk_size, metadata)
         else:
             with self.__get_internal(type_inst) as res:
-                # create metadata and reader
                 metadata = utils.reader.Metadata.from_response(res)
-                res_it = res.iter_content(self._config.chunk_size)
 
                 # cache data if configured, return basic reader otherwise
                 if self._config.store_to_cache:
@@ -109,10 +107,10 @@ class BaseSource(abc.ABC):
                     # FIXME: remove once dependencies between options are implemented
                     store_on_status_error = self._config.store_metadata and self._config.store_failed_requests
 
-                    with utils.reader.CachingReader(cache_path, store_on_status_error, lambda: next(res_it), metadata) as reader:
+                    with utils.reader.CachingReader(cache_path, store_on_status_error, res, self._config.chunk_size, metadata) as reader:
                         yield reader
                 else:
-                    yield utils.reader.DataReader(lambda: next(res_it), metadata)
+                    yield utils.reader.DataReader(res, self._config.chunk_size, metadata)
 
     def __check_status(self, obj: Union[requests.Response, utils.reader.Metadata]) -> None:
         status_check = self._config.response_status_checking
