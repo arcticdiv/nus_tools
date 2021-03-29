@@ -1,14 +1,16 @@
 import os
 import abc
-import requests
 import contextlib
+import requests
+import urllib3
+from requests.adapters import HTTPAdapter
 from enum import Enum
 from dataclasses import dataclass
 from typing import Union, Optional, Iterator
 
 from ..config import Configuration
 from ..reqdata import ReqData
-from ..types._base import BaseType, BaseTypeLoadable
+from ..types._base import BaseType
 from .. import utils, cachemanager
 
 
@@ -33,6 +35,7 @@ class SourceConfig:
     response_status_checking: StatusCheckMode = StatusCheckMode.REQUIRE_200
     store_failed_requests: bool = True
     store_metadata: bool = True
+    http_retries: int = 3
 
 
 class BaseSource(abc.ABC):
@@ -44,7 +47,21 @@ class BaseSource(abc.ABC):
         self._base_reqdata += base_reqdata
 
         self._config = config if config is not None else SourceConfig()
-        self._verify_tls = verify_tls
+
+        self._session = requests.Session()
+        self._session.verify = verify_tls
+        adapter = HTTPAdapter(
+            max_retries=urllib3.util.retry.Retry(
+                total=self._config.http_retries,
+                backoff_factor=0.5,
+                redirect=False,
+                raise_on_redirect=False,
+                status_forcelist={420, 429, *range(500, 520)},
+                raise_on_status=False
+            )
+        )
+        self._session.mount('http://', adapter)
+        self._session.mount('https://', adapter)
 
     def get(self, data: Union[ReqData, BaseType]) -> requests.Response:
         res = self.__get_internal(data)
@@ -64,12 +81,11 @@ class BaseSource(abc.ABC):
             reqdata = data._merged_reqdata
         else:
             reqdata = self._base_reqdata + data
-        res = requests.get(
+        res = self._session.get(
             url=reqdata.path,
             headers=reqdata.headers,
             params=reqdata.params,
             cert=reqdata.cert,
-            verify=self._verify_tls,
             stream=True,
             allow_redirects=False
         )
