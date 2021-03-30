@@ -1,6 +1,7 @@
 from typing import Iterator, Type, TypeVar, Union, List
 
 from ._base import BaseSource, SourceConfig
+from .. import ids
 from ..reqdata import ReqData
 from ..types.samurai import \
     SamuraiContentsList, \
@@ -70,18 +71,22 @@ class Samurai(BaseSource):
         return self._get_all_lists(SamuraiMoviesList, max_page_size, other_params)
 
     # dlcs
-    def get_dlcs(self, title: Union[str, SamuraiListTitle, SamuraiTitleElement]) -> Union[SamuraiDlcsWiiU, SamuraiDlcs3DS]:
-        if isinstance(title, str):
+    def get_dlcs(self, title: Union[str, ids.ContentID, SamuraiListTitle, SamuraiTitleElement]) -> Union[SamuraiDlcsWiiU, SamuraiDlcs3DS]:
+        if isinstance(title, (SamuraiListTitle, SamuraiTitleElement)):
+            content_id = title.content_id
+        elif isinstance(title, ids.ContentID):
             content_id = title
         else:
-            content_id = title.content_id
-        if content_id.startswith('5'):  # TODO: improve this
+            content_id = ids.ContentID(title)
+        if content_id.type.platform == ids.ContentPlatform._3DS:
             return SamuraiDlcs3DS(self, content_id).load()
-        else:
+        elif content_id.type.platform == ids.ContentPlatform.WIIU:
             return SamuraiDlcsWiiU(self, content_id).load()
+        else:
+            assert False  # unhandled, should never happen
 
     # demos
-    def get_demo(self, content_id: str) -> SamuraiDemo:
+    def get_demo(self, content_id: ids.TContentIDInput) -> SamuraiDemo:
         return SamuraiDemo(self, content_id).load()
 
     def get_demos(self, title: SamuraiTitleElement) -> List[SamuraiDemo]:

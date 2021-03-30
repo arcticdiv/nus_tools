@@ -1,30 +1,30 @@
-from typing import Optional
+from typing import Optional, cast
 
 from .._base import BaseTypeLoadable
-from ... import reqdata, sources, utils
+from ... import reqdata, sources, utils, ids
 
 
 #####
-# /<region>/title/<id>ec_info
+# /<region>/title/<id>/ec_info
 #####
 
 class NinjaEcInfo(BaseTypeLoadable['sources.Ninja']):
-    title_id: str
+    title_id: ids.TitleID
     content_size: int
     version: int
     download_disabled: bool
 
-    def __init__(self, source: 'sources.Ninja', content_id: str):
+    def __init__(self, source: 'sources.Ninja', content_id: ids.TContentIDInput):
         super().__init__(
             source,
-            reqdata.ReqData(path=f'{source.region}/title/{content_id}/ec_info')
+            reqdata.ReqData(path=f'{source.region}/title/{ids.get_str_content_id(content_id)}/ec_info')
         )
 
     def _read(self, reader):
         ec_info = utils.xml.load_from_reader(reader, 'title_ec_info')
         utils.xml.validate_schema(ec_info, {'title_id': None, 'content_size': None, 'title_version': None, 'disable_download': None}, False)
 
-        self.title_id = ec_info.title_id.text
+        self.title_id = ids.TitleID(ec_info.title_id.text)
         self.content_size = int(ec_info.content_size.text)
         self.version = int(ec_info.title_version.text)
         self.download_disabled = utils.misc.get_bool(ec_info.disable_download.text)
@@ -35,18 +35,18 @@ class NinjaEcInfo(BaseTypeLoadable['sources.Ninja']):
 #####
 
 class NinjaIDPair(BaseTypeLoadable['sources.Ninja']):
-    content_id: str
-    title_id: str
+    content_id: ids.ContentID
+    title_id: ids.TitleID
 
-    def __init__(self, source: 'sources.Ninja', content_id: Optional[str] = None, title_id: Optional[str] = None):
-        if bool(content_id) == bool(title_id):
+    def __init__(self, source: 'sources.Ninja', content_id: Optional[ids.TContentIDInput] = None, title_id: Optional[ids.TTitleIDInput] = None):
+        if (content_id is None) == (title_id is None):
             raise ValueError('Exactly one of `content_id`/`title_id` must be set')
         # this endpoint probably supports multiple IDs at once, maybe consider implementing that as well
         super().__init__(
             source,
             reqdata.ReqData(
-                path=f'titles/id_pair',
-                params={'title_id[]': title_id} if title_id else {'ns_uid[]': content_id}
+                path='titles/id_pair',
+                params={'title_id[]': ids.get_str_title_id(title_id)} if title_id else {'ns_uid[]': ids.get_str_content_id(cast(ids.TContentIDInput, content_id))}
             )
         )
 
@@ -57,5 +57,5 @@ class NinjaIDPair(BaseTypeLoadable['sources.Ninja']):
         pair = pairs.title_id_pair
 
         assert pair.type.text == 'T'  # not sure if there are any other types
-        self.content_id = pair.ns_uid.text
-        self.title_id = pair.title_id.text
+        self.content_id = ids.ContentID(pair.ns_uid.text)
+        self.title_id = ids.TitleID(pair.title_id.text)

@@ -2,7 +2,7 @@ from typing import Optional
 
 from . import common
 from .._base import BaseTypeLoadable
-from ... import reqdata, sources, utils
+from ... import reqdata, sources, utils, ids
 
 
 #####
@@ -14,10 +14,10 @@ class SamuraiDemo(BaseTypeLoadable['sources.Samurai']):
     rating_info: common.SamuraiRatingDetailed
     icon_url: Optional[str] = None
 
-    def __init__(self, source: 'sources.Samurai', content_id: str):
+    def __init__(self, source: 'sources.Samurai', content_id: ids.TContentIDInput):
         super().__init__(
             source,
-            reqdata.ReqData(path=f'demo/{content_id}')
+            reqdata.ReqData(path=f'demo/{ids.get_str_content_id(content_id)}')
         )
 
     def _read(self, reader):

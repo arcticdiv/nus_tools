@@ -3,7 +3,7 @@ from typing import List, Optional, Dict, Type, TypeVar, Generic
 
 from . import common
 from ._base import SamuraiListBaseType
-from ... import utils
+from ... import utils, ids
 
 
 #####
@@ -56,7 +56,7 @@ class SamuraiMovieLinkedTitle:
 @dataclass(frozen=True)
 class _SamuraiListMovieBaseMixin:
     is_new: bool
-    content_id: str
+    content_id: ids.ContentID
     name: str
     files: List[SamuraiMovieFile]
 
@@ -65,8 +65,7 @@ class _SamuraiListMovieBaseMixin:
         if 'is_new' not in vals:
             xml = child.getparent()
             vals.is_new = utils.misc.get_bool(xml.get('new'))
-            vals.content_id = xml.get('id')
-            assert vals.content_id
+            vals.content_id = ids.ContentID(xml.get('id'))
 
         if tag == 'name':
             vals.name = text

@@ -4,7 +4,7 @@ from typing import Dict, List, Optional, Type, Tuple
 
 from . import common, movie, title_list
 from .._base import BaseTypeLoadable, XmlBaseType, IDName
-from ... import reqdata, sources, utils
+from ... import reqdata, sources, utils, ids
 
 
 #####
@@ -94,7 +94,7 @@ class SamuraiTitleWebsite:
 
 @dataclass(frozen=True)
 class SamuraiTitleLinkedDemo:
-    content_id: str
+    content_id: ids.ContentID
     name: str
     icon_url: Optional[str]
 
@@ -251,7 +251,7 @@ class _SamuraiTitleOptionalMixin(title_list._SamuraiListTitleOptionalMixin[commo
         elif tag == 'demo_titles':
             vals.demos = [
                 SamuraiTitleLinkedDemo(
-                    demo.get('id'),
+                    ids.ContentID(demo.get('id')),
                     demo.name.text,
                     utils.xml.get_text(demo, 'icon_url')
                 )
@@ -295,10 +295,10 @@ class SamuraiTitleElement(_SamuraiTitleOptionalMixin, _SamuraiTitleBaseMixin):
 class SamuraiTitle(BaseTypeLoadable['sources.Samurai']):
     title: SamuraiTitleElement
 
-    def __init__(self, source: 'sources.Samurai', content_id: str):
+    def __init__(self, source: 'sources.Samurai', content_id: ids.TContentIDInput):
         super().__init__(
             source,
-            reqdata.ReqData(path=f'title/{content_id}')
+            reqdata.ReqData(path=f'title/{ids.get_str_content_id(content_id)}')
         )
 
     def _read(self, reader):

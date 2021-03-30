@@ -3,7 +3,7 @@ from typing import Dict, Type, Optional
 
 from . import common, movie_list
 from .._base import BaseTypeLoadable
-from ... import reqdata, sources, utils
+from ... import reqdata, sources, utils, ids
 
 
 @dataclass(frozen=True)
@@ -51,10 +51,10 @@ class SamuraiMovieElement(_SamuraiMovieOptionalMixin, _SamuraiMovieBaseMixin):
 class SamuraiMovie(BaseTypeLoadable['sources.Samurai']):
     movie: SamuraiMovieElement
 
-    def __init__(self, source: 'sources.Samurai', content_id: str):
+    def __init__(self, source: 'sources.Samurai', content_id: ids.TContentIDInput):
         super().__init__(
             source,
-            reqdata.ReqData(path=f'movie/{content_id}')
+            reqdata.ReqData(path=f'movie/{ids.get_str_content_id(content_id)}')
         )
 
     def _read(self, reader):

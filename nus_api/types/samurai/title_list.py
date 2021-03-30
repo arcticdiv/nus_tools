@@ -4,7 +4,7 @@ from typing import Dict, Generic, List, Optional, Type, TypeVar
 from . import common
 from ._base import SamuraiListBaseType
 from .._base import IDName
-from ... import utils
+from ... import utils, ids
 
 
 #####
@@ -14,7 +14,7 @@ from ... import utils
 @dataclass(frozen=True)
 class _SamuraiListTitleBaseMixin:
     is_new: bool
-    content_id: str
+    content_id: ids.ContentID
     product_code: str
     name: str
     platform: common.SamuraiPlatform
@@ -33,8 +33,7 @@ class _SamuraiListTitleBaseMixin:
         if 'is_new' not in vals:
             xml = child.getparent()
             vals.is_new = utils.misc.get_bool(xml.get('new'))
-            vals.content_id = xml.get('id')
-            assert vals.content_id
+            vals.content_id = ids.ContentID(xml.get('id'))
 
         if tag == 'product_code':
             vals.product_code = text

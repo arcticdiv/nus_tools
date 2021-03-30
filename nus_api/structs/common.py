@@ -1,5 +1,7 @@
 from construct import \
-    Struct, Const, Int32ub, Bytes, Hex, Padded
+    Struct, Const, Int32ub, Bytes, Hex, Padded, Adapter
+
+from .. import ids
 
 
 # TODO: verify signatures?
@@ -10,3 +12,11 @@ signature = Padded(0x140, Struct(
 
 sha1 = Hex(Bytes(0x14))
 sha256 = Hex(Bytes(0x20))
+
+
+class TitleIDAdapter(Adapter):
+    def _decode(self, obj: bytes, context, path):
+        return ids.TitleID(obj)
+
+    def _encode(self, obj: ids.TitleID, context, path):
+        return obj.to_bytes()

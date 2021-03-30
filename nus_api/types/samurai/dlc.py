@@ -4,7 +4,7 @@ from typing import List, Optional, Generic, TypeVar
 
 from . import common
 from .._base import BaseTypeLoadable
-from ... import reqdata, sources, utils
+from ... import reqdata, sources, utils, ids
 
 
 #####
@@ -18,10 +18,10 @@ _TDlc = TypeVar('_TDlc')
 class _SamuraiDlcs(Generic[_TDlc], BaseTypeLoadable['sources.Samurai']):
     dlcs: List[_TDlc]
 
-    def __init__(self, source: 'sources.Samurai', content_id: str):
+    def __init__(self, source: 'sources.Samurai', content_id: ids.TContentIDInput):
         super().__init__(
             source,
-            reqdata.ReqData(path=f'title/{content_id}/aocs', params={'limit': 200})  # assuming a maximum of 200 DLCs per title, seems reasonable
+            reqdata.ReqData(path=f'title/{ids.get_str_content_id(content_id)}/aocs', params={'limit': 200})  # assuming a maximum of 200 DLCs per title, seems reasonable
         )
 
     def _read(self, reader):
@@ -46,7 +46,7 @@ class SamuraiDlcContentIndexes:
 @dataclass(frozen=True)
 class SamuraiDlcWiiU:
     is_new: bool
-    content_id: str
+    content_id: ids.ContentID
     name: str
     icon_url: str
     content_indexes: SamuraiDlcContentIndexes
@@ -62,8 +62,7 @@ class SamuraiDlcWiiU:
     def _parse(cls, xml) -> 'SamuraiDlcWiiU':
         vals = utils.dicts.dotdict()
         vals.is_new = utils.misc.get_bool(xml.get('new'))
-        vals.content_id = xml.get('id')
-        assert vals.content_id
+        vals.content_id = ids.ContentID(xml.get('id'))
 
         for child, tag, text in utils.xml.iter_children(xml):
             if tag == 'name':
