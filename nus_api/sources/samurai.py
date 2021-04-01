@@ -1,13 +1,13 @@
 from typing import Iterator, Type, TypeVar, Union, List
 
 from ._base import BaseSource, SourceConfig
-from .. import ids
+from .. import ids, utils
 from ..reqdata import ReqData
 from ..types.samurai import \
     SamuraiContentsList, \
     SamuraiMovie, SamuraiMoviesList, \
     SamuraiTitle, SamuraiTitlesList, \
-    SamuraiDlcsWiiU, SamuraiDlcs3DS, \
+    SamuraiDlcWiiU, SamuraiDlcsWiiU, SamuraiDlcs3DS, SamuraiDlcSizes, \
     SamuraiDemo, \
     SamuraiNews, SamuraiTelops
 from ..types.samurai._base import SamuraiListBaseType
@@ -84,6 +84,14 @@ class Samurai(BaseSource):
             return SamuraiDlcsWiiU(self, content_id).load()
         else:
             assert False  # unhandled, should never happen
+
+    def get_dlc_size(self, dlc: utils.typing.OneOrList[Union[ids.TContentIDInput, SamuraiDlcWiiU]]) -> SamuraiDlcSizes:
+        if not isinstance(dlc, list):
+            dlc = [dlc]
+        if len(dlc) == 0:
+            raise RuntimeError('no DLC content ID provided')
+        dlc_ids = [d.content_id if isinstance(d, SamuraiDlcWiiU) else d for d in dlc]
+        return SamuraiDlcSizes(self, dlc_ids).load()
 
     # demos
     def get_demo(self, content_id: ids.TContentIDInput) -> SamuraiDemo:

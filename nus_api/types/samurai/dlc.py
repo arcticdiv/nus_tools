@@ -1,6 +1,6 @@
 import abc
 from dataclasses import dataclass
-from typing import List, Optional, Generic, TypeVar
+from typing import Dict, List, Optional, Generic, TypeVar
 
 from . import common
 from .._base import BaseTypeLoadable
@@ -111,6 +111,25 @@ class SamuraiDlcsWiiU(_SamuraiDlcs[SamuraiDlcWiiU]):
 
         assert int(title.aocs.get('length')) == int(title.aocs.get('total'))  # sanity check, results could technically be paginated, but there's probably no title with >200 DLCs
         self.dlcs = [SamuraiDlcWiiU._parse(dlc) for dlc in title.aocs.aoc] if hasattr(title.aocs, 'aoc') else []
+
+
+class SamuraiDlcSizes(BaseTypeLoadable['sources.Samurai']):
+    sizes: Dict[ids.ContentID, int]
+
+    def __init__(self, source: 'sources.Samurai', dlc_ids: List[ids.TContentIDInput]):
+        super().__init__(
+            source,
+            reqdata.ReqData(
+                path='aocs/size',
+                params={'aoc[]': ','.join(ids.get_str_content_id(i) for i in dlc_ids)}
+            )
+        )
+
+    def _read(self, reader):
+        aocs = utils.xml.load_from_reader(reader, 'aocs')
+        utils.xml.validate_schema(aocs, {'aoc': {'data_size': None}}, False)
+
+        self.sizes = {ids.ContentID(aoc.get('id')): int(aoc.data_size.text) for aoc in aocs.aoc}
 
 
 #####
