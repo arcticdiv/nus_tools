@@ -97,7 +97,7 @@ class SamuraiDlcWiiU:
                 utils.xml.validate_schema(child, {'content_index': None}, False)
                 vals.content_indexes = SamuraiDlcContentIndexes(
                     child.get('variation'),
-                    [int(i) for i in child.content_index]
+                    [int(i.text) for i in child.content_index]
                 )
             elif tag == 'description':
                 vals.description = text
@@ -195,7 +195,7 @@ class SamuraiDlcPrices(BaseTypeLoadable['sources.Samurai']):
                 regular_price.get('id'),
                 common.SamuraiPrice(
                     float(regular_price.raw_value.text),
-                    regular_price.currency
+                    regular_price.currency.text
                 )
             )
 
@@ -237,8 +237,8 @@ class SamuraiDlc3DS:
             elif tag == 'price':
                 utils.xml.validate_schema(child, {'regular_price': {'amount': None, 'currency': None}}, False)
                 vals.price = common.SamuraiPrice(
-                    float(child.regular_price.amount),
-                    child.regular_price.currency
+                    float(child.regular_price.amount.text),
+                    child.regular_price.currency.text
                 )
             else:
                 raise ValueError(f'unknown tag: {tag}')
