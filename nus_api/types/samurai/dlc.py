@@ -7,17 +7,14 @@ from .._base import BaseTypeLoadable
 from ... import reqdata, sources, utils, ids
 
 
-#####
-# /title/<id>/aocs
-#####
-
-
 _TDlc = TypeVar('_TDlc')
 
 
-class _SamuraiDlcs(Generic[_TDlc], BaseTypeLoadable['sources.Samurai']):
+class SamuraiDlcsBase(Generic[_TDlc], BaseTypeLoadable['sources.Samurai']):
     dlcs: List[_TDlc]
 
+
+class SamuraiTitleDlcsBase(SamuraiDlcsBase[_TDlc]):
     def __init__(self, source: 'sources.Samurai', content_id: ids.TContentIDInput):
         super().__init__(
             source,
@@ -26,10 +23,10 @@ class _SamuraiDlcs(Generic[_TDlc], BaseTypeLoadable['sources.Samurai']):
 
     def _read(self, reader):
         title_xml = utils.xml.load_from_reader(reader, 'title')
-        self._read_dlcs(title_xml)
+        self._read_title(title_xml)
 
     @abc.abstractmethod
-    def _read_dlcs(self, title):
+    def _read_title(self, title):
         pass
 
 
@@ -98,20 +95,34 @@ class SamuraiDlcWiiU:
         return cls(**vals)
 
 
-class SamuraiDlcsWiiU(_SamuraiDlcs[SamuraiDlcWiiU]):
-    name: str
-    banner_url: Optional[str]
-    description: Optional[str]
+class SamuraiDlcsWiiUBase(SamuraiDlcsBase[SamuraiDlcWiiU]):
+    def _read_dlcs(self, aocs):
+        assert int(aocs.get('length')) == int(aocs.get('total'))  # sanity check, results could technically be paginated, but there's probably no title with >200 DLCs
+        self.dlcs = [SamuraiDlcWiiU._parse(dlc) for dlc in aocs.aoc] if hasattr(aocs, 'aoc') else []
 
-    def _read_dlcs(self, title):
-        assert utils.xml.get_child_tags(title) <= {'name', 'aocs_banner_url', 'aocs_description', 'aocs'}
-        self.name = title.name.text
-        self.banner_url = utils.xml.get_text(title, 'aocs_banner_url')
-        self.description = utils.xml.get_text(title, 'description')
 
-        assert int(title.aocs.get('length')) == int(title.aocs.get('total'))  # sanity check, results could technically be paginated, but there's probably no title with >200 DLCs
-        self.dlcs = [SamuraiDlcWiiU._parse(dlc) for dlc in title.aocs.aoc] if hasattr(title.aocs, 'aoc') else []
+#####
+# /aocs
+#####
 
+class SamuraiDlcsWiiU(SamuraiDlcsWiiUBase):
+    def __init__(self, source: 'sources.Samurai', dlc_ids: List[ids.TContentIDInput]):
+        super().__init__(
+            source,
+            reqdata.ReqData(
+                path='aocs',
+                params={'aoc[]': ','.join(ids.get_str_content_id(i) for i in dlc_ids)}
+            )
+        )
+
+    def _read(self, reader):
+        aocs = utils.xml.load_from_reader(reader, 'aocs')
+        self._read_dlcs(aocs)
+
+
+#####
+# /aocs/size
+#####
 
 class SamuraiDlcSizes(BaseTypeLoadable['sources.Samurai']):
     sizes: Dict[ids.ContentID, int]
@@ -131,6 +142,10 @@ class SamuraiDlcSizes(BaseTypeLoadable['sources.Samurai']):
 
         self.sizes = {ids.ContentID(aoc.get('id')): int(aoc.data_size.text) for aoc in aocs.aoc}
 
+
+#####
+# /aocs/prices
+#####
 
 @dataclass(frozen=True)
 class SamuraiDlcPrice:
@@ -170,6 +185,24 @@ class SamuraiDlcPrices(BaseTypeLoadable['sources.Samurai']):
 
 
 #####
+# /title/<id>/aocs
+#####
+
+class SamuraiTitleDlcsWiiU(SamuraiTitleDlcsBase[SamuraiDlcWiiU], SamuraiDlcsWiiUBase):
+    name: str
+    banner_url: Optional[str]
+    description: Optional[str]
+
+    def _read_title(self, title):
+        assert utils.xml.get_child_tags(title) <= {'name', 'aocs_banner_url', 'aocs_description', 'aocs'}
+        self.name = title.name.text
+        self.banner_url = utils.xml.get_text(title, 'aocs_banner_url')
+        self.description = utils.xml.get_text(title, 'description')
+
+        self._read_dlcs(title.aocs)
+
+
+#####
 # 3DS
 #####
 
@@ -197,8 +230,12 @@ class SamuraiDlc3DS:
         return cls(**vals)
 
 
-class SamuraiDlcs3DS(_SamuraiDlcs[SamuraiDlc3DS]):
-    def _read_dlcs(self, title):
+#####
+# /title/<id>/aocs
+#####
+
+class SamuraiTitleDlcs3DS(SamuraiTitleDlcsBase[SamuraiDlc3DS]):
+    def _read_title(self, title):
         # some titles have `aoc_available = True`, but the aoc XML doesn't contain anything :/
         assert utils.xml.get_child_tags(title) <= {'aocs'}
         self.dlcs = [SamuraiDlc3DS._parse(dlc) for dlc in title.aocs.aoc] if hasattr(title, 'aocs') else []

@@ -7,7 +7,7 @@ from ..types.samurai import \
     SamuraiContentsList, \
     SamuraiMovie, SamuraiMoviesList, \
     SamuraiTitle, SamuraiTitlesList, \
-    SamuraiDlcWiiU, SamuraiDlcsWiiU, SamuraiDlcs3DS, SamuraiDlcSizes, SamuraiDlcPrices, \
+    SamuraiDlcWiiU, SamuraiDlcsWiiU, SamuraiTitleDlcsWiiU, SamuraiTitleDlcs3DS, SamuraiDlcSizes, SamuraiDlcPrices, \
     SamuraiDemo, \
     SamuraiNews, SamuraiTelops
 from ..types.samurai._base import SamuraiListBaseType
@@ -71,17 +71,21 @@ class Samurai(BaseSource):
         return self._get_all_lists(SamuraiMoviesList, max_page_size, other_params)
 
     # dlcs
-    def get_dlcs(self, title: Union[str, ids.ContentID, SamuraiListTitle, SamuraiTitleElement]) -> Union[SamuraiDlcsWiiU, SamuraiDlcs3DS]:
+    def get_dlcs(self, dlc: utils.typing.OneOrList[Union[ids.TContentIDInput, SamuraiDlcWiiU]]) -> SamuraiDlcsWiiU:
+        return SamuraiDlcsWiiU(self, self.__get_dlc_ids(dlc)).load()
+
+    def get_dlcs_for_title(self, title: Union[str, ids.ContentID, SamuraiListTitle, SamuraiTitleElement]) -> Union[SamuraiTitleDlcsWiiU, SamuraiTitleDlcs3DS]:
         if isinstance(title, (SamuraiListTitle, SamuraiTitleElement)):
             content_id = title.content_id
         elif isinstance(title, ids.ContentID):
             content_id = title
         else:
             content_id = ids.ContentID(title)
+
         if content_id.type.platform == ids.ContentPlatform._3DS:
-            return SamuraiDlcs3DS(self, content_id).load()
+            return SamuraiTitleDlcs3DS(self, content_id).load()
         elif content_id.type.platform == ids.ContentPlatform.WIIU:
-            return SamuraiDlcsWiiU(self, content_id).load()
+            return SamuraiTitleDlcsWiiU(self, content_id).load()
         else:
             assert False  # unhandled, should never happen
 
