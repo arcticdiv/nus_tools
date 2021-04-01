@@ -1,5 +1,6 @@
 import os
 import urllib
+import hashlib
 import functools
 import pathvalidate
 from typing import Iterable, Tuple, Any
@@ -41,7 +42,15 @@ def get_path(reqdata: ReqData) -> str:
         if fmt:
             name += f'---{fmt}'
 
-    return os.path.join(base_path, __sanitize_fn(name))
+    # check length
+    name = __sanitize_fn(name)
+    limit = 150
+    if len(name) > limit:  # arbitrary limit
+        prefix, suffix = name[:limit], name[limit:]
+        suffix = hashlib.sha1(suffix.encode()).hexdigest().lower()
+        name = f'{prefix}___{suffix}'
+
+    return os.path.join(base_path, name)
 
 
 def get_metadata_path(file_path: str) -> str:

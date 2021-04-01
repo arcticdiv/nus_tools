@@ -38,7 +38,7 @@ class NinjaIDPair(BaseTypeLoadable['sources.Ninja']):
     content_id: ids.ContentID
     title_id: ids.TitleID
 
-    def __init__(self, source: 'sources.Ninja', content_id: Optional[ids.TContentIDInput] = None, title_id: Optional[ids.TTitleIDInput] = None):
+    def __init__(self, source: 'sources.Ninja', *, content_id: Optional[ids.TContentIDInput] = None, title_id: Optional[ids.TTitleIDInput] = None):
         if (content_id is None) == (title_id is None):
             raise ValueError('Exactly one of `content_id`/`title_id` must be set')
         # this endpoint probably supports multiple IDs at once, maybe consider implementing that as well

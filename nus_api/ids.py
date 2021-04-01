@@ -113,6 +113,12 @@ class TitleID:
     def __repr__(self):
         return f'{type(self).__name__}(0x{str(self)})'
 
+    def __hash__(self):
+        return hash((self.type, self.id))
+
+    def __eq__(self, other):
+        return (self.type, self.id) == (other.type, other.id)
+
 
 TTitleIDInput = Union[TitleID, str]
 
@@ -178,6 +184,12 @@ class ContentID:
 
     def __repr__(self):
         return f'{type(self).__name__}({str(self)})'
+
+    def __hash__(self):
+        return hash((self.type, self.id))
+
+    def __eq__(self, other):
+        return (self.type, self.id) == (other.type, other.id)
 
 
 TContentIDInput = Union[ContentID, str]
