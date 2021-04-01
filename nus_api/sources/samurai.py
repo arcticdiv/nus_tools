@@ -45,8 +45,8 @@ class Samurai(BaseSource):
         return self._get_all_lists(SamuraiContentsList, max_page_size, other_params)
 
     # titles
-    def get_title(self, eshop_id: str) -> SamuraiTitle:
-        return SamuraiTitle(self, eshop_id).load()
+    def get_title(self, content_id: ids.TContentIDInput) -> SamuraiTitle:
+        return SamuraiTitle(self, content_id).load()
 
     def get_title_count(self, other_params: dict = {}) -> int:
         return self._get_list_total(SamuraiTitlesList, other_params)
@@ -58,8 +58,8 @@ class Samurai(BaseSource):
         return self._get_all_lists(SamuraiTitlesList, max_page_size, other_params)
 
     # movies
-    def get_movie(self, eshop_id: str) -> SamuraiMovie:
-        return SamuraiMovie(self, eshop_id).load()
+    def get_movie(self, content_id: ids.TContentIDInput) -> SamuraiMovie:
+        return SamuraiMovie(self, content_id).load()
 
     def get_movie_count(self, other_params: dict = {}) -> int:
         return self._get_list_total(SamuraiMoviesList, other_params)
@@ -85,10 +85,10 @@ class Samurai(BaseSource):
         else:
             assert False  # unhandled, should never happen
 
-    def get_dlc_size(self, dlc: utils.typing.OneOrList[Union[ids.TContentIDInput, SamuraiDlcWiiU]]) -> SamuraiDlcSizes:
+    def get_dlc_sizes(self, dlc: utils.typing.OneOrList[Union[ids.TContentIDInput, SamuraiDlcWiiU]]) -> SamuraiDlcSizes:
         return SamuraiDlcSizes(self, self.__get_dlc_ids(dlc)).load()
 
-    def get_dlc_price(self, dlc: utils.typing.OneOrList[Union[ids.TContentIDInput, SamuraiDlcWiiU]]) -> SamuraiDlcPrices:
+    def get_dlc_prices(self, dlc: utils.typing.OneOrList[Union[ids.TContentIDInput, SamuraiDlcWiiU]]) -> SamuraiDlcPrices:
         return SamuraiDlcPrices(self, self.__get_dlc_ids(dlc)).load()
 
     def __get_dlc_ids(self, dlc: utils.typing.OneOrList[Union[ids.TContentIDInput, SamuraiDlcWiiU]]) -> List[ids.TContentIDInput]:
