@@ -1,5 +1,6 @@
 import os
 import json
+import time
 import requests
 from dataclasses import asdict, dataclass
 from typing import Iterator, Optional, Dict, List, Union, BinaryIO
@@ -15,6 +16,8 @@ class Metadata:
     status_reason: str
     response_headers: Dict[str, List[str]]
     url: str
+    timestamp: int
+    elapsed_ms: int
 
     def to_json(self) -> str:
         return json.dumps(asdict(self))
@@ -31,7 +34,9 @@ class Metadata:
             status=response.status_code,
             status_reason=response.reason,
             response_headers={k: headers.getlist(k) for k in headers},
-            url=response.url
+            url=response.url,
+            timestamp=int(time.time()),
+            elapsed_ms=int(response.elapsed.total_seconds() * 1000)
         )
 
 
