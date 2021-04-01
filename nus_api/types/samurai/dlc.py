@@ -7,6 +7,22 @@ from .._base import BaseTypeLoadable
 from ... import reqdata, sources, utils, ids
 
 
+# welcome to inheritance hell
+# graph of the main classes (because this file might be somewhat difficult to understand initially):
+#
+#                                       BaseTypeLoadable
+#                                              |
+#                                      SamuraiDlcsBase[T]
+#                                     /                  \
+#                  T: SamuraiDlcWiiU /                    \
+#                                   /                      \
+#                     SamuraiDlcsWiiUBase              SamuraiTitleDlcsBase[T]
+#                    /                   \            /                       \
+#                   /                     \          / T: SamuraiDlcWiiU       \ T: SamuraiDlc3DS
+#                  /                       \        /                           \
+#          SamuraiDlcsWiiU            SamuraiTitleDlcsWiiU              SamuraiTitleDlcs3DS
+
+
 _TDlc = TypeVar('_TDlc')
 
 
