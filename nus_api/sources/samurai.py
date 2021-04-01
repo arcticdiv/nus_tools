@@ -7,7 +7,7 @@ from ..types.samurai import \
     SamuraiContentsList, \
     SamuraiMovie, SamuraiMoviesList, \
     SamuraiTitle, SamuraiTitlesList, \
-    SamuraiDlcWiiU, SamuraiDlcsWiiU, SamuraiDlcs3DS, SamuraiDlcSizes, \
+    SamuraiDlcWiiU, SamuraiDlcsWiiU, SamuraiDlcs3DS, SamuraiDlcSizes, SamuraiDlcPrices, \
     SamuraiDemo, \
     SamuraiNews, SamuraiTelops
 from ..types.samurai._base import SamuraiListBaseType
@@ -86,12 +86,17 @@ class Samurai(BaseSource):
             assert False  # unhandled, should never happen
 
     def get_dlc_size(self, dlc: utils.typing.OneOrList[Union[ids.TContentIDInput, SamuraiDlcWiiU]]) -> SamuraiDlcSizes:
+        return SamuraiDlcSizes(self, self.__get_dlc_ids(dlc)).load()
+
+    def get_dlc_price(self, dlc: utils.typing.OneOrList[Union[ids.TContentIDInput, SamuraiDlcWiiU]]) -> SamuraiDlcPrices:
+        return SamuraiDlcPrices(self, self.__get_dlc_ids(dlc)).load()
+
+    def __get_dlc_ids(self, dlc: utils.typing.OneOrList[Union[ids.TContentIDInput, SamuraiDlcWiiU]]) -> List[ids.TContentIDInput]:
         if not isinstance(dlc, list):
             dlc = [dlc]
         if len(dlc) == 0:
             raise RuntimeError('no DLC content ID provided')
-        dlc_ids = [d.content_id if isinstance(d, SamuraiDlcWiiU) else d for d in dlc]
-        return SamuraiDlcSizes(self, dlc_ids).load()
+        return [d.content_id if isinstance(d, SamuraiDlcWiiU) else d for d in dlc]
 
     # demos
     def get_demo(self, content_id: ids.TContentIDInput) -> SamuraiDemo:

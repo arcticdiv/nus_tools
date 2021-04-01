@@ -132,6 +132,43 @@ class SamuraiDlcSizes(BaseTypeLoadable['sources.Samurai']):
         self.sizes = {ids.ContentID(aoc.get('id')): int(aoc.data_size.text) for aoc in aocs.aoc}
 
 
+@dataclass(frozen=True)
+class SamuraiDlcPrice:
+    eshop_status: str
+    price_id: str
+    price: common.SamuraiPrice
+
+
+class SamuraiDlcPrices(BaseTypeLoadable['sources.Samurai']):
+    prices: Dict[ids.ContentID, SamuraiDlcPrice]
+
+    def __init__(self, source: 'sources.Samurai', dlc_ids: List[ids.TContentIDInput]):
+        super().__init__(
+            source,
+            reqdata.ReqData(
+                path='aocs/prices',
+                params={'aoc[]': ','.join(ids.get_str_content_id(i) for i in dlc_ids)}
+            )
+        )
+
+    def _read(self, reader):
+        prices = utils.xml.load_from_reader(reader, 'online_prices')
+        utils.xml.validate_schema(prices, {'online_price': {'aoc_id': None, 'eshop_sales_status': None, 'price': {'regular_price': {'amount': None, 'currency': None, 'raw_value': None}}}}, False)
+
+        self.prices = {}
+        for price in prices.online_price:
+            assert len(price.price.getchildren()) == 1
+            regular_price = price.price.regular_price
+            self.prices[ids.ContentID(price.aoc_id.text)] = SamuraiDlcPrice(
+                price.eshop_sales_status.text,
+                regular_price.get('id'),
+                common.SamuraiPrice(
+                    float(regular_price.raw_value.text),
+                    regular_price.currency
+                )
+            )
+
+
 #####
 # 3DS
 #####
