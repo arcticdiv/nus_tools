@@ -15,6 +15,8 @@ class IDBE(BaseTypeLoadable['sources.IDBEServer']):
 
     def __init__(self, source: 'sources.IDBEServer', title_id: ids.TTitleIDInput, version: Optional[int]):
         tid_str = ids.get_str_title_id(title_id)
+        self.__title_id = ids.TitleID(tid_str)  # TODO
+
         super().__init__(
             source,
             # server seems to ignore first value, technically it wouldn't matter what is supplied here
@@ -30,7 +32,11 @@ class IDBE(BaseTypeLoadable['sources.IDBEServer']):
         encrypted = data[2:]
 
         decrypted = self.__get_aes(self.key_index).decrypt(encrypted)
-        self.struct = structs.idbe.parse(decrypted)
+        struct = structs.idbe_wiiu if self.__title_id.type.platform == ids.TitlePlatform.WIIU else structs.idbe_3ds
+        self.struct = struct.parse(decrypted)
+
+        # sanity check
+        assert self.struct.title_id == self.__title_id
 
     @classmethod
     @utils.misc.cache
