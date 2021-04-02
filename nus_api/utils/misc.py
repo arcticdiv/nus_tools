@@ -1,5 +1,6 @@
 import os
-from typing import Generic, TypeVar, Callable, Any
+import functools
+from typing import TypeVar, Callable, TYPE_CHECKING
 
 
 def create_dirs_for_file(file_path: str) -> None:
@@ -15,16 +16,15 @@ def get_bool(text: str) -> bool:
     raise ValueError(text)
 
 
-_TCached = TypeVar('_TCached')
+_TCacheSig = TypeVar('_TCacheSig', bound=Callable)
 
 
-# adapted from https://stackoverflow.com/a/4037979/5080607
-class cached_property(Generic[_TCached]):
-    def __init__(self, factory: Callable[[Any], _TCached]):
-        self._factory = factory
-        self.__doc__ = getattr(factory, '__doc__')
+def cache(func: _TCacheSig) -> _TCacheSig:
+    return functools.lru_cache(maxsize=None)(func)  # type: ignore
 
-    def __get__(self, obj, objtype):
-        val = self._factory(obj)
-        setattr(obj, self._factory.__name__, val)
-        return val
+
+# make the type checker believe that `cachedproperty` is a type alias of `property`, which fixes IDE type hints and autocompletion
+if TYPE_CHECKING:
+    cachedproperty = property
+else:
+    cachedproperty = lambda func: property(cache(func))  # noqa: E731

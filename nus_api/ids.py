@@ -123,8 +123,10 @@ class TitleID:
 TTitleIDInput = Union[TitleID, str]
 
 
-def get_str_title_id(val: TTitleIDInput):
-    return str(val) if isinstance(val, TitleID) else val.upper()
+def get_str_title_id(val: TTitleIDInput) -> str:
+    v = str(val) if isinstance(val, TitleID) else val.upper()
+    assert len(v) == 16
+    return v
 
 
 # couldn't find any references for these, this is only based on observations
@@ -195,5 +197,7 @@ class ContentID:
 TContentIDInput = Union[ContentID, str]
 
 
-def get_str_content_id(val: TContentIDInput):
-    return str(val) if isinstance(val, ContentID) else val
+def get_str_content_id(val: TContentIDInput) -> str:
+    v = str(val) if isinstance(val, ContentID) else val
+    assert len(v) == 14
+    return v

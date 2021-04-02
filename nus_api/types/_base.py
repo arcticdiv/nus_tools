@@ -27,11 +27,11 @@ class BaseType(Generic[_TSource]):
     def is_cached(self) -> bool:
         return os.path.isfile(self._cache_path)  # TODO: case sensitivity?
 
-    @utils.misc.cached_property
+    @utils.misc.cachedproperty
     def _merged_reqdata(self) -> ReqData:
         return self._source._base_reqdata + self._reqdata
 
-    @utils.misc.cached_property
+    @utils.misc.cachedproperty
     def _cache_path(self) -> str:
         return cachemanager.get_path(self._merged_reqdata)
 
