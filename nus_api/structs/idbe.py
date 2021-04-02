@@ -24,7 +24,7 @@ class TitleInfoLanguageAdapter(Adapter):
 # only tested with WiiU files, does not work for 3DS since it uses little endian and different icon sizes
 struct = Struct(
     'checksum' / common.sha256,
-    'title_id' / common.TitleIDAdapter(Bytes(8)),
+    'title_id' / common.TitleID,
     'version' / Int32ub,
     '_unk1' / Bytes(4),
     'regions' / FlagsEnum(Int32ub, JP=1 << 0, US=1 << 1, EU=1 << 2, AU=1 << 3, CN=1 << 4, KO=1 << 5, TW=1 << 6, unk=1 << 7),

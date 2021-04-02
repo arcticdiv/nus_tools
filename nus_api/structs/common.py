@@ -14,9 +14,12 @@ sha1 = Hex(Bytes(0x14))
 sha256 = Hex(Bytes(0x20))
 
 
-class TitleIDAdapter(Adapter):
+class _TitleIDAdapter(Adapter):
     def _decode(self, obj: bytes, context, path):
         return ids.TitleID(obj)
 
     def _encode(self, obj: ids.TitleID, context, path):
         return obj.to_bytes()
+
+
+TitleID = _TitleIDAdapter(Bytes(8))

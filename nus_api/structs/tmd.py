@@ -18,7 +18,7 @@ struct = Struct(
     'signer_crl_version' / Byte,
     '_unk1' / Bytes(1),
     'system_version' / Hex(Bytes(8)),
-    'title_id' / common.TitleIDAdapter(Bytes(8)),
+    'title_id' / common.TitleID,
     'title_type' / Hex(Bytes(4)),
     'group_id' / Hex(Bytes(2)),
     '_unk2' / Bytes(0x3e),

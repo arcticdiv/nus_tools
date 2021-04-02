@@ -19,7 +19,7 @@ struct = Struct(
     '_unk1' / Bytes(1),
     'ticket_id' / Hex(Bytes(8)),
     'console_id' / Hex(Bytes(4)),
-    'title_id' / common.TitleIDAdapter(Bytes(8)),
+    'title_id' / common.TitleID,
     '_unk2' / Bytes(2),
     'title_version' / Int16ub,
     '_unk3' / Bytes(8),
