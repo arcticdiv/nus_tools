@@ -1,6 +1,7 @@
 from construct import \
     Struct, Container, Adapter, Array, ByteSwapped, \
     Bytes, FlagsEnum, Int32ub, PaddedString, Padding, Pass, Terminated
+from constructutils import InliningStruct, InlineStruct, AttributeRawCopy
 
 from . import common
 
@@ -42,21 +43,23 @@ def __get_struct(is_wiiu: bool):
             '48' / Bytes(48 * 48 * 2)
         )
 
-    return Struct(
-        'checksum' / common.sha256,  # TODO: verify
-        'title_id' / swap(common.TitleID),
-        'version' / swap(Int32ub),
-        '_unk1' / Bytes(4),
-        'regions' / swap(FlagsEnum(Int32ub, JP=1 << 0, US=1 << 1, EU=1 << 2, AU=1 << 3, CN=1 << 4, KO=1 << 5, TW=1 << 6, unk=1 << 7)),
-        '_unk2' / Bytes(0x10),
-        Padding(0x0c),
-        'title_info' / TitleInfoLanguageAdapter(Array(16, Struct(
-            'short_name' / PaddedString(0x80, encoding),
-            'long_name' / PaddedString(0x100, encoding),
-            'publisher' / PaddedString(0x80, encoding)
-        ))),
-        'icons' / icons,
-        Padding(4) if is_wiiu else Pass,
+    return InliningStruct(
+        'checksum' / common.sha256,
+        AttributeRawCopy(InlineStruct(
+            'title_id' / swap(common.TitleID),
+            'version' / swap(Int32ub),
+            '_unk1' / Bytes(4),
+            'regions' / swap(FlagsEnum(Int32ub, JP=1 << 0, US=1 << 1, EU=1 << 2, AU=1 << 3, CN=1 << 4, KO=1 << 5, TW=1 << 6, unk=1 << 7)),
+            '_unk2' / Bytes(0x10),
+            Padding(0x0c),
+            'title_info' / TitleInfoLanguageAdapter(Array(16, Struct(
+                'short_name' / PaddedString(0x80, encoding),
+                'long_name' / PaddedString(0x100, encoding),
+                'publisher' / PaddedString(0x80, encoding)
+            ))),
+            'icons' / icons,
+            Padding(4) if is_wiiu else Pass
+        )),
         Terminated
     )
 

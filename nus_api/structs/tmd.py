@@ -1,6 +1,7 @@
 from construct import \
     Struct, Int64ub, Int32ub, Int16ub, Bytes, Byte, Array, \
     GreedyBytes, Hex, PaddedString, Padding, FlagsEnum, this
+from constructutils import AttributeRawCopy
 
 from . import common
 
@@ -27,13 +28,13 @@ struct = Struct(
     'content_count' / Int16ub,
     'boot_index' / Int16ub,
     Padding(2),
-    'content_info_sha256' / common.sha256,  # TODO: verify hashes?
-    'content_info' / Array(64, Struct(
+    'content_info_sha256' / common.sha256,
+    'content_info' / AttributeRawCopy(Array(64, Struct(
         'content_index' / Int16ub,
         'content_count' / Int16ub,
         'contents_sha256' / common.sha256
-    )),
-    'contents' / Array(this.content_count, Struct(
+    ))),
+    'contents' / Array(this.content_count, AttributeRawCopy(Struct(
         'id' / Hex(Int32ub),
         'index' / Int16ub,
         # 0x2000: always set (?)
@@ -43,6 +44,6 @@ struct = Struct(
         'size' / Int64ub,
         'sha1' / common.sha1,
         Padding(0x0c)
-    )),
+    ))),
     '_end' / GreedyBytes
 )

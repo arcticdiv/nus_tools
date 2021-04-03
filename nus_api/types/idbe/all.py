@@ -38,9 +38,11 @@ class IDBE(BaseTypeLoadable['sources.IDBEServer']):
         # sanity check
         assert self.struct.title_id == self.__title_id
 
-    @classmethod
-    @utils.misc.cache
-    def __get_aes(cls, key_index):
+        # verify checksum
+        self.struct.checksum.verify(self.struct.__raw__)
+
+    @staticmethod
+    def __get_aes(key_index):
         return utils.crypto.AES.cbc(
             Configuration.keys.idbe_keys[key_index],
             Configuration.keys.idbe_iv

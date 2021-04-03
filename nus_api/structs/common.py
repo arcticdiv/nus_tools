@@ -1,5 +1,7 @@
+import hashlib
 from construct import \
     Struct, Const, Int32ub, Bytes, Hex, Padded, Adapter
+from constructutils import checksum
 
 from .. import ids
 
@@ -10,8 +12,8 @@ signature = Padded(0x140, Struct(
     'data' / Bytes(0x100)
 ))
 
-sha1 = Hex(Bytes(0x14))
-sha256 = Hex(Bytes(0x20))
+sha1 = checksum.Checksum(hashlib.sha1)
+sha256 = checksum.Checksum(hashlib.sha256)
 
 
 class _TitleIDAdapter(Adapter):

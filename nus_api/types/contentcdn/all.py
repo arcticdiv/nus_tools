@@ -40,6 +40,15 @@ class TMD(BaseTypeLoadable['source_contentcdn._BaseContentSource']):
         raw_data = reader.read_all()
         self.struct = structs.tmd.parse(raw_data)
 
+        # verify checksums
+        self.struct.content_info_sha256.verify(self.struct.content_info.__raw__)
+        for info in self.struct.content_info:
+            if info.content_count == 0:
+                continue
+            contents = self.struct.contents[info.content_index:info.content_index + info.content_count]
+            data = b''.join(c.__raw__ for c in contents)
+            info.contents_sha256.verify(data)
+
 
 #####
 # /<title id>/<content id>
