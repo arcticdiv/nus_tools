@@ -34,6 +34,7 @@ def __get_struct(is_wiiu: bool):
         icons = Struct(
             '128' / Bytes(0x2c + 128 * 128 * 4)
         )
+        region_all = 0xffffffff
     else:
         swap = ByteSwapped
         encoding = 'utf-16-le'
@@ -42,6 +43,7 @@ def __get_struct(is_wiiu: bool):
             '24' / Bytes(24 * 24 * 2),
             '48' / Bytes(48 * 48 * 2)
         )
+        region_all = 0x7fffffff
 
     return InliningStruct(
         'checksum' / common.sha256,
@@ -49,7 +51,7 @@ def __get_struct(is_wiiu: bool):
             'title_id' / swap(common.TitleID),
             'version' / swap(Int32ub),
             '_unk1' / Bytes(4),
-            'regions' / swap(FlagsEnum(Int32ub, JP=1 << 0, US=1 << 1, EU=1 << 2, AU=1 << 3, CN=1 << 4, KO=1 << 5, TW=1 << 6, unk=1 << 7)),
+            'regions' / swap(FlagsEnum(Int32ub, JP=1 << 0, US=1 << 1, EU=1 << 2, AU=1 << 3, CN=1 << 4, KO=1 << 5, TW=1 << 6, ALL=region_all)),
             '_unk2' / Bytes(0x10),
             Padding(0x0c),
             'title_info' / TitleInfoLanguageAdapter(Array(16, Struct(
