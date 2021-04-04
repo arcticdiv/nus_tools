@@ -1,7 +1,7 @@
 from construct import \
-    Struct, Container, Adapter, Array, ByteSwapped, \
+    Struct, Array, ByteSwapped, \
     Bytes, FlagsEnum, Int32ub, PaddedString, Padding, Pass, Terminated
-from constructutils import InliningStruct, InlineStruct, AttributeRawCopy
+from constructutils import InliningStruct, InlineStruct, AttributeRawCopy, DictZipAdapter
 
 from . import common
 
@@ -11,15 +11,6 @@ languages = (
     'JP', 'EN', 'FR', 'DE', 'IT', 'ES', 'TW', 'KO', 'NL', 'PT', 'RU', 'CN',
     'unused1', 'unused2', 'unused3', 'unused4'
 )
-
-
-class TitleInfoLanguageAdapter(Adapter):
-    def _decode(self, obj: list, context, path):
-        assert len(languages) == len(obj)
-        return Container(zip(languages, obj))
-
-    def _encode(self, obj, context, path):
-        raise NotImplementedError
 
 
 # ref:
@@ -54,7 +45,7 @@ def __get_struct(is_wiiu: bool):
             'regions' / swap(FlagsEnum(Int32ub, JP=1 << 0, US=1 << 1, EU=1 << 2, AU=1 << 3, CN=1 << 4, KO=1 << 5, TW=1 << 6, ALL=region_all)),
             '_unk2' / Bytes(0x10),
             Padding(0x0c),
-            'title_info' / TitleInfoLanguageAdapter(Array(16, Struct(
+            'title_info' / DictZipAdapter(languages, Array(16, Struct(
                 'short_name' / PaddedString(0x80, encoding),
                 'long_name' / PaddedString(0x100, encoding),
                 'publisher' / PaddedString(0x80, encoding)
