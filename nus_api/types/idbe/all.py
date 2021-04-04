@@ -14,8 +14,8 @@ class IDBE(BaseTypeLoadable['sources.IDBEServer']):
     struct: Any
 
     def __init__(self, source: 'sources.IDBEServer', title_id: ids.TTitleIDInput, version: Optional[int]):
-        tid_str = ids.get_str_title_id(title_id)
-        self.__title_id = ids.TitleID(tid_str)  # TODO
+        tid_str = ids.TitleID.get_str(title_id)
+        self.__title_id = ids.TitleID.get_inst(title_id)
 
         super().__init__(
             source,

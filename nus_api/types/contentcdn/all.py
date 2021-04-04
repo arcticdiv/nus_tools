@@ -15,7 +15,7 @@ class CETK(BaseTypeLoadable['source_contentcdn._BaseContentSource']):
     def __init__(self, source: 'source_contentcdn._BaseContentSource', title_id: ids.TTitleIDInput):
         super().__init__(
             source,
-            reqdata.ReqData(path=f'{ids.get_str_title_id(title_id)}/cetk')
+            reqdata.ReqData(path=f'{ids.TitleID.get_str(title_id)}/cetk')
         )
 
     def _read(self, reader):
@@ -33,7 +33,7 @@ class TMD(BaseTypeLoadable['source_contentcdn._BaseContentSource']):
     def __init__(self, source: 'source_contentcdn._BaseContentSource', title_id: ids.TTitleIDInput, version: Optional[int]):
         super().__init__(
             source,
-            reqdata.ReqData(path=f'{ids.get_str_title_id(title_id)}/tmd' + (f'.{version}' if version is not None else ''))
+            reqdata.ReqData(path=f'{ids.TitleID.get_str(title_id)}/tmd' + (f'.{version}' if version is not None else ''))
         )
 
     def _read(self, reader):
@@ -58,7 +58,7 @@ class APP(BaseType['source_contentcdn._BaseContentSource']):
     def __init__(self, source: 'source_contentcdn._BaseContentSource', title_id: ids.TTitleIDInput, content_id: int):
         super().__init__(
             source,
-            reqdata.ReqData(path=f'{ids.get_str_title_id(title_id)}/{content_id:08x}')  # TODO: uppercase/lowercase?
+            reqdata.ReqData(path=f'{ids.TitleID.get_str(title_id)}/{content_id:08x}')  # TODO: uppercase/lowercase?
         )
 
 
@@ -70,5 +70,5 @@ class H3(BaseType['source_contentcdn._BaseContentSource']):
     def __init__(self, source: 'source_contentcdn._BaseContentSource', title_id: ids.TTitleIDInput, content_id: int):
         super().__init__(
             source,
-            reqdata.ReqData(path=f'{ids.get_str_title_id(title_id)}/{content_id:08x}.h3')
+            reqdata.ReqData(path=f'{ids.TitleID.get_str(title_id)}/{content_id:08x}.h3')
         )

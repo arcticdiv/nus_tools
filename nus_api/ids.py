@@ -5,6 +5,11 @@ from typing import Union, overload
 # ref: https://www.3dbrew.org/wiki/Titles
 # ref: https://wiiubrew.org/wiki/Title_database
 
+
+TTitleIDInput = Union['TitleID', str]
+TContentIDInput = Union['ContentID', str]
+
+
 class TitlePlatform(IntEnum):
     _3DS = 0x0004
     WIIU = 0x0005
@@ -111,7 +116,7 @@ class TitleID:
         return f'{self.type.value:08X}{self.id:08X}'
 
     def __repr__(self):
-        return f'{type(self).__name__}(0x{str(self)})'
+        return f'{type(self).__name__}[0x{str(self)}, {self.type.name}]'
 
     def __hash__(self):
         return hash((self.type, self.id))
@@ -119,14 +124,15 @@ class TitleID:
     def __eq__(self, other):
         return (self.type, self.id) == (other.type, other.id)
 
+    @staticmethod
+    def get_str(val: TTitleIDInput) -> str:
+        s = str(val) if isinstance(val, TitleID) else val.upper()
+        assert len(s) == 16
+        return s
 
-TTitleIDInput = Union[TitleID, str]
-
-
-def get_str_title_id(val: TTitleIDInput) -> str:
-    v = str(val) if isinstance(val, TitleID) else val.upper()
-    assert len(v) == 16
-    return v
+    @staticmethod
+    def get_inst(val: TTitleIDInput) -> 'TitleID':
+        return TitleID(val) if isinstance(val, str) else val
 
 
 # couldn't find any references for these, this is only based on observations
@@ -185,7 +191,7 @@ class ContentID:
         return f'{self.type.value:04d}{self.id:010d}'
 
     def __repr__(self):
-        return f'{type(self).__name__}({str(self)})'
+        return f'{type(self).__name__}[{str(self)}, {self.type.name}]'
 
     def __hash__(self):
         return hash((self.type, self.id))
@@ -193,11 +199,12 @@ class ContentID:
     def __eq__(self, other):
         return (self.type, self.id) == (other.type, other.id)
 
+    @staticmethod
+    def get_str(val: TContentIDInput) -> str:
+        s = str(val) if isinstance(val, ContentID) else val
+        assert len(s) == 14
+        return s
 
-TContentIDInput = Union[ContentID, str]
-
-
-def get_str_content_id(val: TContentIDInput) -> str:
-    v = str(val) if isinstance(val, ContentID) else val
-    assert len(v) == 14
-    return v
+    @staticmethod
+    def get_inst(val: TContentIDInput) -> 'ContentID':
+        return ContentID(val) if isinstance(val, str) else val

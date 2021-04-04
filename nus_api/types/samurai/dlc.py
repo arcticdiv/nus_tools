@@ -34,7 +34,7 @@ class SamuraiTitleDlcsBase(SamuraiDlcsBase[_TDlc]):
     def __init__(self, source: 'sources.Samurai', content_id: ids.TContentIDInput):
         super().__init__(
             source,
-            reqdata.ReqData(path=f'title/{ids.get_str_content_id(content_id)}/aocs', params={'limit': 200})  # assuming a maximum of 200 DLCs per title, seems reasonable
+            reqdata.ReqData(path=f'title/{ids.ContentID.get_str(content_id)}/aocs', params={'limit': 200})  # assuming a maximum of 200 DLCs per title, seems reasonable
         )
 
     def _read(self, reader):
@@ -127,7 +127,7 @@ class SamuraiDlcsWiiU(SamuraiDlcsWiiUBase):
             source,
             reqdata.ReqData(
                 path='aocs',
-                params={'aoc[]': ','.join(ids.get_str_content_id(i) for i in dlc_ids)}
+                params={'aoc[]': ','.join(ids.ContentID.get_str(i) for i in dlc_ids)}
             )
         )
 
@@ -148,7 +148,7 @@ class SamuraiDlcSizes(BaseTypeLoadable['sources.Samurai']):
             source,
             reqdata.ReqData(
                 path='aocs/size',
-                params={'aoc[]': ','.join(ids.get_str_content_id(i) for i in dlc_ids)}
+                params={'aoc[]': ','.join(ids.ContentID.get_str(i) for i in dlc_ids)}
             )
         )
 
@@ -178,7 +178,7 @@ class SamuraiDlcPrices(BaseTypeLoadable['sources.Samurai']):
             source,
             reqdata.ReqData(
                 path='aocs/prices',
-                params={'aoc[]': ','.join(ids.get_str_content_id(i) for i in dlc_ids)}
+                params={'aoc[]': ','.join(ids.ContentID.get_str(i) for i in dlc_ids)}
             )
         )
 

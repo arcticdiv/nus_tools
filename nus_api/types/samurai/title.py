@@ -298,7 +298,7 @@ class SamuraiTitle(BaseTypeLoadable['sources.Samurai']):
     def __init__(self, source: 'sources.Samurai', content_id: ids.TContentIDInput):
         super().__init__(
             source,
-            reqdata.ReqData(path=f'title/{ids.get_str_content_id(content_id)}')
+            reqdata.ReqData(path=f'title/{ids.ContentID.get_str(content_id)}')
         )
 
     def _read(self, reader):

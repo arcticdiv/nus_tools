@@ -17,7 +17,7 @@ class NinjaEcInfo(BaseTypeLoadable['sources.Ninja']):
     def __init__(self, source: 'sources.Ninja', content_id: ids.TContentIDInput):
         super().__init__(
             source,
-            reqdata.ReqData(path=f'{source.region}/title/{ids.get_str_content_id(content_id)}/ec_info')
+            reqdata.ReqData(path=f'{source.region}/title/{ids.ContentID.get_str(content_id)}/ec_info')
         )
 
     def _read(self, reader):
@@ -46,7 +46,7 @@ class NinjaIDPair(BaseTypeLoadable['sources.Ninja']):
             source,
             reqdata.ReqData(
                 path='titles/id_pair',
-                params={'title_id[]': ids.get_str_title_id(title_id)} if title_id else {'ns_uid[]': ids.get_str_content_id(cast(ids.TContentIDInput, content_id))}
+                params={'title_id[]': ids.TitleID.get_str(title_id)} if title_id else {'ns_uid[]': ids.ContentID.get_str(cast(ids.TContentIDInput, content_id))}
             )
         )
 
