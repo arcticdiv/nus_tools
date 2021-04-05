@@ -1,7 +1,10 @@
+import hashlib
 from construct import \
-    Struct, Array, ByteSwapped, \
-    Bytes, FlagsEnum, Int32ub, PaddedString, Padding, Pass, Terminated
-from constructutils import InliningStruct, InlineStruct, AttributeRawCopy, DictZipAdapter
+    Struct, Array, ByteSwapped, Bytes, Int32ub, \
+    FlagsEnum, PaddedString, Padding, Pass, Terminated, this
+from constructutils import \
+    InliningStruct, InlineStruct, DictZipAdapter, \
+    ChecksumValue, ChecksumSourceData, VerifyOrWriteChecksums
 
 from . import common
 
@@ -37,8 +40,8 @@ def __get_struct(is_wiiu: bool):
         region_all = 0x7fffffff
 
     return InliningStruct(
-        'checksum' / common.sha256,
-        AttributeRawCopy(InlineStruct(
+        'checksum' / ChecksumValue(hashlib.sha256, this),
+        ChecksumSourceData(InlineStruct(
             'title_id' / swap(common.TitleID),
             'version' / swap(Int32ub),
             '_unk1' / Bytes(4),
@@ -53,6 +56,7 @@ def __get_struct(is_wiiu: bool):
             'icons' / icons,
             Padding(4) if is_wiiu else Pass
         )),
+        VerifyOrWriteChecksums,
         Terminated
     )
 
