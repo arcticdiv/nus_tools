@@ -25,7 +25,7 @@ def __get_struct(is_wiiu: bool):
         swap = lambda x: x  # noop  # noqa: E731
         encoding = 'utf-16-be'
         # tga file
-        icons = Struct(
+        icon_struct = 'icons_tga' / Struct(
             '128' / Bytes(0x2c + 128 * 128 * 4)
         )
         region_all = 0xffffffff
@@ -33,7 +33,7 @@ def __get_struct(is_wiiu: bool):
         swap = ByteSwapped
         encoding = 'utf-16-le'
         # raw RGB565
-        icons = Struct(
+        icon_struct = 'icons_raw' / Struct(
             '24' / Bytes(24 * 24 * 2),
             '48' / Bytes(48 * 48 * 2)
         )
@@ -53,7 +53,7 @@ def __get_struct(is_wiiu: bool):
                 'long_name' / PaddedString(0x100, encoding),
                 'publisher' / PaddedString(0x80, encoding)
             ))),
-            'icons' / icons,
+            icon_struct,
             Padding(4) if is_wiiu else Pass
         )),
         VerifyOrWriteChecksums,
