@@ -19,6 +19,9 @@ class TitleType(IntEnum):
     GAME_3DS = 0x00040000
     DEMO_3DS = 0x00040002
     UPDATE_3DS = 0x0004000e
+    SYSTEM_APP_3DS = 0x00040010
+    SYSTEM_DATA_3DS = 0x0004001b
+    APPLET_3DS = 0x00040030
     DLC_3DS = 0x0004008c
     DSIWARE_3DS = 0x00048004
 
@@ -26,6 +29,9 @@ class TitleType(IntEnum):
     DEMO_WIIU = 0x00050002
     DLC_WIIU = 0x0005000c
     UPDATE_WIIU = 0x0005000e
+    SYSTEM_APP_WIIU = 0x00050010
+    SYSTEM_DATA_WIIU = 0x0005001b
+    APPLET_WIIU = 0x00050030
 
     @classmethod
     def from_platform_category(cls, platform: Union[TitlePlatform, int], category: int):
