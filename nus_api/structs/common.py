@@ -1,5 +1,6 @@
 from construct import \
-    Struct, Const, Int32ub, Bytes, Hex, Padded, ExprAdapter
+    Construct, Struct, Const, Int32ub, Bytes, Hex, Padded, ExprAdapter
+from typing import Callable, Union
 
 from .. import ids
 
@@ -16,3 +17,21 @@ TitleID = ExprAdapter(
     lambda data, _: ids.TitleID(data),
     lambda title_id, _: title_id.to_bytes()
 )
+
+
+class PlatformSpecific:
+    _3ds: Construct
+    wiiu: Construct
+
+    # expected signature: `func(is_wiiu: bool) -> Construct`
+    def __init__(self, func: Callable[[bool], Construct]):
+        self._3ds = func(False)
+        self.wiiu = func(True)
+
+    def get(self, platform: Union[ids.TitlePlatform, ids.ContentPlatform]) -> Construct:
+        return {
+            ids.TitlePlatform._3DS: self._3ds,
+            ids.ContentPlatform._3DS: self._3ds,
+            ids.TitlePlatform.WIIU: self.wiiu,
+            ids.ContentPlatform.WIIU: self.wiiu
+        }[platform]

@@ -10,7 +10,7 @@ from ...sources import contentcdn as source_contentcdn
 #####
 
 class CETK(BaseTypeLoadable['source_contentcdn._BaseContentSource']):
-    struct: Any
+    data: Any
 
     def __init__(self, source: 'source_contentcdn._BaseContentSource', title_id: ids.TTitleIDInput):
         super().__init__(
@@ -20,7 +20,7 @@ class CETK(BaseTypeLoadable['source_contentcdn._BaseContentSource']):
 
     def _read(self, reader):
         raw_data = reader.read_all()
-        self.struct = structs.cetk.parse(raw_data)
+        self.data = structs.cetk.parse(raw_data)
 
 
 #####
@@ -28,10 +28,11 @@ class CETK(BaseTypeLoadable['source_contentcdn._BaseContentSource']):
 #####
 
 class TMD(BaseTypeLoadable['source_contentcdn._BaseContentSource']):
-    struct: Any
+    data: Any
 
     def __init__(self, source: 'source_contentcdn._BaseContentSource', title_id: ids.TTitleIDInput, version: Optional[int]):
         self.__title_id = ids.TitleID.get_inst(title_id)
+        self.__struct = structs.tmd.get(self.__title_id.type.platform)
 
         super().__init__(
             source,
@@ -40,9 +41,10 @@ class TMD(BaseTypeLoadable['source_contentcdn._BaseContentSource']):
 
     def _read(self, reader):
         raw_data = reader.read_all()
+        self.data = self.__struct.parse(raw_data)
 
-        struct = structs.tmd_wiiu if self.__title_id.type.platform == ids.TitlePlatform.WIIU else structs.tmd_3ds
-        self.struct = struct.parse(raw_data)
+        # sanity check
+        assert self.data.title_id == self.__title_id
 
 
 #####

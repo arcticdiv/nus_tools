@@ -11,11 +11,12 @@ from ...config import Configuration
 
 class IDBE(BaseTypeLoadable['sources.IDBEServer']):
     key_index: int
-    struct: Any
+    data: Any
 
     def __init__(self, source: 'sources.IDBEServer', title_id: ids.TTitleIDInput, version: Optional[int]):
         tid_str = ids.TitleID.get_str(title_id)
         self.__title_id = ids.TitleID.get_inst(title_id)
+        self.__struct = structs.idbe.get(self.__title_id.type.platform)
 
         super().__init__(
             source,
@@ -25,18 +26,17 @@ class IDBE(BaseTypeLoadable['sources.IDBEServer']):
         )
 
     def _read(self, reader):
-        data = reader.read_all()
+        raw_data = reader.read_all()
 
-        assert data[0] == 0
-        self.key_index = data[1]
-        encrypted = data[2:]
+        assert raw_data[0] == 0
+        self.key_index = raw_data[1]
+        encrypted = raw_data[2:]
 
         decrypted = self.__get_aes(self.key_index).decrypt(encrypted)
-        struct = structs.idbe_wiiu if self.__title_id.type.platform == ids.TitlePlatform.WIIU else structs.idbe_3ds
-        self.struct = struct.parse(decrypted)
+        self.data = self.__struct.parse(decrypted)
 
         # sanity check
-        assert self.struct.title_id == self.__title_id
+        assert self.data.title_id == self.__title_id
 
     @staticmethod
     def __get_aes(key_index):

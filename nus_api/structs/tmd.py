@@ -63,5 +63,4 @@ def __get_struct(is_wiiu: bool):
     )
 
 
-struct_wiiu = __get_struct(True)
-struct_3ds = __get_struct(False)
+structs = common.PlatformSpecific(__get_struct)
