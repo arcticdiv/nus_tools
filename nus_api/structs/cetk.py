@@ -1,6 +1,6 @@
 from construct import \
-    Struct, Int16ub, Bytes, Byte, \
-    GreedyBytes, Hex, PaddedString
+    Struct, Int32ub, Int16ub, Bytes, Byte, \
+    Hex, PaddedString, Terminated, this
 
 from . import common
 
@@ -31,5 +31,11 @@ struct = Struct(
     'audit' / Byte,
     '_unk6' / Bytes(0x42),
     'limits' / Bytes(0x40),
-    '_end' / GreedyBytes
+    'content_index' / Struct(
+        '_unk1' / Bytes(4),
+        'size' / Int32ub,
+        '_unk2' / Bytes(this.size - 8)
+    ),
+    'certificates' / common.certificates,
+    Terminated
 )

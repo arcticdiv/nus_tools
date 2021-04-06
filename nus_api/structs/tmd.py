@@ -1,7 +1,7 @@
 import hashlib
 from construct import \
     Struct, Int64ub, Int32ub, Int16ub, Bytes, Byte, Array, \
-    GreedyBytes, Hex, PaddedString, Padding, Padded, FlagsEnum, IfThenElse, this
+    Hex, PaddedString, Padding, Padded, FlagsEnum, IfThenElse, Terminated, this
 from constructutils import ChecksumRaw, ChecksumValue, ChecksumSourceData, VerifyOrWriteChecksums
 
 from . import common
@@ -54,12 +54,13 @@ def __get_struct(is_wiiu: bool):
             # 0x2000: always set (?)
             # 0x4000: appears in DLC TMDs ("optional"?)
             # 0x8000: "shared"?
-            'type' / FlagsEnum(Int16ub, encrypted=0x0001, hashed=0x0002, unk1=0x2000, unk2=0x4000, unk3=0x8000),
+            'type' / FlagsEnum(Int16ub, encrypted=0x0001, hashed=0x0002, cfm=0x0004, unk1=0x2000, unk2=0x4000, unk3=0x8000),
             'size' / Int64ub,
             content_hash
         ))),
-        '_end' / GreedyBytes,
-        VerifyOrWriteChecksums
+        'certificates' / common.certificates,
+        VerifyOrWriteChecksums,
+        Terminated
     )
 
 
