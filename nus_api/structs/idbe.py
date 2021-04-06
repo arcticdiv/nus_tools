@@ -1,7 +1,7 @@
 import hashlib
 from construct import \
     Struct, Array, ByteSwapped, Bytes, Int32ub, \
-    FlagsEnum, PaddedString, Padding, Pass, Terminated, this
+    FlagsEnum, PaddedString, Padding, Padded, Terminated, this
 from constructutils import \
     InliningStruct, InlineStruct, DictZipAdapter, \
     ChecksumValue, ChecksumSourceData, VerifyOrWriteChecksums
@@ -25,9 +25,10 @@ def __get_struct(is_wiiu: bool):
         swap = lambda x: x  # noop  # noqa: E731
         encoding = 'utf-16-be'
         # tga file
-        icon_struct = 'icons_tga' / Struct(
+        icon_struct = Struct(
             '128' / Bytes(0x2c + 128 * 128 * 4)
         )
+        icon_struct = 'icons_tga' / Padded(icon_struct.sizeof() + 4, icon_struct)
         region_all = 0xffffffff
     else:
         swap = ByteSwapped
@@ -46,15 +47,13 @@ def __get_struct(is_wiiu: bool):
             'version' / swap(Int32ub),
             '_unk1' / Bytes(4),
             'regions' / swap(FlagsEnum(Int32ub, JP=1 << 0, US=1 << 1, EU=1 << 2, AU=1 << 3, CN=1 << 4, KO=1 << 5, TW=1 << 6, ALL=region_all)),
-            '_unk2' / Bytes(0x10),
-            Padding(0x0c),
+            '_unk2' / Bytes(0x1c),
             'title_info' / DictZipAdapter(languages, Array(16, Struct(
                 'short_name' / PaddedString(0x80, encoding),
                 'long_name' / PaddedString(0x100, encoding),
                 'publisher' / PaddedString(0x80, encoding)
             ))),
-            icon_struct,
-            Padding(4) if is_wiiu else Pass
+            icon_struct
         )),
         VerifyOrWriteChecksums,
         Terminated

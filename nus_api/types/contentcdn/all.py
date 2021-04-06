@@ -31,6 +31,8 @@ class TMD(BaseTypeLoadable['source_contentcdn._BaseContentSource']):
     struct: Any
 
     def __init__(self, source: 'source_contentcdn._BaseContentSource', title_id: ids.TTitleIDInput, version: Optional[int]):
+        self.__title_id = ids.TitleID.get_inst(title_id)
+
         super().__init__(
             source,
             reqdata.ReqData(path=f'{ids.TitleID.get_str(title_id)}/tmd' + (f'.{version}' if version is not None else ''))
@@ -38,7 +40,9 @@ class TMD(BaseTypeLoadable['source_contentcdn._BaseContentSource']):
 
     def _read(self, reader):
         raw_data = reader.read_all()
-        self.struct = structs.tmd.parse(raw_data)
+
+        struct = structs.tmd_wiiu if self.__title_id.type.platform == ids.TitlePlatform.WIIU else structs.tmd_3ds
+        self.struct = struct.parse(raw_data)
 
 
 #####
