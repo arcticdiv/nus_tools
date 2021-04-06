@@ -24,11 +24,15 @@ class _BaseContentSource(BaseSource):
 # - cached/cdn:
 #   - nus.cdn.c.shop.nintendowifi.net (unavailable)
 #   - ccs.cdn.c.shop.nintendowifi.net
+#   - nus.cdn.t.shop.nintendowifi.net
+#   - ccs.cdn.t.shop.nintendowifi.net
 #   - nus.cdn.wup.shop.nintendo.net
 #   - ccs.cdn.wup.shop.nintendo.net
 # - uncached:
 #   - nus.c.shop.nintendowifi.net (unavailable)
 #   - ccs.c.shop.nintendowifi.net (unavailable)
+#   - nus.t.shop.nintendowifi.net (unavailable)
+#   - ccs.t.shop.nintendowifi.net
 #   - nus.wup.shop.nintendo.net (unavailable)
 #   - ccs.wup.shop.nintendo.net
 

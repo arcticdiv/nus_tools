@@ -1,9 +1,10 @@
 import hashlib
 from construct import \
     Struct, Array, ByteSwapped, Bytes, Int32ub, \
-    FlagsEnum, PaddedString, Padding, Padded, Terminated, this
+    FlagsEnum, PaddedString, Padded, Terminated, this
 from constructutils import \
-    InliningStruct, InlineStruct, DictZipAdapter, \
+    InliningStruct, InlineStruct, \
+    DictZipAdapter, \
     ChecksumValue, ChecksumSourceData, VerifyOrWriteChecksums
 
 from . import common

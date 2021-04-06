@@ -31,7 +31,7 @@ class ResponseStatusError(Exception):
 class SourceConfig:
     load_from_cache: bool = True
     store_to_cache: bool = True
-    chunk_size: int = 65536  # note: with streamed requests, this value is the size of compressed chunks (i.e. the size of returned chunks may be larger)
+    chunk_size: int = 32768  # note: with streamed requests, this value is the size of compressed chunks (i.e. the size of returned chunks may be larger)
     response_status_checking: StatusCheckMode = StatusCheckMode.REQUIRE_200
     store_failed_requests: bool = True
     store_metadata: bool = True
