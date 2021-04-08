@@ -37,6 +37,7 @@ class SourceConfig:
     store_metadata: bool = True
     http_retries: int = 3
     requests_per_second: float = 5.0
+    verify_checksums: bool = True
 
 
 class BaseSource(abc.ABC):

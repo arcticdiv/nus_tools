@@ -2,6 +2,7 @@ import os
 import abc
 import requests
 import lxml.objectify
+from construct import Construct
 from dataclasses import dataclass
 from typing import Optional, Tuple, Type, TypeVar, Generic, Dict, Any
 
@@ -54,6 +55,18 @@ class BaseTypeLoadable(BaseType[_TSource], abc.ABC):
                 self._read(reader)
             self.__loaded = True
         return self
+
+
+class BaseTypeLoadableStruct(BaseTypeLoadable[_TSource]):
+    def __init__(self, source: _TSource, reqdata: ReqData, struct: Construct):
+        super().__init__(source, reqdata)
+        self.__struct = struct
+
+    def _parse_struct(self, data: bytes):
+        return self.__struct.parse(
+            data,
+            skip_verify_checksums=not self._source._config.verify_checksums
+        )
 
 
 _TXml = TypeVar('_TXml', bound='XmlBaseType')
