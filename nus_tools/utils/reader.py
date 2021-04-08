@@ -19,12 +19,14 @@ class Metadata:
     timestamp: int
     elapsed_ms: int
 
-    def to_json(self) -> str:
-        return json.dumps(asdict(self))
+    def write_file(self, path: str) -> None:
+        with open(path, 'w') as f:
+            return json.dump(asdict(self), f)
 
     @classmethod
-    def from_json(cls, str) -> 'Metadata':
-        return cls(**json.loads(str))
+    def from_file(cls, path: str) -> 'Metadata':
+        with open(path, 'r') as f:
+            return cls(**json.load(f))
 
     @classmethod
     def from_response(cls, response: requests.Response) -> 'Metadata':

@@ -105,8 +105,7 @@ class BaseSource(abc.ABC):
         if self._config.load_from_cache and type_inst.is_cached():
             metadata = None
             if os.path.isfile(meta_path):
-                with open(meta_path, 'r') as fm:
-                    metadata = utils.reader.Metadata.from_json(fm.read())
+                metadata = utils.reader.Metadata.from_file(meta_path)
 
             with open(cache_path, 'rb') as fc:
                 yield utils.reader.DataReader(fc, self._config.chunk_size, metadata)
@@ -119,8 +118,7 @@ class BaseSource(abc.ABC):
                     # additionally store metadata to separate file
                     if self._config.store_metadata:
                         utils.misc.create_dirs_for_file(meta_path)
-                        with open(meta_path, 'w') as fm:
-                            fm.write(metadata.to_json())
+                        metadata.write_file(meta_path)
 
                     # avoid creating a cache file if the request failed and metadata wasn't stored.
                     # if the file were to be kept regardless of errors, it would later be impossible
