@@ -36,7 +36,8 @@ class IDBE(BaseTypeLoadable['sources.IDBEServer']):
         self.data = self.__struct.parse(decrypted)
 
         # sanity check
-        assert self.data.title_id == self.__title_id
+        # compare lower half since some update/DLC title IDs return their associated game's IDBE
+        assert self.data.title_id.game == self.__title_id.game
 
     @staticmethod
     def __get_aes(key_index):
