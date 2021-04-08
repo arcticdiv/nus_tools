@@ -2,7 +2,10 @@ import time
 import threading
 import functools
 import collections
-from typing import Dict, Type, Union, Callable, Any
+from typing import Dict, Type, Union, Callable, Any, TypeVar, cast
+
+
+_TFunc = TypeVar('_TFunc', bound=Callable)
 
 
 class limit:
@@ -12,7 +15,7 @@ class limit:
     def __init__(self, calls_per_second: Union[Callable[[Any], float], float] = 1.0):
         self._calls_per_second = calls_per_second
 
-    def __call__(self, func):
+    def __call__(self, func: _TFunc) -> _TFunc:
         @functools.wraps(func)
         def wrapper(self_inner, *args, **kwargs):
             self._setup_interval(self_inner)
@@ -22,7 +25,7 @@ class limit:
                 time.sleep(wait_time)
 
             return func(self_inner, *args, **kwargs)
-        return wrapper
+        return cast(_TFunc, wrapper)
 
     def _get_wait_time(self, key: Type) -> float:
         with self._lock:
