@@ -50,7 +50,7 @@ class TitleType(IntEnum):
 
 class TitleID:
     type: TitleType
-    id: int
+    uid: int
 
     @overload
     def __init__(self, type: TitleType, id: int):
@@ -65,7 +65,7 @@ class TitleID:
         if isinstance(type_or_title_id, TitleType):
             assert isinstance(id, int)
             self.type = type_or_title_id
-            self.id = id
+            self.uid = id
         # second overload
         else:
             title_id = type_or_title_id
@@ -74,7 +74,7 @@ class TitleID:
             elif isinstance(title_id, str):
                 title_id = int(title_id, 16)
             self.type = TitleType(title_id >> 32)
-            self.id = title_id & 0xffffffff
+            self.uid = title_id & 0xffffffff
 
     @property
     def is_game(self):
@@ -93,7 +93,7 @@ class TitleID:
         if self.is_game:
             return self
         if self.is_update or self.is_dlc:
-            return TitleID(TitleType.from_platform_category(self.type.platform, 0x0000), self.id)
+            return TitleID(TitleType.from_platform_category(self.type.platform, 0x0000), self.uid)
         raise RuntimeError(f'unimplemented: game title ID for {self}')
 
     @property
@@ -101,7 +101,7 @@ class TitleID:
         if self.is_update:
             return self
         if self.is_game or self.is_dlc:
-            return TitleID(TitleType.from_platform_category(self.type.platform, 0x000e), self.id)
+            return TitleID(TitleType.from_platform_category(self.type.platform, 0x000e), self.uid)
         raise RuntimeError(f'unimplemented: update title ID for {self}')
 
     @property
@@ -110,25 +110,25 @@ class TitleID:
             return self
         if self.is_game or self.is_update:
             if self.type.platform == TitlePlatform._3DS:
-                return TitleID(TitleType.from_platform_category(self.type.platform, 0x008c), self.id)
+                return TitleID(TitleType.from_platform_category(self.type.platform, 0x008c), self.uid)
             else:
-                return TitleID(TitleType.from_platform_category(self.type.platform, 0x000c), self.id)
+                return TitleID(TitleType.from_platform_category(self.type.platform, 0x000c), self.uid)
         raise RuntimeError(f'unimplemented: dlc title ID for {self}')
 
     def to_bytes(self) -> bytes:
         return bytes.fromhex(str(self))
 
     def __str__(self):
-        return f'{self.type.value:08X}{self.id:08X}'
+        return f'{self.type.value:08X}{self.uid:08X}'
 
     def __repr__(self):
         return f'{type(self).__name__}[0x{str(self)}, {self.type.name}]'
 
     def __hash__(self):
-        return hash((self.type, self.id))
+        return hash((self.type, self.uid))
 
     def __eq__(self, other):
-        return (self.type, self.id) == (other.type, other.id)
+        return (self.type, self.uid) == (other.type, other.uid)
 
     @staticmethod
     def get_str(val: TTitleIDInput) -> str:
@@ -168,7 +168,7 @@ class ContentType(IntEnum):
 
 class ContentID:
     type: ContentType
-    id: int
+    uid: int
 
     @overload
     def __init__(self, type: ContentType, id: int):
@@ -183,7 +183,7 @@ class ContentID:
         if isinstance(type_or_content_id, ContentType):
             assert isinstance(id, int)
             self.type = type_or_content_id
-            self.id = id
+            self.uid = id
         # second overload
         else:
             content_id = type_or_content_id
@@ -191,19 +191,19 @@ class ContentID:
                 content_id = str(content_id)
             assert len(content_id) == 14
             self.type = ContentType(int(content_id[:4]))
-            self.id = int(content_id[4:])
+            self.uid = int(content_id[4:])
 
     def __str__(self):
-        return f'{self.type.value:04d}{self.id:010d}'
+        return f'{self.type.value:04d}{self.uid:010d}'
 
     def __repr__(self):
         return f'{type(self).__name__}[{str(self)}, {self.type.name}]'
 
     def __hash__(self):
-        return hash((self.type, self.id))
+        return hash((self.type, self.uid))
 
     def __eq__(self, other):
-        return (self.type, self.id) == (other.type, other.id)
+        return (self.type, self.uid) == (other.type, other.uid)
 
     @staticmethod
     def get_str(val: TContentIDInput) -> str:
