@@ -20,7 +20,7 @@ class _BaseContentSource(BaseSource):
 
 
 # there are multiple different servers, their purpose isn't entirely clear
-# the domains resolve to different IPs, but the servers all seem to serve the same contents (?)
+# the domains resolve to different IPs, but the servers all seem to serve mostly the same contents (?)
 # - cached/cdn:
 #   - nus.cdn.c.shop.nintendowifi.net (unavailable)
 #   - ccs.cdn.c.shop.nintendowifi.net
@@ -40,7 +40,7 @@ class CachedContentServer(_BaseContentSource):
     def __init__(self, config: SourceConfig = None):
         super().__init__(
             reqdata.ReqData(
-                path='http://ccs.cdn.wup.shop.nintendo.net/ccs/download/'
+                path='http://ccs.cdn.c.shop.nintendowifi.net/ccs/download/'
             ),
             config
         )
