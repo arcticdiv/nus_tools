@@ -80,6 +80,11 @@ class Samurai(BaseSource):
     # /aocs
     # WiiU only since 3DS DLCs don't have their own content IDs
     def get_dlcs_wiiu(self, *dlc_ids: ids.TContentIDInput) -> SamuraiDlcsWiiU:
+        for dlc_id in dlc_ids:
+            dlc_id = ids.ContentID.get_inst(dlc_id)
+            if dlc_id.type.platform != ids.ContentPlatform.WIIU:
+                raise ValueError(f'content ID {dlc_id} is not a WiiU title')
+
         return self._create_type(
             SamuraiDlcsWiiU(),
             ReqData(
