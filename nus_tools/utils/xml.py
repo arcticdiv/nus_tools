@@ -14,7 +14,7 @@ def read_object(data: bytes) -> lxml.objectify.ObjectifiedElement:
     return lxml.objectify.parse(io.BytesIO(data)).getroot()
 
 
-def load_from_reader(reader: reader.DataReader, root_tag: Optional[str] = None) -> lxml.objectify.ObjectifiedElement:
+def load_from_reader(reader: reader.Reader, root_tag: Optional[str] = None) -> lxml.objectify.ObjectifiedElement:
     data = reader.read_all()
     tree = read_object(data)
     children = tree.getchildren()

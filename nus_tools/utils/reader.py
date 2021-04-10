@@ -2,11 +2,11 @@ import os
 import json
 import time
 import requests
+from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass
-from typing import Iterator, Optional, Dict, List, Union, BinaryIO
+from typing import Callable, Iterator, Optional, Dict, List, Sequence, BinaryIO, Type
 
 from . import misc
-from .. import sources
 
 
 @dataclass(frozen=True)
@@ -42,25 +42,33 @@ class Metadata:
         )
 
 
-class DataReader(Iterator[bytes]):
-    metadata: Optional[Metadata]
+class Reader(Iterator[bytes], ABC):
     size: Optional[int]  # *compressed* size (for HTTP responses), see `SourceConfig.chunk_size`
+    metadata: Optional[Metadata]
 
-    def __init__(self, resource: Union[requests.Response, BinaryIO], chunk_size: int, meta: Optional[Metadata]):
+    def __init__(self, size: Optional[int], meta: Optional[Metadata]):
+        self.size = size
         self.metadata = meta
 
-        if isinstance(resource, requests.Response):
-            res_it = resource.iter_content(chunk_size)
-            self.__func_read = lambda: next(res_it)
-            self.__func_get_offset = resource.raw.tell
-            self.size = resource.raw.length_remaining
-        else:
-            _resource = resource  # https://mypy.readthedocs.io/en/latest/common_issues.html#narrowing-and-inner-functions
-            self.__func_read = lambda: _resource.read(chunk_size)
-            self.__func_get_offset = resource.tell
-            orig_offset = resource.tell()
-            self.size = resource.seek(0, os.SEEK_END)
-            resource.seek(orig_offset, os.SEEK_SET)
+    def read_all(self) -> bytes:
+        return b''.join(self)
+
+    @abstractmethod
+    def __next__(self):
+        pass
+
+    @property
+    @abstractmethod
+    def current_offset(self) -> int:
+        # offset in *compressed* data (for HTTP responses), see `SourceConfig.chunk_size`
+        pass
+
+
+class _FuncReader(Reader):
+    def __init__(self, size: Optional[int], meta: Optional[Metadata], func_read: Callable[[], bytes], func_get_offset: Callable[[], int]):
+        super().__init__(size, meta)
+        self.__func_read = func_read
+        self.__func_get_offset = func_get_offset
 
     def __next__(self):
         data = self.__func_read()
@@ -68,37 +76,68 @@ class DataReader(Iterator[bytes]):
             raise StopIteration
         return data
 
-    def read_all(self) -> bytes:
-        return b''.join(self)
-
     @property
     def current_offset(self) -> int:
         # *compressed* size (for HTTP responses), see `SourceConfig.chunk_size`
         return self.__func_get_offset()
 
 
-class CachingReader(DataReader):
-    def __init__(self, filename: str, store_on_status_error: bool, resource: Union[requests.Response, BinaryIO], chunk_size: int, meta: Optional[Metadata]):
-        super().__init__(resource, chunk_size, meta)
-        self.filename = filename
-        self.store_on_status_error = store_on_status_error
+class ResponseReader(_FuncReader):
+    def __init__(self, response: requests.Response, chunk_size: int, meta: Optional[Metadata]):
+        res_it = response.iter_content(chunk_size)
+        super().__init__(
+            response.raw.length_remaining,
+            meta,
+            lambda: next(res_it),
+            response.raw.tell
+        )
 
-        self.tmp_filename = f'{filename}.tmp'
+
+class IOReader(_FuncReader):
+    def __init__(self, io: BinaryIO, chunk_size: int, meta: Optional[Metadata]):
+        orig_offset = io.tell()
+        size = io.seek(0, os.SEEK_END)
+        io.seek(orig_offset, os.SEEK_SET)
+
+        super().__init__(
+            size,
+            meta,
+            lambda: io.read(chunk_size),
+            io.tell
+        )
+
+
+class CachingReader(Reader):
+    def __init__(self, subreader: Reader, filename: str, store_on_errors: Sequence[Type[Exception]] = tuple()):
+        super().__init__(
+            subreader.size,
+            subreader.metadata
+        )
+
+        self._subreader = subreader
+        self.filename = filename
+        self._store_on_errors = store_on_errors
+
+        self._tmp_filename = f'{filename}.tmp'
         self.__file = None
 
     def __next__(self):
-        data = super().__next__()
+        data = next(self._subreader)
         self.__file.write(data)
         return data
 
+    @property
+    def current_offset(self) -> int:
+        return self._subreader.current_offset
+
     def __enter__(self):
-        misc.create_dirs_for_file(self.tmp_filename)
+        misc.create_dirs_for_file(self._tmp_filename)
         assert self.__file is None
-        self.__file = open(self.tmp_filename, 'wb')
+        self.__file = open(self._tmp_filename, 'wb')
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        write_file = exc_type is None or (self.store_on_status_error and exc_type is sources.ResponseStatusError)
+        write_file = (exc_type is None) or (exc_type in self._store_on_errors)
         if write_file:
             # finish writing in case not everything was read
             for _ in self:
@@ -108,6 +147,6 @@ class CachingReader(DataReader):
 
         # move tmp file if successful
         if write_file:
-            os.replace(self.tmp_filename, self.filename)
+            os.replace(self._tmp_filename, self.filename)
         else:
-            os.unlink(self.tmp_filename)
+            os.unlink(self._tmp_filename)

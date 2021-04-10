@@ -135,7 +135,3 @@ class SamuraiMoviesList(SamuraiListBaseType):
     def _read_list(self, xml):
         assert xml.tag == 'contents'
         self.movies = [SamuraiListMovie._parse(content.movie) for content in xml.content]
-
-    @classmethod
-    def _get_req_path(cls) -> str:
-        return 'movies'

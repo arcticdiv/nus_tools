@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import List
 
 from .._base import BaseTypeLoadable
-from ... import reqdata, sources, utils
+from ... import utils
 
 
 #####
@@ -26,16 +26,10 @@ class SamuraiNewsEntry:
     images: List[SamuraiNewsImage]
 
 
-class SamuraiNews(BaseTypeLoadable['sources.Samurai']):
+class SamuraiNews(BaseTypeLoadable):
     entries: List[SamuraiNewsEntry]
 
-    def __init__(self, source: 'sources.Samurai'):
-        super().__init__(
-            source,
-            reqdata.ReqData(path=f'news')
-        )
-
-    def _read(self, reader):
+    def _read(self, reader, config):
         news_xml = utils.xml.load_from_reader(reader, 'news')
         utils.xml.validate_schema(news_xml, {'news_entry': {'headline': None, 'description': None, 'date': None, 'images': {'image': None}}}, True)
         self.entries = []
@@ -65,16 +59,10 @@ class SamuraiNews(BaseTypeLoadable['sources.Samurai']):
 # /telops
 #####
 
-class SamuraiTelops(BaseTypeLoadable['sources.Samurai']):
+class SamuraiTelops(BaseTypeLoadable):
     entries: List[str]
 
-    def __init__(self, source: 'sources.Samurai'):
-        super().__init__(
-            source,
-            reqdata.ReqData(path=f'telops')
-        )
-
-    def _read(self, reader):
+    def _read(self, reader, config):
         telops_xml = utils.xml.load_from_reader(reader, 'telops')
         utils.xml.validate_schema(telops_xml, {'telop': None}, True)
         self.entries = [el.text for el in getattr(telops_xml, 'telop', [])]

@@ -18,5 +18,12 @@ class IDBEServer(BaseSource):
         )
         self.platform = platform
 
+    # /<id>/<title id>.idbe
     def get_idbe(self, title_id: ids.TTitleIDInput, version: Optional[int] = None) -> IDBE:
-        return IDBE(self, title_id, version).load()
+        tid_str = ids.TitleID.get_str(title_id)
+        return self._create_type(
+            IDBE(title_id),
+            # server seems to ignore first value, it probably doesn't matter what is supplied here
+            # based on nn_idbe.rpl .text+0x1d0
+            reqdata.ReqData(path=f'{tid_str[12:14]}/{tid_str}' + (f'-{version}' if version is not None else '') + '.idbe')
+        )

@@ -1,21 +1,15 @@
 import abc
 
 from .._base import BaseTypeLoadable
-from ... import reqdata, sources, utils
+from ... import utils
 
 
-class SamuraiListBaseType(BaseTypeLoadable['sources.Samurai'], abc.ABC):
+class SamuraiListBaseType(BaseTypeLoadable, abc.ABC):
     length: int
     offset: int
     total: int
 
-    def __init__(self, source: 'sources.Samurai', offset: int, limit: int, other_params: dict):
-        super().__init__(
-            source,
-            reqdata.ReqData(path=self._get_req_path(), params={'offset': offset, 'limit': limit, **other_params})
-        )
-
-    def _read(self, reader):
+    def _read(self, reader, config):
         el = utils.xml.load_from_reader(reader)
         self.length = int(el.get('length'))
         self.offset = int(el.get('offset'))
@@ -25,9 +19,4 @@ class SamuraiListBaseType(BaseTypeLoadable['sources.Samurai'], abc.ABC):
 
     @abc.abstractmethod
     def _read_list(self, xml):
-        pass
-
-    @classmethod
-    @abc.abstractmethod
-    def _get_req_path(cls) -> str:
         pass

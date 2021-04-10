@@ -4,7 +4,7 @@ from typing import Dict, List, Optional, Generic, TypeVar
 
 from . import common
 from .._base import BaseTypeLoadable
-from ... import reqdata, sources, utils, ids
+from ... import utils, ids
 
 
 # welcome to inheritance hell
@@ -26,18 +26,12 @@ from ... import reqdata, sources, utils, ids
 _TDlc = TypeVar('_TDlc')
 
 
-class SamuraiDlcsBase(Generic[_TDlc], BaseTypeLoadable['sources.Samurai']):
+class SamuraiDlcsBase(Generic[_TDlc], BaseTypeLoadable):
     dlcs: List[_TDlc]
 
 
 class SamuraiTitleDlcsBase(SamuraiDlcsBase[_TDlc]):
-    def __init__(self, source: 'sources.Samurai', content_id: ids.TContentIDInput):
-        super().__init__(
-            source,
-            reqdata.ReqData(path=f'title/{ids.ContentID.get_str(content_id)}/aocs', params={'limit': 200})  # assuming a maximum of 200 DLCs per title, seems reasonable
-        )
-
-    def _read(self, reader):
+    def _read(self, reader, config):
         title_xml = utils.xml.load_from_reader(reader, 'title')
         self._read_title(title_xml)
 
@@ -117,51 +111,21 @@ class SamuraiDlcsWiiUBase(SamuraiDlcsBase[SamuraiDlcWiiU]):
         self.dlcs = [SamuraiDlcWiiU._parse(dlc) for dlc in aocs.aoc] if hasattr(aocs, 'aoc') else []
 
 
-#####
-# /aocs
-#####
-
 class SamuraiDlcsWiiU(SamuraiDlcsWiiUBase):
-    def __init__(self, source: 'sources.Samurai', dlc_ids: List[ids.TContentIDInput]):
-        super().__init__(
-            source,
-            reqdata.ReqData(
-                path='aocs',
-                params={'aoc[]': ','.join(ids.ContentID.get_str(i) for i in dlc_ids)}
-            )
-        )
-
-    def _read(self, reader):
+    def _read(self, reader, config):
         aocs = utils.xml.load_from_reader(reader, 'aocs')
         self._read_dlcs(aocs)
 
 
-#####
-# /aocs/size
-#####
-
-class SamuraiDlcSizes(BaseTypeLoadable['sources.Samurai']):
+class SamuraiDlcSizes(BaseTypeLoadable):
     sizes: Dict[ids.ContentID, int]
 
-    def __init__(self, source: 'sources.Samurai', dlc_ids: List[ids.TContentIDInput]):
-        super().__init__(
-            source,
-            reqdata.ReqData(
-                path='aocs/size',
-                params={'aoc[]': ','.join(ids.ContentID.get_str(i) for i in dlc_ids)}
-            )
-        )
-
-    def _read(self, reader):
+    def _read(self, reader, config):
         aocs = utils.xml.load_from_reader(reader, 'aocs')
         utils.xml.validate_schema(aocs, {'aoc': {'data_size': None}}, False)
 
         self.sizes = {ids.ContentID(aoc.get('id')): int(aoc.data_size.text) for aoc in aocs.aoc}
 
-
-#####
-# /aocs/prices
-#####
 
 @dataclass(frozen=True)
 class SamuraiDlcPrice:
@@ -170,19 +134,10 @@ class SamuraiDlcPrice:
     price: common.SamuraiPrice
 
 
-class SamuraiDlcPrices(BaseTypeLoadable['sources.Samurai']):
+class SamuraiDlcPrices(BaseTypeLoadable):
     prices: Dict[ids.ContentID, SamuraiDlcPrice]
 
-    def __init__(self, source: 'sources.Samurai', dlc_ids: List[ids.TContentIDInput]):
-        super().__init__(
-            source,
-            reqdata.ReqData(
-                path='aocs/prices',
-                params={'aoc[]': ','.join(ids.ContentID.get_str(i) for i in dlc_ids)}
-            )
-        )
-
-    def _read(self, reader):
+    def _read(self, reader, config):
         prices = utils.xml.load_from_reader(reader, 'online_prices')
         utils.xml.validate_schema(prices, {'online_price': {'aoc_id': None, 'eshop_sales_status': None, 'price': {'regular_price': {'amount': None, 'currency': None, 'raw_value': None}}}}, False)
 
@@ -199,10 +154,6 @@ class SamuraiDlcPrices(BaseTypeLoadable['sources.Samurai']):
                 )
             )
 
-
-#####
-# /title/<id>/aocs
-#####
 
 class SamuraiTitleDlcsWiiU(SamuraiTitleDlcsBase[SamuraiDlcWiiU], SamuraiDlcsWiiUBase):
     name: str
@@ -245,10 +196,6 @@ class SamuraiDlc3DS:
 
         return cls(**vals)
 
-
-#####
-# /title/<id>/aocs
-#####
 
 class SamuraiTitleDlcs3DS(SamuraiTitleDlcsBase[SamuraiDlc3DS]):
     def _read_title(self, title):

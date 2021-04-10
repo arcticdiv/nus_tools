@@ -1,31 +1,19 @@
-from typing import Optional, Any
+from typing import Any
 
 from .._base import BaseTypeLoadableStruct
-from ... import reqdata, sources, utils, ids, structs
+from ... import utils, ids, structs
 from ...config import Configuration
 
 
-#####
-# /<id>/<title id>.idbe
-#####
-
-class IDBE(BaseTypeLoadableStruct['sources.IDBEServer']):
+class IDBE(BaseTypeLoadableStruct):
     key_index: int
     data: Any
 
-    def __init__(self, source: 'sources.IDBEServer', title_id: ids.TTitleIDInput, version: Optional[int]):
-        tid_str = ids.TitleID.get_str(title_id)
+    def __init__(self, title_id: ids.TTitleIDInput):
         self.__title_id = ids.TitleID.get_inst(title_id)
+        super().__init__(structs.idbe.get(self.__title_id.type.platform))
 
-        super().__init__(
-            source,
-            # server seems to ignore first value, technically it wouldn't matter what is supplied here
-            # based on nn_idbe.rpl .text+0x1d0
-            reqdata.ReqData(path=f'{tid_str[12:14]}/{tid_str}' + (f'-{version}' if version is not None else '') + '.idbe'),
-            structs.idbe.get(self.__title_id.type.platform)
-        )
-
-    def _read(self, reader):
+    def _read(self, reader, config):
         raw_data = reader.read_all()
 
         assert raw_data[0] == 0
@@ -33,7 +21,7 @@ class IDBE(BaseTypeLoadableStruct['sources.IDBEServer']):
         encrypted = raw_data[2:]
 
         decrypted = self.__get_aes(self.key_index).decrypt(encrypted)
-        self.data = self._parse_struct(decrypted)
+        self.data = self._parse_struct(decrypted, config)
 
         # sanity check
         # compare lower half since some update/DLC title IDs return their associated game's IDBE

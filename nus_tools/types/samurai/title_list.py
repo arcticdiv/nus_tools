@@ -7,10 +7,6 @@ from .._base import IDName
 from ... import utils, ids
 
 
-#####
-# /titles
-#####
-
 @dataclass(frozen=True)
 class _SamuraiListTitleBaseMixin:
     is_new: bool
@@ -137,7 +133,3 @@ class SamuraiTitlesList(SamuraiListBaseType):
     def _read_list(self, xml):
         assert xml.tag == 'contents'
         self.titles = [SamuraiListTitle._parse(content.title) for content in xml.content]
-
-    @classmethod
-    def _get_req_path(cls) -> str:
-        return 'titles'

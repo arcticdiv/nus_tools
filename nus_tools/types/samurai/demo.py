@@ -2,25 +2,15 @@ from typing import Optional
 
 from . import common
 from .._base import BaseTypeLoadable
-from ... import reqdata, sources, utils, ids
+from ... import utils
 
 
-#####
-# /demo/<id>
-#####
-
-class SamuraiDemo(BaseTypeLoadable['sources.Samurai']):
+class SamuraiDemo(BaseTypeLoadable):
     name: str
     rating_info: common.SamuraiRatingDetailed
     icon_url: Optional[str] = None
 
-    def __init__(self, source: 'sources.Samurai', content_id: ids.TContentIDInput):
-        super().__init__(
-            source,
-            reqdata.ReqData(path=f'demo/{ids.ContentID.get_str(content_id)}')
-        )
-
-    def _read(self, reader):
+    def _read(self, reader, config):
         content = utils.xml.load_from_reader(reader, 'content')
         assert len(content.getchildren()) == 1
         demo = content.demo

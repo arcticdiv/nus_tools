@@ -20,8 +20,9 @@ class _Keys:
 @dataclass
 class _Configuration:
     cache_path: str = './cache/'
-    default_user_agent: str = ''  # TODO
     keys: _Keys = _Keys()
+    default_user_agent: str = ''  # TODO
+    default_chunk_size: int = 32768
 
 
 Configuration = _Configuration()

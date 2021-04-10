@@ -4,10 +4,6 @@ from . import movie, title_list
 from ._base import SamuraiListBaseType
 
 
-#####
-# /contents
-#####
-
 class SamuraiContentsList(SamuraiListBaseType):
     titles: List[title_list.SamuraiListTitle]
     movies: List[movie.SamuraiMovieElement]
@@ -23,7 +19,3 @@ class SamuraiContentsList(SamuraiListBaseType):
                 self.movies.append(movie.SamuraiMovieElement._parse(content.movie))
             else:
                 raise ValueError(content.getchildren()[0].tag)
-
-    @classmethod
-    def _get_req_path(cls) -> str:
-        return 'contents'

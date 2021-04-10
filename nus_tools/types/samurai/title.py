@@ -4,7 +4,7 @@ from typing import Dict, List, Optional, Type, Tuple
 
 from . import common, movie, title_list
 from .._base import BaseTypeLoadable, XmlBaseType, IDName
-from ... import reqdata, sources, utils, ids
+from ... import utils, ids
 
 
 #####
@@ -292,15 +292,9 @@ class SamuraiTitleElement(_SamuraiTitleOptionalMixin, _SamuraiTitleBaseMixin):
         return cls(**vals)
 
 
-class SamuraiTitle(BaseTypeLoadable['sources.Samurai']):
+class SamuraiTitle(BaseTypeLoadable):
     title: SamuraiTitleElement
 
-    def __init__(self, source: 'sources.Samurai', content_id: ids.TContentIDInput):
-        super().__init__(
-            source,
-            reqdata.ReqData(path=f'title/{ids.ContentID.get_str(content_id)}')
-        )
-
-    def _read(self, reader):
+    def _read(self, reader, config):
         title_xml = utils.xml.load_from_reader(reader, 'title')
         self.title = SamuraiTitleElement._parse(title_xml)

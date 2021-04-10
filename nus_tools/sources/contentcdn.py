@@ -1,22 +1,36 @@
 from typing import Optional
 
-from ._base import BaseSource, SourceConfig
+from ._base import UnloadableType, BaseSource, SourceConfig
 from .. import reqdata, ids
-from ..types.contentcdn import CETK, TMD, APP, H3
+from ..types.contentcdn import CETK, TMD
 
 
 class _BaseContentSource(BaseSource):
+    # /<title id>/cetk
     def get_cetk(self, title_id: ids.TTitleIDInput) -> CETK:
-        return CETK(self, title_id).load()
+        return self._create_type(
+            CETK(title_id),
+            reqdata.ReqData(path=f'{ids.TitleID.get_str(title_id)}/cetk')
+        )
 
+    # /<title id>/tmd[.<version>]
     def get_tmd(self, title_id: ids.TTitleIDInput, version: Optional[int] = None) -> TMD:
-        return TMD(self, title_id, version).load()
+        return self._create_type(
+            TMD(title_id),
+            reqdata.ReqData(path=f'{ids.TitleID.get_str(title_id)}/tmd' + (f'.{version}' if version is not None else ''))
+        )
 
-    def get_app(self, title_id: ids.TTitleIDInput, content_id: int) -> APP:
-        return APP(self, title_id, content_id)
+    # /<title id>/<content id>
+    def get_app(self, title_id: ids.TTitleIDInput, content_id: int) -> UnloadableType:
+        return self._create_type(
+            reqdata.ReqData(path=f'{ids.TitleID.get_str(title_id)}/{content_id:08x}')  # TODO: uppercase/lowercase?
+        )
 
-    def get_h3(self, title_id: ids.TTitleIDInput, content_id: int) -> H3:
-        return H3(self, title_id, content_id)
+    # /<title id>/<content id>.h3
+    def get_h3(self, title_id: ids.TTitleIDInput, content_id: int) -> UnloadableType:
+        return self._create_type(
+            reqdata.ReqData(path=f'{ids.TitleID.get_str(title_id)}/{content_id:08x}.h3')
+        )
 
 
 # there are multiple different servers, their purpose isn't entirely clear
