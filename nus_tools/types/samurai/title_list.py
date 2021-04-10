@@ -3,7 +3,6 @@ from typing import Dict, Generic, List, Optional, Type, TypeVar
 
 from . import common
 from ._base import SamuraiListBaseType
-from .._base import IDName
 from ... import utils, ids
 
 
@@ -14,7 +13,7 @@ class _SamuraiListTitleBaseMixin:
     product_code: str
     name: str
     platform: common.SamuraiPlatform
-    publisher: IDName
+    publisher: common.IDName
     genre: str
     sales_retail: bool
     sales_eshop: bool
@@ -39,7 +38,7 @@ class _SamuraiListTitleBaseMixin:
             vals.platform = common.SamuraiPlatform._parse(child)
         elif tag == 'publisher':
             utils.xml.validate_schema(child, {'name': None}, False)
-            vals.publisher = IDName(child.get('id'), child.name.text)
+            vals.publisher = common.IDName(child.get('id'), child.name.text)
         elif tag == 'display_genre':
             vals.genre = text
         elif tag == 'retail_sales':

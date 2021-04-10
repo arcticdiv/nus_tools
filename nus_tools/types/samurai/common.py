@@ -1,7 +1,13 @@
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
-from .._base import XmlBaseType, IDName
+from .._base import XmlBaseType
+
+
+@dataclass
+class IDName:
+    id: str
+    name: str
 
 
 @dataclass(frozen=True)

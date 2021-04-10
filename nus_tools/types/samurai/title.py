@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Dict, List, Optional, Type, Tuple
 
 from . import common, movie, title_list
-from .._base import BaseTypeLoadable, XmlBaseType, IDName
+from .._base import BaseTypeLoadable, XmlBaseType
 from ... import utils, ids
 
 
@@ -120,7 +120,7 @@ class SamuraiTitleScreenshot(common.SamuraiScreenshot):
 class _SamuraiTitleBaseMixin(title_list._SamuraiListTitleBaseMixin):
     is_public: bool
     formal_name: str
-    genres: List[IDName]
+    genres: List[common.IDName]
     keywords: List[str]
     has_ticket: bool
     sales_download_code: bool
@@ -138,7 +138,7 @@ class _SamuraiTitleBaseMixin(title_list._SamuraiListTitleBaseMixin):
             vals.genres = []
             for genre in child.genre:
                 utils.xml.validate_schema(genre, {'name': None}, False)
-                vals.genres.append(IDName(genre.get('id'), genre.name.text))
+                vals.genres.append(common.IDName(genre.get('id'), genre.name.text))
         elif tag == 'keywords':
             vals.keywords = [keyword.text for keyword in getattr(child, 'keyword', [])]
         elif tag == 'ticket_available':

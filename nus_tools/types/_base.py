@@ -86,9 +86,3 @@ class XmlBaseType(ABC):
             utils.xml.validate_schema(xml, schema, superset)
 
         return cls(**cls._parse_internal(xml))  # type: ignore  # https://github.com/python/mypy/issues/5374
-
-
-@dataclass
-class IDName:
-    id: str
-    name: str
