@@ -88,25 +88,25 @@ class Samurai(BaseSource):
             )
         )
 
-    def get_dlcs_for_title(self, title: Union[str, ids.ContentID, SamuraiListTitle, SamuraiTitleElement]) -> Union[SamuraiTitleDlcsWiiU, SamuraiTitleDlcs3DS]:
+    def get_dlcs_for_title(self, title: Union[ids.TContentIDInput, SamuraiListTitle, SamuraiTitleElement]) -> Union[SamuraiTitleDlcsWiiU, SamuraiTitleDlcs3DS]:
         if isinstance(title, (SamuraiListTitle, SamuraiTitleElement)):
             content_id = title.content_id
-        elif isinstance(title, ids.ContentID):
-            content_id = title
         else:
-            content_id = ids.ContentID(title)
+            content_id = ids.ContentID.get_inst(title)
 
         dlcs_type: Union[SamuraiTitleDlcs3DS, SamuraiTitleDlcsWiiU]
         if content_id.type.platform == ids.ContentPlatform._3DS:
             dlcs_type = SamuraiTitleDlcs3DS()
+            params = {}  # 3DS DLC results aren't paginated
         elif content_id.type.platform == ids.ContentPlatform.WIIU:
             dlcs_type = SamuraiTitleDlcsWiiU()
+            params = {'limit': 200}  # assuming a maximum of 200 DLCs per title, seems reasonable
         else:
             assert False  # unhandled, should never happen
 
         return self._create_type(
             dlcs_type,
-            ReqData(path=f'title/{ids.ContentID.get_str(content_id)}/aocs', params={'limit': 200})  # assuming a maximum of 200 DLCs per title, seems reasonable
+            ReqData(path=f'title/{ids.ContentID.get_str(content_id)}/aocs', params=params)
         )
 
     def get_dlc_sizes(self, *dlcs: Union[ids.TContentIDInput, SamuraiDlcWiiU]) -> SamuraiDlcSizes:
