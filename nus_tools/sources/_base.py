@@ -37,7 +37,8 @@ class UnloadableType(Generic[_TBaseType]):
 
     @contextlib.contextmanager
     def get_reader(self):
-        yield from self.source.get_reader(self.reqdata)
+        with self.source.get_reader(self.reqdata) as reader:
+            yield reader
 
 
 # TODO: implement dependencies between options
