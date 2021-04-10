@@ -20,8 +20,8 @@ class Ninja(BaseSource):
     # /<region>/title/<id>/ec_info
     def get_ec_info(self, content_id: ids.TContentIDInput) -> NinjaEcInfo:
         return self._create_type(
-            NinjaEcInfo(),
-            reqdata.ReqData(path=f'{self.region}/title/{ids.ContentID.get_str(content_id)}/ec_info')
+            reqdata.ReqData(path=f'{self.region}/title/{ids.ContentID.get_str(content_id)}/ec_info'),
+            NinjaEcInfo()
         )
 
     # /titles/id_pair
@@ -30,11 +30,11 @@ class Ninja(BaseSource):
             raise ValueError('Exactly one of `content_id`/`title_id` must be set')
 
         return self._create_type(
-            NinjaIDPair(),
             reqdata.ReqData(
                 path='titles/id_pair',
                 params={'title_id[]': ids.TitleID.get_str(title_id)} if title_id else {'ns_uid[]': ids.ContentID.get_str(cast(ids.TContentIDInput, content_id))}
-            )
+            ),
+            NinjaIDPair()
         )
 
     def get_content_id(self, title_id: ids.TTitleIDInput) -> ids.ContentID:

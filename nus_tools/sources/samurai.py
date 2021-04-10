@@ -47,8 +47,8 @@ class Samurai(BaseSource):
     # /title/<id>
     def get_title(self, content_id: ids.TContentIDInput) -> SamuraiTitle:
         return self._create_type(
-            SamuraiTitle(),
-            ReqData(path=f'title/{ids.ContentID.get_str(content_id)}')
+            ReqData(path=f'title/{ids.ContentID.get_str(content_id)}'),
+            SamuraiTitle()
         )
 
     # /titles
@@ -64,8 +64,8 @@ class Samurai(BaseSource):
     # movies
     def get_movie(self, content_id: ids.TContentIDInput) -> SamuraiMovie:
         return self._create_type(
-            SamuraiMovie(),
-            ReqData(path=f'movie/{ids.ContentID.get_str(content_id)}')
+            ReqData(path=f'movie/{ids.ContentID.get_str(content_id)}'),
+            SamuraiMovie()
         )
 
     def get_movie_count(self, other_params: dict = {}) -> int:
@@ -86,11 +86,11 @@ class Samurai(BaseSource):
                 raise ValueError(f'content ID {dlc_id} is not a WiiU title')
 
         return self._create_type(
-            SamuraiDlcsWiiU(),
             ReqData(
                 path='aocs',
                 params={'aoc[]': ','.join(ids.ContentID.get_str(i) for i in dlc_ids)}
-            )
+            ),
+            SamuraiDlcsWiiU()
         )
 
     def get_dlcs_for_title(self, title: Union[ids.TContentIDInput, SamuraiListTitle, SamuraiTitleElement]) -> Union[SamuraiTitleDlcsWiiU, SamuraiTitleDlcs3DS]:
@@ -110,26 +110,26 @@ class Samurai(BaseSource):
             assert False  # unhandled, should never happen
 
         return self._create_type(
-            dlcs_type,
-            ReqData(path=f'title/{ids.ContentID.get_str(content_id)}/aocs', params=params)
+            ReqData(path=f'title/{ids.ContentID.get_str(content_id)}/aocs', params=params),
+            dlcs_type
         )
 
     def get_dlc_sizes(self, *dlcs: Union[ids.TContentIDInput, SamuraiDlcWiiU]) -> SamuraiDlcSizes:
         return self._create_type(
-            SamuraiDlcSizes(),
             ReqData(
                 path='aocs/size',
                 params={'aoc[]': ','.join(ids.ContentID.get_str(i) for i in self.__get_dlc_ids(dlcs))}
-            )
+            ),
+            SamuraiDlcSizes()
         )
 
     def get_dlc_prices(self, *dlcs: Union[ids.TContentIDInput, SamuraiDlcWiiU]) -> SamuraiDlcPrices:
         return self._create_type(
-            SamuraiDlcPrices(),
             ReqData(
                 path='aocs/prices',
                 params={'aoc[]': ','.join(ids.ContentID.get_str(i) for i in self.__get_dlc_ids(dlcs))}
-            )
+            ),
+            SamuraiDlcPrices()
         )
 
     def __get_dlc_ids(self, dlcs: Tuple[Union[ids.TContentIDInput, SamuraiDlcWiiU], ...]) -> List[ids.TContentIDInput]:
@@ -140,8 +140,8 @@ class Samurai(BaseSource):
     # /demo/<id>
     def get_demo(self, content_id: ids.TContentIDInput) -> SamuraiDemo:
         return self._create_type(
-            SamuraiDemo(),
-            ReqData(path=f'demo/{ids.ContentID.get_str(content_id)}')
+            ReqData(path=f'demo/{ids.ContentID.get_str(content_id)}'),
+            SamuraiDemo()
         )
 
     def get_demos(self, title: SamuraiTitleElement) -> List[SamuraiDemo]:
@@ -153,22 +153,22 @@ class Samurai(BaseSource):
     # /news
     def get_news(self) -> SamuraiNews:
         return self._create_type(
-            SamuraiNews(),
-            ReqData(path='news')
+            ReqData(path='news'),
+            SamuraiNews()
         )
 
     # /telops
     def get_telops(self) -> SamuraiTelops:
         return self._create_type(
-            SamuraiTelops(),
-            ReqData(path='telops')
+            ReqData(path='telops'),
+            SamuraiTelops()
         )
 
     # generic list funcs
     def _get_list(self, list_type: Type[_TList], path: str, offset: int, limit: int, other_params: dict) -> _TList:
         return self._create_type(
-            list_type(),
-            ReqData(path=path, params={'offset': offset, 'limit': limit, **other_params})
+            ReqData(path=path, params={'offset': offset, 'limit': limit, **other_params}),
+            list_type()
         )
 
     def _get_list_total(self, get_list_func: Callable[[int, int, dict], _TList], other_params: dict) -> int:

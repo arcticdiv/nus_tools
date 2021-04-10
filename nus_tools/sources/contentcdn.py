@@ -9,15 +9,15 @@ class _BaseContentSource(BaseSource):
     # /<title id>/cetk
     def get_cetk(self, title_id: ids.TTitleIDInput) -> CETK:
         return self._create_type(
-            CETK(title_id),
-            reqdata.ReqData(path=f'{ids.TitleID.get_str(title_id)}/cetk')
+            reqdata.ReqData(path=f'{ids.TitleID.get_str(title_id)}/cetk'),
+            CETK(title_id)
         )
 
     # /<title id>/tmd[.<version>]
     def get_tmd(self, title_id: ids.TTitleIDInput, version: Optional[int] = None) -> TMD:
         return self._create_type(
-            TMD(title_id),
-            reqdata.ReqData(path=f'{ids.TitleID.get_str(title_id)}/tmd' + (f'.{version}' if version is not None else ''))
+            reqdata.ReqData(path=f'{ids.TitleID.get_str(title_id)}/tmd' + (f'.{version}' if version is not None else '')),
+            TMD(title_id)
         )
 
     # /<title id>/<content id>

@@ -1,5 +1,4 @@
 import os
-import abc
 import contextlib
 import requests
 import urllib3
@@ -55,7 +54,7 @@ class SourceConfig:
     type_load_config: TypeLoadConfig = TypeLoadConfig()
 
 
-class BaseSource(abc.ABC):
+class BaseSource:
     def __init__(self, base_reqdata: ReqData, config: Optional[SourceConfig], *, verify_tls: bool = True):
         # build base request data
         self._base_reqdata = ReqData(
@@ -84,19 +83,21 @@ class BaseSource(abc.ABC):
         self._session.mount('https://', adapter)
 
     @overload
-    def _create_type(self, loadable_inst: _TBaseTypeLoadable, reqdata: ReqData) -> _TBaseTypeLoadable:
+    def _create_type(self, reqdata: ReqData, loadable: _TBaseTypeLoadable) -> _TBaseTypeLoadable:
         ...
 
     @overload
     def _create_type(self, reqdata: ReqData) -> UnloadableType:
         ...
 
-    def _create_type(self, loadable_or_reqdata, reqdata=None):
-        if isinstance(loadable_or_reqdata, BaseTypeLoadable):
+    def _create_type(self, reqdata: ReqData, loadable: Optional[_TBaseTypeLoadable] = None):
+        if loadable is not None:
+            # first overload
             with self.get_reader(reqdata) as reader:
-                return loadable_or_reqdata.load(reader, self._config.type_load_config)
+                return loadable.load(reader, self._config.type_load_config)
         else:
-            return UnloadableType(self, loadable_or_reqdata)
+            # second overload
+            return UnloadableType(self, reqdata)
 
     def get_nocache(self, reqdata: ReqData) -> requests.Response:
         res = self.__get_nocache_internal(reqdata)
