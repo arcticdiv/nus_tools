@@ -53,22 +53,23 @@ class TitleID:
     uid: int
 
     @overload
-    def __init__(self, type: TitleType, id: int):
+    def __init__(self, type: TitleType, uid: int):
         ...
 
     @overload
     def __init__(self, title_id: Union[str, int, bytes]):
         ...
 
-    def __init__(self, type_or_title_id, id=None):
+    def __init__(self, type=None, uid=None, title_id=None):
         # first overload
-        if isinstance(type_or_title_id, TitleType):
-            assert isinstance(id, int)
-            self.type = type_or_title_id
-            self.uid = id
+        if isinstance(type, TitleType):
+            assert isinstance(uid, int)
+            self.type = type
+            self.uid = uid
         # second overload
         else:
-            title_id = type_or_title_id
+            if title_id is None:
+                title_id = type  # positional parameter
             if isinstance(title_id, bytes):
                 title_id = int.from_bytes(title_id, 'big')
             elif isinstance(title_id, str):
@@ -171,22 +172,23 @@ class ContentID:
     uid: int
 
     @overload
-    def __init__(self, type: ContentType, id: int):
+    def __init__(self, type: ContentType, uid: int):
         ...
 
     @overload
     def __init__(self, content_id: Union[str, int]):
         ...
 
-    def __init__(self, type_or_content_id, id=None):
+    def __init__(self, type=None, uid=None, content_id=None):
         # first overload
-        if isinstance(type_or_content_id, ContentType):
+        if isinstance(type, ContentType):
             assert isinstance(id, int)
-            self.type = type_or_content_id
-            self.uid = id
+            self.type = type
+            self.uid = uid
         # second overload
         else:
-            content_id = type_or_content_id
+            if content_id is None:
+                content_id = type  # positional parameter
             if isinstance(content_id, int):
                 content_id = str(content_id)
             assert len(content_id) == 14
