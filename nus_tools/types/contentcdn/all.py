@@ -15,6 +15,8 @@ class CETK(BaseTypeLoadableStruct):
         raw_data = reader.read_all()
         self.data = self._parse_struct(raw_data, config)
 
+        # sanity check
+        assert self.data.title_id == self.__title_id
 
 
 class TMD(BaseTypeLoadableStruct):
