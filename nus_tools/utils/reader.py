@@ -4,7 +4,7 @@ import time
 import requests
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass
-from typing import Callable, Iterator, Optional, Dict, List, Sequence, BinaryIO, Type
+from typing import Callable, Iterable, Iterator, Optional, Dict, List, BinaryIO, Type
 
 from . import misc
 
@@ -108,7 +108,7 @@ class IOReader(_FuncReader):
 
 
 class CachingReader(Reader):
-    def __init__(self, subreader: Reader, filename: str, store_on_errors: Sequence[Type[Exception]] = tuple()):
+    def __init__(self, subreader: Reader, filename: str, store_on_errors: Iterable[Type[Exception]] = tuple()):
         super().__init__(
             subreader.size,
             subreader.metadata
@@ -116,7 +116,7 @@ class CachingReader(Reader):
 
         self._subreader = subreader
         self.filename = filename
-        self._store_on_errors = store_on_errors
+        self._store_on_errors = set(store_on_errors)
 
         self._tmp_filename = f'{filename}.tmp'
         self.__file = None
