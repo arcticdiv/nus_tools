@@ -1,4 +1,5 @@
 import abc
+import lxml.objectify
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Generic, TypeVar
 
@@ -66,7 +67,7 @@ class SamuraiDlcWiiU:
     promotion_video_url: Optional[str] = None
 
     @classmethod
-    def _parse(cls, xml) -> 'SamuraiDlcWiiU':
+    def _parse(cls, xml: lxml.objectify.ObjectifiedElement) -> 'SamuraiDlcWiiU':
         vals = utils.dicts.dotdict()
         vals.is_new = utils.misc.get_bool(xml.get('new'))
         vals.content_id = ids.ContentID(xml.get('id'))
@@ -179,7 +180,7 @@ class SamuraiDlc3DS:
     price: common.SamuraiPrice
 
     @classmethod
-    def _parse(cls, xml) -> 'SamuraiDlc3DS':
+    def _parse(cls, xml: lxml.objectify.ObjectifiedElement) -> 'SamuraiDlc3DS':
         vals = utils.dicts.dotdict()
 
         for child, tag, text in utils.xml.iter_children(xml):

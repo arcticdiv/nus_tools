@@ -11,7 +11,7 @@ from . import common
 #   https://www.3dbrew.org/wiki/Title_metadata
 #   https://wiibrew.org/wiki/Title_metadata
 #   https://wiiubrew.org/wiki/Title_metadata
-def __get_struct(is_wiiu: bool):
+def __get_struct(is_wiiu: bool) -> Struct:
     if is_wiiu:
         content_hash = 'sha1' / Padded(0x20, ChecksumRaw(hashlib.sha1))
         system_version = common.TitleID

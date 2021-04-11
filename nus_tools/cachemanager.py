@@ -13,7 +13,7 @@ __sanitize_fn = functools.partial(pathvalidate.sanitize_filename, replacement_te
 __sanitize_fp = functools.partial(pathvalidate.sanitize_filepath, replacement_text='_')
 
 
-def __fmt_pairs(it: Iterable[Tuple[Any, Any]]):
+def __fmt_pairs(it: Iterable[Tuple[Any, Any]]) -> str:
     return '--'.join(f'{k}+{v}' for k, v in it)
 
 

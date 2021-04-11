@@ -38,7 +38,7 @@ class limit:
             self._last_call[key] = now + wait_time
             return wait_time
 
-    def _setup_interval(self, obj) -> None:
+    def _setup_interval(self, self_inner: Any) -> None:
         with self._lock:
             if hasattr(self, 'interval'):
                 return
@@ -46,6 +46,6 @@ class limit:
             if isinstance(self._calls_per_second, float):
                 value = self._calls_per_second
             else:
-                value = self._calls_per_second(obj)
+                value = self._calls_per_second(self_inner)
             assert value > 0
             self.interval = 1.0 / value

@@ -1,3 +1,4 @@
+import lxml.objectify
 from dataclasses import dataclass
 from typing import Optional
 
@@ -9,7 +10,7 @@ from ... import utils
 @dataclass(frozen=True)
 class _SamuraiMovieBaseMixin(movie_list._SamuraiListMovieBaseMixin):
     @classmethod
-    def _try_parse_value(cls, vals: utils.dicts.dotdict, child, tag, text, custom_types: movie_list.CustomTypes) -> bool:
+    def _try_parse_value(cls, vals: utils.dicts.dotdict, child: lxml.objectify.ObjectifiedElement, tag: str, text: str, custom_types: movie_list.CustomTypes) -> bool:
         return super()._try_parse_value(vals, child, tag, text, custom_types)
 
 
@@ -18,7 +19,7 @@ class _SamuraiMovieOptionalMixin(movie_list._SamuraiListMovieOptionalMixin[commo
     rating_info_alternate_image_url: Optional[str] = None
 
     @classmethod
-    def _try_parse_value(cls, vals: utils.dicts.dotdict, child, tag, text, custom_types: movie_list.CustomTypes) -> bool:
+    def _try_parse_value(cls, vals: utils.dicts.dotdict, child: lxml.objectify.ObjectifiedElement, tag: str, text: str, custom_types: movie_list.CustomTypes) -> bool:
         if tag == 'alternate_rating_image_url':
             vals.rating_info_alternate_image_url = text
         else:
@@ -29,7 +30,7 @@ class _SamuraiMovieOptionalMixin(movie_list._SamuraiListMovieOptionalMixin[commo
 @dataclass(frozen=True)
 class SamuraiMovieElement(_SamuraiMovieOptionalMixin, _SamuraiMovieBaseMixin):
     @classmethod
-    def _parse(cls, xml) -> 'SamuraiMovieElement':
+    def _parse(cls, xml: lxml.objectify.ObjectifiedElement) -> 'SamuraiMovieElement':
         vals = utils.dicts.dotdict()
 
         for child, tag, text in utils.xml.iter_children(xml):

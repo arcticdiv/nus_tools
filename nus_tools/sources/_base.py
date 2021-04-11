@@ -89,7 +89,7 @@ class BaseSource:
     def _create_type(self, reqdata: ReqData) -> UnloadableType:
         ...
 
-    def _create_type(self, reqdata: ReqData, loadable: Optional[_TBaseTypeLoadable] = None):
+    def _create_type(self, reqdata: ReqData, loadable: Optional[_TBaseTypeLoadable] = None) -> Union[_TBaseTypeLoadable, UnloadableType]:
         if loadable is not None:
             # first overload
             with self.get_reader(reqdata) as reader:
@@ -104,7 +104,7 @@ class BaseSource:
         return res
 
     @contextlib.contextmanager
-    def get_reader(self, reqdata: ReqData):
+    def get_reader(self, reqdata: ReqData) -> Iterator[utils.reader.Reader]:
         with self.__get_reader_internal(reqdata) as reader:
             if reader.metadata:  # if this is None, request was loaded from cache and successful
                 self.__check_status(reader.metadata)
@@ -128,7 +128,7 @@ class BaseSource:
         return res
 
     @contextlib.contextmanager
-    def __get_reader_internal(self, reqdata: ReqData):
+    def __get_reader_internal(self, reqdata: ReqData) -> Iterator[utils.reader.Reader]:
         merged_reqdata = self._base_reqdata + reqdata
         cache_path = cachemanager.get_path(merged_reqdata)
         meta_path = cachemanager.get_metadata_path(cache_path)

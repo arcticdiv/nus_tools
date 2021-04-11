@@ -34,7 +34,7 @@ class TitleType(IntEnum):
     APPLET_WIIU = 0x00050030
 
     @classmethod
-    def from_platform_category(cls, platform: Union[TitlePlatform, int], category: int):
+    def from_platform_category(cls, platform: Union[TitlePlatform, int], category: int) -> 'TitleType':
         if isinstance(platform, TitlePlatform):
             platform = platform.value
         return cls(((platform & 0xffff) << 16) | (category & 0xffff))

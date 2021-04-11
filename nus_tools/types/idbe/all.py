@@ -1,11 +1,11 @@
 from typing import Any
 
-from .._base import BaseTypeLoadableStruct
+from .._base import BaseTypeLoadableConstruct
 from ... import utils, ids, structs
 from ...config import Configuration
 
 
-class IDBE(BaseTypeLoadableStruct):
+class IDBE(BaseTypeLoadableConstruct):
     key_index: int
     data: Any
 
@@ -21,7 +21,7 @@ class IDBE(BaseTypeLoadableStruct):
         encrypted = raw_data[2:]
 
         decrypted = self.__get_aes(self.key_index).decrypt(encrypted)
-        self.data = self._parse_struct(decrypted, config)
+        self.data = self._parse_construct(decrypted, config)
 
         # sanity check
         # compare lower half since some update/DLC title IDs return their associated game's IDBE
