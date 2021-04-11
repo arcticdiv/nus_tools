@@ -182,7 +182,7 @@ class ContentID:
     def __init__(self, type=None, uid=None, content_id=None):
         # first overload
         if isinstance(type, ContentType):
-            assert isinstance(id, int)
+            assert isinstance(uid, int)
             self.type = type
             self.uid = uid
         # second overload
