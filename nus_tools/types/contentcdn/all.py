@@ -1,10 +1,10 @@
 from typing import Any
 
-from .._base import BaseTypeLoadableStruct
+from .._base import BaseTypeLoadableConstruct
 from ... import structs, ids
 
 
-class CETK(BaseTypeLoadableStruct):
+class CETK(BaseTypeLoadableConstruct):
     data: Any
 
     def __init__(self, title_id: ids.TTitleIDInput):
@@ -13,13 +13,13 @@ class CETK(BaseTypeLoadableStruct):
 
     def _read(self, reader, config):
         raw_data = reader.read_all()
-        self.data = self._parse_struct(raw_data, config)
+        self.data = self._parse_construct(raw_data, config)
 
         # sanity check
         assert self.data.title_id == self.__title_id
 
 
-class TMD(BaseTypeLoadableStruct):
+class TMD(BaseTypeLoadableConstruct):
     data: Any
 
     def __init__(self, title_id: ids.TTitleIDInput):
@@ -28,7 +28,7 @@ class TMD(BaseTypeLoadableStruct):
 
     def _read(self, reader, config):
         raw_data = reader.read_all()
-        self.data = self._parse_struct(raw_data, config)
+        self.data = self._parse_construct(raw_data, config)
 
         # sanity check
         assert self.data.title_id == self.__title_id

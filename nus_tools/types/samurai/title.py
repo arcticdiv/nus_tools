@@ -1,15 +1,12 @@
 import re
+import lxml.objectify
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Type, Tuple
+from typing import List, Optional, Tuple
 
 from . import common, movie, title_list
 from .._base import BaseTypeLoadable, XmlBaseType
 from ... import utils, ids
 
-
-#####
-# /title/<id>
-#####
 
 @dataclass(frozen=True)
 class SamuraiTitleStars(common.SamuraiStars):
@@ -127,7 +124,7 @@ class _SamuraiTitleBaseMixin(title_list._SamuraiListTitleBaseMixin):
     sales_download_card: bool
 
     @classmethod
-    def _try_parse_value(cls, vals: utils.dicts.dotdict, child, tag, text, custom_types: Dict[str, Type]) -> bool:
+    def _try_parse_value(cls, vals: utils.dicts.dotdict, child: lxml.objectify.ObjectifiedElement, tag: str, text: str, custom_types: title_list.CustomTypes) -> bool:
         if 'is_public' not in vals:
             xml = child.getparent()
             vals.is_public = utils.misc.get_bool(xml.get('public'))
@@ -177,7 +174,7 @@ class _SamuraiTitleOptionalMixin(title_list._SamuraiListTitleOptionalMixin[commo
     size: Optional[int] = None
 
     @classmethod
-    def _try_parse_value(cls, vals: utils.dicts.dotdict, child, tag, text, custom_types: Dict[str, Type]) -> bool:
+    def _try_parse_value(cls, vals: utils.dicts.dotdict, child: lxml.objectify.ObjectifiedElement, tag: str, text: str, custom_types: title_list.CustomTypes) -> bool:
         if tag == 'web_sales':
             vals.sales_web = utils.misc.get_bool(text)
         elif tag == 'top_image':
@@ -272,7 +269,7 @@ class _SamuraiTitleOptionalMixin(title_list._SamuraiListTitleOptionalMixin[commo
 @dataclass(frozen=True)
 class SamuraiTitleElement(_SamuraiTitleOptionalMixin, _SamuraiTitleBaseMixin):
     @classmethod
-    def _parse(cls, xml) -> 'SamuraiTitleElement':
+    def _parse(cls, xml: lxml.objectify.ObjectifiedElement) -> 'SamuraiTitleElement':
         vals = utils.dicts.dotdict()
 
         for child, tag, text in utils.xml.iter_children(xml):

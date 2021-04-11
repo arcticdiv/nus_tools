@@ -51,7 +51,7 @@ class _BaseContentSource(BaseSource):
 #   - ccs.wup.shop.nintendo.net
 
 class CachedContentServer(_BaseContentSource):
-    def __init__(self, config: SourceConfig = None):
+    def __init__(self, config: Optional[SourceConfig] = None):
         super().__init__(
             reqdata.ReqData(
                 path='http://ccs.cdn.c.shop.nintendowifi.net/ccs/download/'
@@ -61,7 +61,7 @@ class CachedContentServer(_BaseContentSource):
 
 
 class UncachedContentServer(_BaseContentSource):
-    def __init__(self, config: SourceConfig = None):
+    def __init__(self, config: Optional[SourceConfig] = None):
         super().__init__(
             reqdata.ReqData(
                 path='http://ccs.wup.shop.nintendo.net/ccs/download/'

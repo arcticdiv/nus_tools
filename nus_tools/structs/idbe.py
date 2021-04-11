@@ -21,7 +21,7 @@ languages = (
 #   https://wiiubrew.org/wiki/Nn_idbe.rpl (specified length of unknown block is currently off by 4 bytes)
 #   https://www.3dbrew.org/wiki/SMDH#Region_Lockout
 #   https://github.com/TomEke/WiiU-Title-Key/blob/a4efc01d92f7b1f4c37bb7bf4470a42fa7bf914d/app/Title.php#L81
-def __get_struct(is_wiiu: bool):
+def __get_struct(is_wiiu: bool) -> Struct:
     if is_wiiu:
         swap = lambda x: x  # noop  # noqa: E731
         encoding = 'utf-16-be'

@@ -119,10 +119,12 @@ class CachingReader(Reader):
         self._store_on_errors = set(store_on_errors)
 
         self._tmp_filename = f'{filename}.tmp'
-        self.__file = None
+        self.__file = None  # type: Optional[BinaryIO]
 
     def __next__(self):
         data = next(self._subreader)
+        if self.__file is None:
+            raise RuntimeError('cache file wasn\'t opened')
         self.__file.write(data)
         return data
 
@@ -137,6 +139,10 @@ class CachingReader(Reader):
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
+        if self.__file is None:
+            # tmp file wasn't created yet, nothing to clean up/write
+            return
+
         write_file = (exc_type is None) or (exc_type in self._store_on_errors)
         if write_file:
             # finish writing in case not everything was read

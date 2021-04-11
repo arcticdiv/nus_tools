@@ -53,12 +53,12 @@ class BaseTypeLoadable(BaseType, ABC):
         pass
 
 
-class BaseTypeLoadableStruct(BaseTypeLoadable):
+class BaseTypeLoadableConstruct(BaseTypeLoadable):
     def __init__(self, struct: Construct):
         super().__init__()
         self.__struct = struct
 
-    def _parse_struct(self, data: bytes, config: TypeLoadConfig):
+    def _parse_construct(self, data: bytes, config: TypeLoadConfig) -> Construct:
         return self.__struct.parse(
             data,
             skip_verify_checksums=not config.verify_checksums
@@ -75,7 +75,7 @@ class XmlBaseType(ABC):
         pass
 
     @classmethod
-    def _get_schema(cls) -> Optional[Tuple[dict, bool]]:
+    def _get_schema(cls) -> Optional[Tuple[utils.xml.SchemaType, bool]]:
         return None
 
     @classmethod
