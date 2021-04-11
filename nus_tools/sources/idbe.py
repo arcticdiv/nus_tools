@@ -14,7 +14,9 @@ class IDBEServer(BaseSource):
                 path=f'https://idbe-{platform}.cdn.nintendo.net/icondata/'
             ),
             config,
-            verify_tls=False
+            verify_tls=False,
+            # fingerprints for ctr/wup certs are the same
+            require_fingerprint='43:8D:A9:4A:60:CB:00:DF:F2:B3:EB:17:A7:A2:1C:98:BD:11:FC:4A:A6:49:62:C1:2C:EF:41:BB:1F:28:88:95'
         )
         self.platform = platform
 

@@ -3,6 +3,7 @@ import contextlib
 import requests
 import urllib3
 from requests.adapters import HTTPAdapter
+from requests_toolbelt.adapters.fingerprint import FingerprintAdapter
 from enum import Enum
 from dataclasses import dataclass
 from typing import Iterator, TypeVar, Union, Optional, overload
@@ -69,7 +70,7 @@ class SourceConfig:
 
 
 class BaseSource:
-    def __init__(self, base_reqdata: ReqData, config: Optional[SourceConfig], *, verify_tls: bool = True):
+    def __init__(self, base_reqdata: ReqData, config: Optional[SourceConfig], *, verify_tls: bool = True, require_fingerprint: Optional[str] = None):
         # build base request data
         self._base_reqdata = ReqData(
             path='',
@@ -80,21 +81,25 @@ class BaseSource:
         # use supplied config or default
         self._config = config if config is not None else SourceConfig()
 
-        # set up retries
         self._session = requests.Session()
         self._session.verify = verify_tls
-        adapter = HTTPAdapter(
-            max_retries=urllib3.util.retry.Retry(
-                total=self._config.http_retries,
-                backoff_factor=0.5,
-                redirect=False,
-                raise_on_redirect=False,
-                status_forcelist={420, 429, *range(500, 520)},
-                raise_on_status=False
-            )
+
+        # set up retries
+        retry = urllib3.util.retry.Retry(
+            total=self._config.http_retries,
+            backoff_factor=0.5,
+            redirect=False,
+            raise_on_redirect=False,
+            status_forcelist={420, 429, *range(500, 520)},
+            raise_on_status=False
         )
-        self._session.mount('http://', adapter)
-        self._session.mount('https://', adapter)
+        self._session.mount('http://', HTTPAdapter(max_retries=retry))
+
+        if require_fingerprint is not None:
+            # FingerprintAdapter passes kwargs to underlying HTTPAdapter
+            self._session.mount('https://', FingerprintAdapter(require_fingerprint, max_retries=retry))
+        else:
+            self._session.mount('https://', HTTPAdapter(max_retries=retry))
 
     @overload
     def _create_type(self, reqdata: ReqData, loadable: _TBaseTypeLoadable) -> _TBaseTypeLoadable:
