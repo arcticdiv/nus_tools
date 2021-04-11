@@ -6,7 +6,7 @@ from ..types.idbe import IDBE
 
 
 class IDBEServer(BaseSource):
-    def __init__(self, platform: str, config: SourceConfig = None):
+    def __init__(self, platform: str, config: Optional[SourceConfig] = None):
         if platform not in ('wup', 'ctr'):
             raise ValueError('`platform` must be either \'wup\' or \'ctr\'')
         super().__init__(

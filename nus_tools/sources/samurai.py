@@ -1,4 +1,4 @@
-from typing import Callable, Iterator, Type, TypeVar, Union, List, Tuple
+from typing import Callable, Iterator, Optional, Type, TypeVar, Union, List, Tuple
 
 from ..utils.typing import RequestDict
 
@@ -21,7 +21,7 @@ _TList = TypeVar('_TList', bound=SamuraiListBaseType)
 
 
 class Samurai(BaseSource):
-    def __init__(self, region: str, shop_id: int, lang: str, config: SourceConfig = None):
+    def __init__(self, region: str, shop_id: int, lang: str, config: Optional[SourceConfig] = None):
         super().__init__(
             ReqData(
                 path=f'https://samurai.wup.shop.nintendo.net/samurai/ws/{region}/',
