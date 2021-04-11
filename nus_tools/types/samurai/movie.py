@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Dict, Type, Optional
+from typing import Optional
 
 from . import common, movie_list
 from .._base import BaseTypeLoadable
@@ -9,7 +9,7 @@ from ... import utils
 @dataclass(frozen=True)
 class _SamuraiMovieBaseMixin(movie_list._SamuraiListMovieBaseMixin):
     @classmethod
-    def _try_parse_value(cls, vals: utils.dicts.dotdict, child, tag, text, custom_types: Dict[str, Type]) -> bool:
+    def _try_parse_value(cls, vals: utils.dicts.dotdict, child, tag, text, custom_types: movie_list.CustomTypes) -> bool:
         return super()._try_parse_value(vals, child, tag, text, custom_types)
 
 
@@ -18,7 +18,7 @@ class _SamuraiMovieOptionalMixin(movie_list._SamuraiListMovieOptionalMixin[commo
     rating_info_alternate_image_url: Optional[str] = None
 
     @classmethod
-    def _try_parse_value(cls, vals: utils.dicts.dotdict, child, tag, text, custom_types: Dict[str, Type]) -> bool:
+    def _try_parse_value(cls, vals: utils.dicts.dotdict, child, tag, text, custom_types: movie_list.CustomTypes) -> bool:
         if tag == 'alternate_rating_image_url':
             vals.rating_info_alternate_image_url = text
         else:

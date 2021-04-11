@@ -75,7 +75,7 @@ class XmlBaseType(ABC):
         pass
 
     @classmethod
-    def _get_schema(cls) -> Optional[Tuple[dict, bool]]:
+    def _get_schema(cls) -> Optional[Tuple[utils.xml.SchemaType, bool]]:
         return None
 
     @classmethod

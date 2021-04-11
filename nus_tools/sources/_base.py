@@ -5,12 +5,12 @@ import urllib3
 from requests.adapters import HTTPAdapter
 from enum import Enum
 from dataclasses import dataclass
-from typing import Generic, TypeVar, Union, Optional, overload
+from typing import Iterator, TypeVar, Union, Optional, overload
 
 from .. import utils, cachemanager
 from ..config import Configuration
 from ..reqdata import ReqData
-from ..types._base import TypeLoadConfig, BaseType, BaseTypeLoadable
+from ..types._base import TypeLoadConfig, BaseTypeLoadable
 
 
 class StatusCheckMode(Enum):
@@ -25,11 +25,10 @@ class ResponseStatusError(Exception):
         self.status = status
 
 
-_TBaseType = TypeVar('_TBaseType', bound=BaseType)
 _TBaseTypeLoadable = TypeVar('_TBaseTypeLoadable', bound=BaseTypeLoadable)
 
 
-class UnloadableType(Generic[_TBaseType]):
+class UnloadableType:
     def __init__(self, source: 'BaseSource', reqdata: ReqData):
         self.source = source
         self.reqdata = reqdata

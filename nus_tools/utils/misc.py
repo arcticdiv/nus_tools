@@ -1,6 +1,8 @@
 import os
 import functools
-from typing import TypeVar, Callable, TYPE_CHECKING
+from typing import TYPE_CHECKING
+
+from .typing import TFuncAny
 
 
 def create_dirs_for_file(file_path: str) -> None:
@@ -16,15 +18,11 @@ def get_bool(text: str) -> bool:
     raise ValueError(text)
 
 
-_TCacheSig = TypeVar('_TCacheSig', bound=Callable)
-
-
-def cache(func: _TCacheSig) -> _TCacheSig:
+def cache(func: TFuncAny) -> TFuncAny:
     return functools.lru_cache(maxsize=None)(func)  # type: ignore
 
 
+cachedproperty = lambda func: property(cache(func))  # noqa: E731
 # make the type checker believe that `cachedproperty` is a type alias of `property`, which fixes IDE type hints and autocompletion
 if TYPE_CHECKING:
     cachedproperty = property
-else:
-    cachedproperty = lambda func: property(cache(func))  # noqa: E731

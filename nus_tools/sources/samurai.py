@@ -1,5 +1,7 @@
 from typing import Callable, Iterator, Type, TypeVar, Union, List, Tuple
 
+from ..utils.typing import RequestDict
+
 from ._base import BaseSource, SourceConfig
 from .. import ids
 from ..reqdata import ReqData
@@ -35,13 +37,13 @@ class Samurai(BaseSource):
     # could use functools.partial for most of these, but type information would be lost
 
     # /contents
-    def get_content_count(self, other_params: dict = {}) -> int:
+    def get_content_count(self, other_params: RequestDict = {}) -> int:
         return self._get_list_total(self.get_content_list, other_params)
 
-    def get_content_list(self, offset: int, limit: int = 200, other_params: dict = {}) -> SamuraiContentsList:
+    def get_content_list(self, offset: int, limit: int = 200, other_params: RequestDict = {}) -> SamuraiContentsList:
         return self._get_list(SamuraiContentsList, 'contents', offset, limit, other_params)
 
-    def get_all_content_lists(self, max_page_size: int = 200, other_params: dict = {}) -> Iterator[SamuraiContentsList]:
+    def get_all_content_lists(self, max_page_size: int = 200, other_params: RequestDict = {}) -> Iterator[SamuraiContentsList]:
         return self._get_all_lists(self.get_content_list, max_page_size, other_params)
 
     # /title/<id>
@@ -52,13 +54,13 @@ class Samurai(BaseSource):
         )
 
     # /titles
-    def get_title_count(self, other_params: dict = {}) -> int:
+    def get_title_count(self, other_params: RequestDict = {}) -> int:
         return self._get_list_total(self.get_title_list, other_params)
 
-    def get_title_list(self, offset: int, limit: int = 200, other_params: dict = {}) -> SamuraiTitlesList:
+    def get_title_list(self, offset: int, limit: int = 200, other_params: RequestDict = {}) -> SamuraiTitlesList:
         return self._get_list(SamuraiTitlesList, 'titles', offset, limit, other_params)
 
-    def get_all_title_lists(self, max_page_size: int = 200, other_params: dict = {}) -> Iterator[SamuraiTitlesList]:
+    def get_all_title_lists(self, max_page_size: int = 200, other_params: RequestDict = {}) -> Iterator[SamuraiTitlesList]:
         return self._get_all_lists(self.get_title_list, max_page_size, other_params)
 
     # movies
@@ -68,13 +70,13 @@ class Samurai(BaseSource):
             SamuraiMovie()
         )
 
-    def get_movie_count(self, other_params: dict = {}) -> int:
+    def get_movie_count(self, other_params: RequestDict = {}) -> int:
         return self._get_list_total(self.get_movie_list, other_params)
 
-    def get_movie_list(self, offset: int, limit: int = 200, other_params: dict = {}) -> SamuraiMoviesList:
+    def get_movie_list(self, offset: int, limit: int = 200, other_params: RequestDict = {}) -> SamuraiMoviesList:
         return self._get_list(SamuraiMoviesList, 'movies', offset, limit, other_params)
 
-    def get_all_movie_lists(self, max_page_size: int = 200, other_params: dict = {}) -> Iterator[SamuraiMoviesList]:
+    def get_all_movie_lists(self, max_page_size: int = 200, other_params: RequestDict = {}) -> Iterator[SamuraiMoviesList]:
         return self._get_all_lists(self.get_movie_list, max_page_size, other_params)
 
     # /aocs
@@ -165,16 +167,16 @@ class Samurai(BaseSource):
         )
 
     # generic list funcs
-    def _get_list(self, list_type: Type[_TList], path: str, offset: int, limit: int, other_params: dict) -> _TList:
+    def _get_list(self, list_type: Type[_TList], path: str, offset: int, limit: int, other_params: RequestDict) -> _TList:
         return self._create_type(
             ReqData(path=path, params={'offset': offset, 'limit': limit, **other_params}),
             list_type()
         )
 
-    def _get_list_total(self, get_list_func: Callable[[int, int, dict], _TList], other_params: dict) -> int:
+    def _get_list_total(self, get_list_func: Callable[[int, int, RequestDict], _TList], other_params: RequestDict) -> int:
         return get_list_func(0, 1, other_params).total
 
-    def _get_all_lists(self, get_list_func: Callable[[int, int, dict], _TList], max_page_size: int, other_params: dict) -> Iterator[_TList]:
+    def _get_all_lists(self, get_list_func: Callable[[int, int, RequestDict], _TList], max_page_size: int, other_params: RequestDict) -> Iterator[_TList]:
         first_page = get_list_func(0, max_page_size, other_params)
         yield first_page
         for offset in range(max_page_size, first_page.total, max_page_size):

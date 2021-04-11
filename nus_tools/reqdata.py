@@ -2,6 +2,8 @@ import urllib.parse
 from dataclasses import dataclass, field
 from typing import Optional, Union, Tuple
 
+from .utils.typing import RequestDict
+
 
 # ref: cert parameter for https://requests.readthedocs.io/en/master/api/#requests.request
 CertType = Union[str, Tuple[str, str]]
@@ -10,8 +12,8 @@ CertType = Union[str, Tuple[str, str]]
 @dataclass(frozen=True)
 class ReqData:
     path: str
-    params: dict = field(default_factory=lambda: {})
-    headers: dict = field(default_factory=lambda: {})
+    params: RequestDict = field(default_factory=lambda: {})
+    headers: RequestDict = field(default_factory=lambda: {})
     cert: Optional[CertType] = None
 
     def __add__(self, other: 'ReqData') -> 'ReqData':

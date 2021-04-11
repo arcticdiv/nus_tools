@@ -1,9 +1,12 @@
 import io
 import lxml.objectify
 from xml.etree import ElementTree as ET
-from typing import Tuple, Set, Dict, Optional, Iterator
+from typing import Any, Tuple, Set, Dict, Optional, Iterator
 
 from . import dicts, reader
+
+
+SchemaType = Dict[str, Any]  # needs `Any` type since there's no support for self-recursive types (yet)
 
 
 def read(data: bytes) -> ET.ElementTree:
@@ -34,7 +37,7 @@ def iter_children(xml) -> Iterator[Tuple[lxml.objectify.ObjectifiedElement, str,
         yield (child, child.tag, child.text)
 
 
-def get_tag_schema(xml) -> Optional[Dict]:
+def get_tag_schema(xml) -> Optional[SchemaType]:
     children = xml.getchildren()
     if not children:
         return None
@@ -45,7 +48,7 @@ def get_tag_schema(xml) -> Optional[Dict]:
     return d
 
 
-def validate_schema(xml, target_hierarchy: Optional[Dict], superset: bool):
+def validate_schema(xml, target_hierarchy: Optional[SchemaType], superset: bool):
     h = get_tag_schema(xml)
     if (not superset and target_hierarchy != h) or (superset and not dicts.is_dict_subset_deep(h, target_hierarchy)):
         raise RuntimeError(f'unexpected XML structure\nexpected{" subset of" if superset else ""}:\n\t{target_hierarchy}\ngot:\n\t{h}')

@@ -1,9 +1,20 @@
 from dataclasses import dataclass
-from typing import Dict, Generic, List, Optional, Type, TypeVar
+from typing import Generic, List, Optional, Type, TypeVar
+from typing_extensions import TypedDict
 
 from . import common
 from ._base import SamuraiListBaseType
 from ... import utils, ids
+
+
+CustomTypes = TypedDict(
+    'CustomTypes',
+    {
+        'rating_info': Type[common.SamuraiRating],
+        'rating_stars': Type[common.SamuraiStars]
+    },
+    total=False
+)
 
 
 @dataclass(frozen=True)
@@ -23,7 +34,7 @@ class _SamuraiListTitleBaseMixin:
     has_iap__inaccurate: bool
 
     @classmethod
-    def _try_parse_value(cls, vals: utils.dicts.dotdict, child, tag, text, custom_types: Dict[str, Type]) -> bool:
+    def _try_parse_value(cls, vals: utils.dicts.dotdict, child, tag, text, custom_types: CustomTypes) -> bool:
         # kind of hacky, but it works
         if 'is_new' not in vals:
             xml = child.getparent()
@@ -79,7 +90,7 @@ class _SamuraiListTitleOptionalMixin(Generic[_TRating, _TStars]):
     # have to specify generic parameters twice: in base class definition and in custom_types parameter;
     # classmethods don't have access to the generic parameters of their classes for some reason, see https://github.com/python/typing/issues/629
     @classmethod
-    def _try_parse_value(cls, vals: utils.dicts.dotdict, child, tag, text, custom_types: Dict[str, Type]) -> bool:
+    def _try_parse_value(cls, vals: utils.dicts.dotdict, child, tag, text, custom_types: CustomTypes) -> bool:
         if tag == 'icon_url':
             vals.icon_url = text
         elif tag == 'banner_url':

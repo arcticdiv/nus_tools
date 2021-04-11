@@ -1,7 +1,7 @@
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 
-class dotdict(dict):
+class dotdict(Dict[str, Any]):
     def __getattr__(self, attr):
         return self.get(attr)
 
@@ -12,7 +12,7 @@ class dotdict(dict):
         self.__delitem__(attr)
 
 
-def is_dict_subset_deep(a: Optional[Dict], b: Optional[Dict]) -> bool:
+def is_dict_subset_deep(a: Optional[Dict[Any, Any]], b: Optional[Dict[Any, Any]]) -> bool:
     if a is None:
         return True
     elif b is None:

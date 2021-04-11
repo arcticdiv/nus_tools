@@ -5,10 +5,6 @@ from .._base import BaseTypeLoadable
 from ... import utils
 
 
-#####
-# /news
-#####
-
 @dataclass
 class SamuraiNewsImage:
     url: str
@@ -54,10 +50,6 @@ class SamuraiNews(BaseTypeLoadable):
                 images
             ))
 
-
-#####
-# /telops
-#####
 
 class SamuraiTelops(BaseTypeLoadable):
     entries: List[str]

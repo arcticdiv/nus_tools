@@ -3,5 +3,6 @@ lxml
 pathvalidate
 construct
 pycryptodome
+typing-extensions
 
 git+https://github.com/shiftinv/construct-utils
