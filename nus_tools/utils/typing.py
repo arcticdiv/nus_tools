@@ -1,4 +1,4 @@
-from typing import Mapping, TypeVar, Callable, Any, Dict, Union
+from typing import Mapping, TypeVar, Callable, Any, Union
 
 
 TFuncAny = TypeVar('TFuncAny', bound=Callable[..., Any])

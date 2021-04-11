@@ -11,9 +11,9 @@ def create_dirs_for_file(file_path: str) -> None:
 
 def get_bool(text: str) -> bool:
     text = text.lower()
-    if text in ['true', 'yes', 'y', '1']:
+    if text in {'true', 'yes', 'y', '1'}:
         return True
-    elif text in ['false', 'no', 'n', '0']:
+    elif text in {'false', 'no', 'n', '0'}:
         return False
     raise ValueError(text)
 

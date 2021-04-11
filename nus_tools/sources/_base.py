@@ -39,18 +39,33 @@ class UnloadableType:
             yield reader
 
 
-# TODO: implement dependencies between options
+class ConfigDependencyError(Exception):
+    pass
+
+
 @dataclass(frozen=True)
 class SourceConfig:
     load_from_cache: bool = True
     store_to_cache: bool = True
+    store_metadata: bool = True
+    store_failed_requests: bool = True
     chunk_size: int = Configuration.default_chunk_size  # note: with streamed requests, this value is the size of compressed chunks (i.e. the size of returned chunks may be larger)
     response_status_checking: StatusCheckMode = StatusCheckMode.REQUIRE_200
-    store_failed_requests: bool = True
-    store_metadata: bool = True
     http_retries: int = 3
     requests_per_second: float = 5.0
     type_load_config: TypeLoadConfig = TypeLoadConfig()
+
+    def __post_init__(self):
+        dependencies = {
+            'store_metadata': 'store_to_cache',
+            'store_failed_requests': 'store_metadata'
+        }
+        for key, dependency in dependencies.items():
+            key_value = getattr(self, key)
+            dependency_value = getattr(self, dependency)
+            assert isinstance(key_value, bool) and isinstance(dependency_value, bool)
+            if key_value and not dependency_value:
+                raise ConfigDependencyError(f'configuration option {key!r} requires {dependency!r}')
 
 
 class BaseSource:
@@ -110,7 +125,6 @@ class BaseSource:
                 self.__check_status(reader.metadata)
             yield reader
 
-    # TODO: ratelimit by cls instead of self
     @utils.ratelimit.limit(lambda self: self._config.requests_per_second)
     def __get_nocache_internal(self, reqdata: ReqData, already_merged: bool = False) -> requests.Response:
         # optimization to avoid having to merge twice
@@ -156,10 +170,8 @@ class BaseSource:
                     # avoid creating a cache file if the request failed and metadata wasn't stored.
                     # if the file were to be kept regardless of errors, it would later be impossible
                     # to distinguish successful and failed requests, as metadata wasn't written
-                    # FIXME: remove once dependencies between options are implemented
-                    store_on_status_error = self._config.store_metadata and self._config.store_failed_requests
 
-                    with utils.reader.CachingReader(res_reader, cache_path, [ResponseStatusError] if store_on_status_error else []) as reader:
+                    with utils.reader.CachingReader(res_reader, cache_path, [ResponseStatusError] if self._config.store_failed_requests else []) as reader:
                         yield reader
                 else:
                     yield res_reader
