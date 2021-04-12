@@ -116,7 +116,7 @@ class TitleID:
                 return TitleID(TitleType.from_platform_category(self.type.platform, 0x000c), self.uid)
         raise RuntimeError(f'unimplemented: dlc title ID for {self}')
 
-    def to_bytes(self) -> bytes:
+    def __bytes__(self) -> bytes:
         return bytes.fromhex(str(self))
 
     def __str__(self):
