@@ -145,3 +145,4 @@ cache/
 *.crt
 *.key
 __test__.py
+keys.ini
