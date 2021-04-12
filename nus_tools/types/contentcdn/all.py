@@ -12,7 +12,7 @@ class CETK(BaseTypeLoadableConstruct):
         super().__init__(structs.cetk)
 
     def _read(self, reader, config):
-        raw_data = reader.read_all()
+        raw_data = reader.read()
         self.data = self._parse_construct(raw_data, config)
 
         # sanity check
@@ -27,7 +27,7 @@ class TMD(BaseTypeLoadableConstruct):
         super().__init__(structs.tmd.get(self.__title_id.type.platform))
 
     def _read(self, reader, config):
-        raw_data = reader.read_all()
+        raw_data = reader.read()
         self.data = self._parse_construct(raw_data, config)
 
         # sanity check

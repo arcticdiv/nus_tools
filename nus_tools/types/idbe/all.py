@@ -14,7 +14,7 @@ class IDBE(BaseTypeLoadableConstruct):
         super().__init__(structs.idbe.get(self.__title_id.type.platform))
 
     def _read(self, reader, config):
-        raw_data = reader.read_all()
+        raw_data = reader.read()
 
         assert raw_data[0] == 0
         self.key_index = raw_data[1]
