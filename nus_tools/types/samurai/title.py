@@ -3,8 +3,10 @@ import lxml.objectify
 from dataclasses import dataclass
 from typing import List, Optional, Tuple
 
+import reqcli.utils.xml as xmlutils
+from reqcli.type import BaseTypeLoadable, XmlBaseType
+
 from . import common, movie, title_list
-from .._base import BaseTypeLoadable, XmlBaseType
 from ... import utils, ids
 
 
@@ -124,7 +126,7 @@ class _SamuraiTitleBaseMixin(title_list._SamuraiListTitleBaseMixin):
     sales_download_card: bool
 
     @classmethod
-    def _try_parse_value(cls, vals: utils.dicts.dotdict, child: lxml.objectify.ObjectifiedElement, tag: str, text: str, custom_types: title_list.CustomTypes) -> bool:
+    def _try_parse_value(cls, vals: utils.misc.dotdict, child: lxml.objectify.ObjectifiedElement, tag: str, text: str, custom_types: title_list.CustomTypes) -> bool:
         if 'is_public' not in vals:
             xml = child.getparent()
             vals.is_public = utils.misc.get_bool(xml.get('public'))
@@ -134,7 +136,7 @@ class _SamuraiTitleBaseMixin(title_list._SamuraiListTitleBaseMixin):
         elif tag == 'genres':
             vals.genres = []
             for genre in child.genre:
-                utils.xml.validate_schema(genre, {'name': None}, False)
+                xmlutils.validate_schema(genre, {'name': None}, False)
                 vals.genres.append(common.IDName(genre.get('id'), genre.name.text))
         elif tag == 'keywords':
             vals.keywords = [keyword.text for keyword in getattr(child, 'keyword', [])]
@@ -143,7 +145,7 @@ class _SamuraiTitleBaseMixin(title_list._SamuraiListTitleBaseMixin):
         elif tag == 'download_code_sales':
             vals.sales_download_code = utils.misc.get_bool(text)
         elif tag == 'download_card_sales':
-            utils.xml.validate_schema(child, None, False)
+            xmlutils.validate_schema(child, None, False)
             vals.sales_download_card = utils.misc.get_bool(child.get('available'))
         else:
             return super()._try_parse_value(vals, child, tag, text, custom_types)
@@ -174,11 +176,11 @@ class _SamuraiTitleOptionalMixin(title_list._SamuraiListTitleOptionalMixin[commo
     size: Optional[int] = None
 
     @classmethod
-    def _try_parse_value(cls, vals: utils.dicts.dotdict, child: lxml.objectify.ObjectifiedElement, tag: str, text: str, custom_types: title_list.CustomTypes) -> bool:
+    def _try_parse_value(cls, vals: utils.misc.dotdict, child: lxml.objectify.ObjectifiedElement, tag: str, text: str, custom_types: title_list.CustomTypes) -> bool:
         if tag == 'web_sales':
             vals.sales_web = utils.misc.get_bool(text)
         elif tag == 'top_image':
-            utils.xml.validate_schema(child, {'type': None, 'url': None}, False)
+            xmlutils.validate_schema(child, {'type': None, 'url': None}, False)
             vals.top_image_type = child.type.text
             vals.top_image_url = child.url.text
         elif tag == 'description':
@@ -188,7 +190,7 @@ class _SamuraiTitleOptionalMixin(title_list._SamuraiListTitleOptionalMixin[commo
         elif tag == 'features':
             vals.features = [SamuraiTitleFeature._parse(feature) for feature in child.feature]
         elif tag == 'play_styles':
-            utils.xml.validate_schema(child, {'play_style': {'controllers': {'controller': {'id': None, 'name': None}}, 'features': {'feature': SamuraiTitleFeature._get_schema()[0]}}}, True)
+            xmlutils.validate_schema(child, {'play_style': {'controllers': {'controller': {'id': None, 'name': None}}, 'features': {'feature': SamuraiTitleFeature._get_schema()[0]}}}, True)
             vals.play_styles = []
             for play_style in child.play_style:
                 controllers = [
@@ -208,7 +210,7 @@ class _SamuraiTitleOptionalMixin(title_list._SamuraiListTitleOptionalMixin[commo
         elif tag == 'languages':
             vals.languages = []
             for language in child.language:
-                utils.xml.validate_schema(language, {'iso_code': None, 'name': None}, False)
+                xmlutils.validate_schema(language, {'iso_code': None, 'name': None}, False)
                 vals.languages.append(SamuraiTitleLanguage(language.iso_code.text, language.name.text))
         elif tag == 'number_of_players':
             cleaned_text = text.split('\n', 2)[0]  # sometimes this field contains additional text in a second line, discard it for now
@@ -223,7 +225,7 @@ class _SamuraiTitleOptionalMixin(title_list._SamuraiListTitleOptionalMixin[commo
         elif tag == 'disclaimer':
             vals.disclaimer = text
         elif tag == 'copyright':
-            utils.xml.validate_schema(child, {'text': None}, False)
+            xmlutils.validate_schema(child, {'text': None}, False)
             vals.copyright = child.find('text').text
         elif tag == 'screenshots':
             vals.screenshots = [SamuraiTitleScreenshot._parse(screenshot) for screenshot in child.screenshot]
@@ -237,7 +239,7 @@ class _SamuraiTitleOptionalMixin(title_list._SamuraiListTitleOptionalMixin[commo
         elif tag == 'web_sites':
             vals.websites = []
             for website in child.web_site:
-                utils.xml.validate_schema(website, {'name': None, 'url': None, 'official': None}, False)
+                xmlutils.validate_schema(website, {'name': None, 'url': None, 'official': None}, False)
                 vals.websites.append(SamuraiTitleWebsite(
                     website.name.text,
                     website.url.text,
@@ -250,7 +252,7 @@ class _SamuraiTitleOptionalMixin(title_list._SamuraiListTitleOptionalMixin[commo
                 SamuraiTitleLinkedDemo(
                     ids.ContentID(demo.get('id')),
                     demo.name.text,
-                    utils.xml.get_text(demo, 'icon_url')
+                    xmlutils.get_text(demo, 'icon_url')
                 )
                 for demo in child.demo_title
             ]
@@ -270,9 +272,9 @@ class _SamuraiTitleOptionalMixin(title_list._SamuraiListTitleOptionalMixin[commo
 class SamuraiTitleElement(_SamuraiTitleOptionalMixin, _SamuraiTitleBaseMixin):
     @classmethod
     def _parse(cls, xml: lxml.objectify.ObjectifiedElement) -> 'SamuraiTitleElement':
-        vals = utils.dicts.dotdict()
+        vals = utils.misc.dotdict()
 
-        for child, tag, text in utils.xml.iter_children(xml):
+        for child, tag, text in xmlutils.iter_children(xml):
             if _SamuraiTitleBaseMixin._try_parse_value(vals, child, tag, text, {}):
                 pass
             elif _SamuraiTitleOptionalMixin._try_parse_value(
@@ -293,5 +295,5 @@ class SamuraiTitle(BaseTypeLoadable):
     title: SamuraiTitleElement
 
     def _read(self, reader, config):
-        title_xml = utils.xml.load_from_reader(reader, 'title')
+        title_xml = xmlutils.load_from_reader(reader, 'title')
         self.title = SamuraiTitleElement._parse(title_xml)

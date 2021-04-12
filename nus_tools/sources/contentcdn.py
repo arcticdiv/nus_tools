@@ -1,7 +1,7 @@
 from typing import Optional
+from reqcli.source import UnloadableType, BaseSource, SourceConfig, ReqData
 
-from ._base import UnloadableType, BaseSource, SourceConfig
-from .. import reqdata, ids
+from .. import ids
 from ..types.contentcdn import CETK, TMD
 
 
@@ -9,27 +9,27 @@ class _BaseContentSource(BaseSource):
     # /<title id>/cetk
     def get_cetk(self, title_id: ids.TTitleIDInput) -> CETK:
         return self._create_type(
-            reqdata.ReqData(path=f'{ids.TitleID.get_str(title_id)}/cetk'),
+            ReqData(path=f'{ids.TitleID.get_str(title_id)}/cetk'),
             CETK(title_id)
         )
 
     # /<title id>/tmd[.<version>]
     def get_tmd(self, title_id: ids.TTitleIDInput, version: Optional[int] = None) -> TMD:
         return self._create_type(
-            reqdata.ReqData(path=f'{ids.TitleID.get_str(title_id)}/tmd' + (f'.{version}' if version is not None else '')),
+            ReqData(path=f'{ids.TitleID.get_str(title_id)}/tmd' + (f'.{version}' if version is not None else '')),
             TMD(title_id)
         )
 
     # /<title id>/<content id>
     def get_app(self, title_id: ids.TTitleIDInput, content_id: int) -> UnloadableType:
         return self._create_type(
-            reqdata.ReqData(path=f'{ids.TitleID.get_str(title_id)}/{content_id:08x}')  # TODO: uppercase/lowercase?
+            ReqData(path=f'{ids.TitleID.get_str(title_id)}/{content_id:08x}')  # TODO: uppercase/lowercase?
         )
 
     # /<title id>/<content id>.h3
     def get_h3(self, title_id: ids.TTitleIDInput, content_id: int) -> UnloadableType:
         return self._create_type(
-            reqdata.ReqData(path=f'{ids.TitleID.get_str(title_id)}/{content_id:08x}.h3')
+            ReqData(path=f'{ids.TitleID.get_str(title_id)}/{content_id:08x}.h3')
         )
 
 
@@ -53,7 +53,7 @@ class _BaseContentSource(BaseSource):
 class CachedContentServer(_BaseContentSource):
     def __init__(self, config: Optional[SourceConfig] = None):
         super().__init__(
-            reqdata.ReqData(
+            ReqData(
                 path='http://ccs.cdn.c.shop.nintendowifi.net/ccs/download/'
             ),
             config
@@ -63,7 +63,7 @@ class CachedContentServer(_BaseContentSource):
 class UncachedContentServer(_BaseContentSource):
     def __init__(self, config: Optional[SourceConfig] = None):
         super().__init__(
-            reqdata.ReqData(
+            ReqData(
                 path='http://ccs.wup.shop.nintendo.net/ccs/download/'
             ),
             config

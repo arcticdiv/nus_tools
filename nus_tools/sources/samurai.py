@@ -1,10 +1,8 @@
 from typing import Callable, Iterator, Optional, Type, TypeVar, Union, List, Tuple
+from reqcli.source import BaseSource, SourceConfig, ReqData
+from reqcli.utils.typing import RequestDict
 
-from ..utils.typing import RequestDict
-
-from ._base import BaseSource, SourceConfig
 from .. import ids
-from ..reqdata import ReqData
 from ..types.samurai import \
     SamuraiContentsList, \
     SamuraiMovie, SamuraiMoviesList, \
@@ -12,7 +10,7 @@ from ..types.samurai import \
     SamuraiDlcWiiU, SamuraiDlcsWiiU, SamuraiTitleDlcsWiiU, SamuraiTitleDlcs3DS, SamuraiDlcSizes, SamuraiDlcPrices, \
     SamuraiDemo, \
     SamuraiNews, SamuraiTelops
-from ..types.samurai._base import SamuraiListBaseType
+from ..types.samurai.common import SamuraiListBaseType
 from ..types.samurai.title_list import SamuraiListTitle
 from ..types.samurai.title import SamuraiTitleElement
 

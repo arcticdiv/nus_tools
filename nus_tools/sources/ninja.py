@@ -1,14 +1,14 @@
 from typing import Optional, cast
+from reqcli.source import BaseSource, SourceConfig, CertType, ReqData
 
-from ._base import BaseSource, SourceConfig
-from .. import reqdata, ids
+from .. import ids
 from ..types.ninja import NinjaEcInfo, NinjaIDPair
 
 
 class Ninja(BaseSource):
-    def __init__(self, region: str, cert: reqdata.CertType, config: Optional[SourceConfig] = None):
+    def __init__(self, region: str, cert: CertType, config: Optional[SourceConfig] = None):
         super().__init__(
-            reqdata.ReqData(
+            ReqData(
                 path='https://ninja.wup.shop.nintendo.net/ninja/ws/',
                 cert=cert
             ),
@@ -21,7 +21,7 @@ class Ninja(BaseSource):
     # /<region>/title/<id>/ec_info
     def get_ec_info(self, content_id: ids.TContentIDInput) -> NinjaEcInfo:
         return self._create_type(
-            reqdata.ReqData(path=f'{self.region}/title/{ids.ContentID.get_str(content_id)}/ec_info'),
+            ReqData(path=f'{self.region}/title/{ids.ContentID.get_str(content_id)}/ec_info'),
             NinjaEcInfo()
         )
 
@@ -31,7 +31,7 @@ class Ninja(BaseSource):
             raise ValueError('Exactly one of `content_id`/`title_id` must be set')
 
         return self._create_type(
-            reqdata.ReqData(
+            ReqData(
                 path='titles/id_pair',
                 params={'title_id[]': ids.TitleID.get_str(title_id)} if title_id else {'ns_uid[]': ids.ContentID.get_str(cast(ids.TContentIDInput, content_id))}
             ),

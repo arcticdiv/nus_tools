@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from typing import List
 
-from .._base import BaseTypeLoadable
-from ... import utils
+import reqcli.utils.xml as xmlutils
+from reqcli.type import BaseTypeLoadable
 
 
 @dataclass
@@ -26,8 +26,8 @@ class SamuraiNews(BaseTypeLoadable):
     entries: List[SamuraiNewsEntry]
 
     def _read(self, reader, config):
-        news_xml = utils.xml.load_from_reader(reader, 'news')
-        utils.xml.validate_schema(news_xml, {'news_entry': {'headline': None, 'description': None, 'date': None, 'images': {'image': None}}}, True)
+        news_xml = xmlutils.load_from_reader(reader, 'news')
+        xmlutils.validate_schema(news_xml, {'news_entry': {'headline': None, 'description': None, 'date': None, 'images': {'image': None}}}, True)
         self.entries = []
         for entry in news_xml.news_entry:
             if hasattr(entry, 'images'):
@@ -55,6 +55,6 @@ class SamuraiTelops(BaseTypeLoadable):
     entries: List[str]
 
     def _read(self, reader, config):
-        telops_xml = utils.xml.load_from_reader(reader, 'telops')
-        utils.xml.validate_schema(telops_xml, {'telop': None}, True)
+        telops_xml = xmlutils.load_from_reader(reader, 'telops')
+        xmlutils.validate_schema(telops_xml, {'telop': None}, True)
         self.entries = [el.text for el in getattr(telops_xml, 'telop', [])]

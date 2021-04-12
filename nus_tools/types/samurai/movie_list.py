@@ -3,8 +3,9 @@ from dataclasses import dataclass
 from typing import List, Optional, Type, TypeVar, Generic
 from typing_extensions import TypedDict
 
+import reqcli.utils.xml as xmlutils
+
 from . import common
-from ._base import SamuraiListBaseType
 from ... import utils, ids
 
 
@@ -29,10 +30,10 @@ class SamuraiMovieFile:
 
     @classmethod
     def _parse(cls, xml: lxml.objectify.ObjectifiedElement) -> 'SamuraiMovieFile':
-        vals = utils.dicts.dotdict()
+        vals = utils.misc.dotdict()
         vals.quality = xml.get('quality')
 
-        for child, tag, text in utils.xml.iter_children(xml):
+        for child, tag, text in xmlutils.iter_children(xml):
             if tag == 'format':
                 vals.format = text
             elif tag == 'movie_url':
@@ -67,7 +68,7 @@ class _SamuraiListMovieBaseMixin:
     files: List[SamuraiMovieFile]
 
     @classmethod
-    def _try_parse_value(cls, vals: utils.dicts.dotdict, child: lxml.objectify.ObjectifiedElement, tag: str, text: str, custom_types: CustomTypes) -> bool:
+    def _try_parse_value(cls, vals: utils.misc.dotdict, child: lxml.objectify.ObjectifiedElement, tag: str, text: str, custom_types: CustomTypes) -> bool:
         if 'is_new' not in vals:
             xml = child.getparent()
             vals.is_new = utils.misc.get_bool(xml.get('new'))
@@ -93,18 +94,18 @@ class _SamuraiListMovieOptionalMixin(Generic[_TRating]):
     rating_info: Optional[_TRating] = None
 
     @classmethod
-    def _try_parse_value(cls, vals: utils.dicts.dotdict, child: lxml.objectify.ObjectifiedElement, tag: str, text: str, custom_types: CustomTypes) -> bool:
+    def _try_parse_value(cls, vals: utils.misc.dotdict, child: lxml.objectify.ObjectifiedElement, tag: str, text: str, custom_types: CustomTypes) -> bool:
         if tag == 'icon_url':
             vals.icon_url = text
         elif tag == 'banner_url':
             vals.banner_url = text
         elif tag == 'title':
-            utils.xml.validate_schema(child, {'name': None, 'icon_url': None, 'banner_url': None}, True)
+            xmlutils.validate_schema(child, {'name': None, 'icon_url': None, 'banner_url': None}, True)
             vals.title = SamuraiMovieLinkedTitle(
                 child.get('id'),
                 child.name.text,
-                utils.xml.get_text(child, 'icon_url'),
-                utils.xml.get_text(child, 'banner_url')
+                xmlutils.get_text(child, 'icon_url'),
+                xmlutils.get_text(child, 'banner_url')
             )
         elif tag == 'rating_info':
             vals.rating_info = custom_types['rating_info']._parse(child)
@@ -117,9 +118,9 @@ class _SamuraiListMovieOptionalMixin(Generic[_TRating]):
 class SamuraiListMovie(_SamuraiListMovieOptionalMixin[common.SamuraiRating], _SamuraiListMovieBaseMixin):
     @classmethod
     def _parse(cls, xml: lxml.objectify.ObjectifiedElement) -> 'SamuraiListMovie':
-        vals = utils.dicts.dotdict()
+        vals = utils.misc.dotdict()
 
-        for child, tag, text in utils.xml.iter_children(xml):
+        for child, tag, text in xmlutils.iter_children(xml):
             if _SamuraiListMovieBaseMixin._try_parse_value(vals, child, tag, text, {}):
                 pass
             elif _SamuraiListMovieOptionalMixin._try_parse_value(
@@ -135,7 +136,7 @@ class SamuraiListMovie(_SamuraiListMovieOptionalMixin[common.SamuraiRating], _Sa
         return cls(**vals)
 
 
-class SamuraiMoviesList(SamuraiListBaseType):
+class SamuraiMoviesList(common.SamuraiListBaseType):
     movies: List[SamuraiListMovie]
 
     def _read_list(self, xml):

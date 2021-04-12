@@ -1,6 +1,6 @@
 from typing import Any
+from reqcli.type import BaseTypeLoadableConstruct
 
-from .._base import BaseTypeLoadableConstruct
 from ... import structs, ids
 
 

@@ -1,9 +1,7 @@
-requests
-requests-toolbelt
 lxml
-pathvalidate
 construct
 pycryptodome
 typing-extensions
 
 git+https://github.com/shiftinv/construct-utils
+git+https://github.com/shiftinv/reqcli

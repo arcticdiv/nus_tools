@@ -1,7 +1,27 @@
+import abc
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
-from .._base import XmlBaseType
+import reqcli.utils.xml as xmlutils
+from reqcli.type import BaseTypeLoadable, XmlBaseType
+
+
+class SamuraiListBaseType(BaseTypeLoadable, abc.ABC):
+    length: int
+    offset: int
+    total: int
+
+    def _read(self, reader, config):
+        el = xmlutils.load_from_reader(reader)
+        self.length = int(el.get('length'))
+        self.offset = int(el.get('offset'))
+        self.total = int(el.get('total'))
+
+        self._read_list(el)
+
+    @abc.abstractmethod
+    def _read_list(self, xml):
+        pass
 
 
 @dataclass

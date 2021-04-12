@@ -1,16 +1,17 @@
 from typing import Optional
+from reqcli.source import BaseSource, SourceConfig, ReqData
 
-from ._base import BaseSource, SourceConfig
-from .. import reqdata, ids
+from .. import ids
 from ..types.idbe import IDBE
 
 
 class IDBEServer(BaseSource):
     def __init__(self, platform: str, config: Optional[SourceConfig] = None):
+        # platform does not matter, both servers seem to contain the same data
         if platform not in ('wup', 'ctr'):
             raise ValueError('`platform` must be either \'wup\' or \'ctr\'')
         super().__init__(
-            reqdata.ReqData(
+            ReqData(
                 path=f'https://idbe-{platform}.cdn.nintendo.net/icondata/'
             ),
             config,
@@ -26,6 +27,6 @@ class IDBEServer(BaseSource):
         return self._create_type(
             # server seems to ignore first value, it probably doesn't matter what is supplied here
             # based on nn_idbe.rpl .text+0x1d0
-            reqdata.ReqData(path=f'{tid_str[12:14]}/{tid_str}' + (f'-{version}' if version is not None else '') + '.idbe'),
+            ReqData(path=f'{tid_str[12:14]}/{tid_str}' + (f'-{version}' if version is not None else '') + '.idbe'),
             IDBE(title_id)
         )

@@ -1,12 +1,18 @@
-import os
 import functools
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, Any
 
 from .typing import TFuncAny
 
 
-def create_dirs_for_file(file_path: str) -> None:
-    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+class dotdict(Dict[str, Any]):
+    def __getattr__(self, attr):
+        return self.get(attr)
+
+    def __setattr__(self, attr, value):
+        self.__setitem__(attr, value)
+
+    def __delattr__(self, attr):
+        self.__delitem__(attr)
 
 
 def get_bool(text: str) -> bool:

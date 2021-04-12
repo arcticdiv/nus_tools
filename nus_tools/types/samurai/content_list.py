@@ -1,7 +1,7 @@
 from typing import List
 
 from . import movie, title_list
-from ._base import SamuraiListBaseType
+from .common import SamuraiListBaseType
 
 
 class SamuraiContentsList(SamuraiListBaseType):

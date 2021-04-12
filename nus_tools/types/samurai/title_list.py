@@ -3,8 +3,9 @@ from dataclasses import dataclass
 from typing import Generic, List, Optional, Type, TypeVar
 from typing_extensions import TypedDict
 
+import reqcli.utils.xml as xmlutils
+
 from . import common
-from ._base import SamuraiListBaseType
 from ... import utils, ids
 
 
@@ -35,7 +36,7 @@ class _SamuraiListTitleBaseMixin:
     has_iap__inaccurate: bool
 
     @classmethod
-    def _try_parse_value(cls, vals: utils.dicts.dotdict, child: lxml.objectify.ObjectifiedElement, tag: str, text: str, custom_types: CustomTypes) -> bool:
+    def _try_parse_value(cls, vals: utils.misc.dotdict, child: lxml.objectify.ObjectifiedElement, tag: str, text: str, custom_types: CustomTypes) -> bool:
         # kind of hacky, but it works
         if 'is_new' not in vals:
             xml = child.getparent()
@@ -49,7 +50,7 @@ class _SamuraiListTitleBaseMixin:
         elif tag == 'platform':
             vals.platform = common.SamuraiPlatform._parse(child)
         elif tag == 'publisher':
-            utils.xml.validate_schema(child, {'name': None}, False)
+            xmlutils.validate_schema(child, {'name': None}, False)
             vals.publisher = common.IDName(child.get('id'), child.name.text)
         elif tag == 'display_genre':
             vals.genre = text
@@ -91,7 +92,7 @@ class _SamuraiListTitleOptionalMixin(Generic[_TRating, _TStars]):
     # have to specify generic parameters twice: in base class definition and in custom_types parameter;
     # classmethods don't have access to the generic parameters of their classes for some reason, see https://github.com/python/typing/issues/629
     @classmethod
-    def _try_parse_value(cls, vals: utils.dicts.dotdict, child: lxml.objectify.ObjectifiedElement, tag: str, text: str, custom_types: CustomTypes) -> bool:
+    def _try_parse_value(cls, vals: utils.misc.dotdict, child: lxml.objectify.ObjectifiedElement, tag: str, text: str, custom_types: CustomTypes) -> bool:
         if tag == 'icon_url':
             vals.icon_url = text
         elif tag == 'banner_url':
@@ -105,7 +106,7 @@ class _SamuraiListTitleOptionalMixin(Generic[_TRating, _TStars]):
         elif tag == 'release_date_on_retail':
             vals.release_date_retail = text
         elif tag == 'price_on_retail_detail':
-            utils.xml.validate_schema(child, {'amount': None, 'currency': None, 'raw_value': None}, True)
+            xmlutils.validate_schema(child, {'amount': None, 'currency': None, 'raw_value': None}, True)
             vals.price_retail = common.SamuraiPrice(
                 float(child.raw_value.text) if 'TBD' not in child.amount.text else -1.0,
                 child.currency
@@ -119,9 +120,9 @@ class _SamuraiListTitleOptionalMixin(Generic[_TRating, _TStars]):
 class SamuraiListTitle(_SamuraiListTitleOptionalMixin[common.SamuraiRating, common.SamuraiStars], _SamuraiListTitleBaseMixin):
     @classmethod
     def _parse(cls, xml: lxml.objectify.ObjectifiedElement) -> 'SamuraiListTitle':
-        vals = utils.dicts.dotdict()
+        vals = utils.misc.dotdict()
 
-        for child, tag, text in utils.xml.iter_children(xml):
+        for child, tag, text in xmlutils.iter_children(xml):
             if _SamuraiListTitleBaseMixin._try_parse_value(vals, child, tag, text, {}):
                 pass
             elif _SamuraiListTitleOptionalMixin._try_parse_value(
@@ -138,7 +139,7 @@ class SamuraiListTitle(_SamuraiListTitleOptionalMixin[common.SamuraiRating, comm
         return cls(**vals)
 
 
-class SamuraiTitlesList(SamuraiListBaseType):
+class SamuraiTitlesList(common.SamuraiListBaseType):
     titles: List[SamuraiListTitle]
 
     def _read_list(self, xml):

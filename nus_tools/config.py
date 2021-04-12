@@ -1,6 +1,7 @@
 import base64
 from dataclasses import dataclass
 from typing import Tuple
+from reqcli.config import Configuration as ReqCliConfig
 
 
 def _key_dec(val: str) -> bytes:  # tiny amount of obfuscation, seems better this way
@@ -19,10 +20,12 @@ class _Keys:
 
 @dataclass
 class _Configuration:
-    cache_path: str = './cache/'
     keys: _Keys = _Keys()
-    default_user_agent: str = ''  # TODO
-    default_chunk_size: int = 32768
+
+    @property
+    def reqcli_config(self):
+        return ReqCliConfig
 
 
 Configuration = _Configuration()
+# TODO: set user agent
