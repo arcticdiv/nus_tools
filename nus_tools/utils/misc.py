@@ -1,5 +1,5 @@
 import functools
-from typing import TYPE_CHECKING, Dict, Any
+from typing import TYPE_CHECKING, List, Dict, Any
 
 from .typing import TFuncAny
 
@@ -22,6 +22,16 @@ def get_bool(text: str) -> bool:
     elif text in {'false', 'no', 'n', '0'}:
         return False
     raise ValueError(text)
+
+
+def chunk(data: bytes, n: int) -> List[bytes]:
+    if len(data) % n != 0:
+        raise RuntimeError(f'length of data ({len(data)}) is not divisible by chunk size ({n})')
+    return [get_chunk(data, i, n) for i in range(len(data) // n)]
+
+
+def get_chunk(data: bytes, i: int, chunk_size: int) -> bytes:
+    return data[i * chunk_size:(i + 1) * chunk_size]
 
 
 def cache(func: TFuncAny) -> TFuncAny:

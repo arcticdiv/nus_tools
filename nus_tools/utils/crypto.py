@@ -1,6 +1,8 @@
+import hashlib
 from Crypto.Cipher import AES as _AESCrypto
 from Crypto.Cipher._mode_cbc import CbcMode
 from typing import Any, Optional, cast
+from constructutils.checksum import ChecksumVerifyError
 
 from .. import ids
 from ..config import Configuration
@@ -35,3 +37,13 @@ class TitleKey:
         else:
             assert False
         return AES.cbc(common_key, bytes(title_id) + bytes(8))
+
+
+#####
+# checksum stuff
+#####
+
+def verify_sha1(data: bytes, expected_hash: bytes) -> None:
+    digest = hashlib.sha1(data).digest()
+    if digest != expected_hash:
+        raise ChecksumVerifyError('hash mismatch', expected_hash, digest)
