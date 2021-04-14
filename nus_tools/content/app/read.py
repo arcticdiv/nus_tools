@@ -2,13 +2,13 @@ import math
 import hashlib
 from typing import BinaryIO, Iterator, List, Optional, Tuple, Union, cast
 
-from .. import utils
+from ... import utils
 
 
 HASH_TABLES_SIZE = 0x0400
 
 
-class AppReader:
+class AppBlockReader:
     def __init__(self, h3: Optional[Union[BinaryIO, bytes]], app: BinaryIO, content_hash: bytes, real_app_size: int, tmd_app_size: int, verify: bool = True):
         self._app = app
         self._content_hash = content_hash
@@ -21,16 +21,13 @@ class AppReader:
         self._h3_table = self.__get_h3_table(h3, content_hash)
         self._is_hashed = self._h3_table is not None
 
-        self._data_size = 0xfc00  # size of data blocks
-        self._block_size = self._data_size  # size of physical blocks (data or (hash + data))
+        self.data_size = 0xfc00  # size of data blocks
+        self.block_size = self.data_size  # size of physical blocks (data or (hash + data))
         if self._is_hashed:
-            self._block_size += HASH_TABLES_SIZE
+            self.block_size += HASH_TABLES_SIZE
 
         self._curr_block = 0
         self._unhashed_data = None  # type: Optional[List[bytes]]
-
-        self._get_data_cache = None  # type: Optional[bytes]
-        self._get_data_cache_index = -1
 
     def write_all(self, output: BinaryIO) -> None:
         '''
@@ -38,7 +35,7 @@ class AppReader:
         '''
 
         # calculate total number of blocks
-        num_blocks = math.ceil(self._real_app_size / self._block_size)
+        num_blocks = math.ceil(self._real_app_size / self.block_size)
 
         # read and write each block
         for _ in range(num_blocks - self._curr_block):
@@ -52,7 +49,7 @@ class AppReader:
 
         # seek to block (no need to seek for unhashed files, as they're read in one go)
         if self._is_hashed:
-            self._app.seek(block_index * self._block_size)
+            self._app.seek(block_index * self.block_size)
         self._curr_block = block_index
         return self.load_next_block()
 
@@ -66,30 +63,6 @@ class AppReader:
             return self.__load_next_block_hashed()
         else:
             return self.__load_next_block_unhashed()
-
-    def get_data(self, data_offset: int, length: int) -> Iterator[bytes]:
-        def handle_block(block: bytes, start_offset: int) -> bytes:
-            nonlocal length
-            # required length or blocksize, whichever is smaller
-            slice_length = min(length, len(block) - start_offset)
-            length -= slice_length
-            return block[start_offset:start_offset + slice_length]
-
-        block_index = data_offset // self._data_size
-        # load new block if no block is cached or index changed
-        if not self._get_data_cache or block_index != self._get_data_cache_index:
-            self._get_data_cache = self.load_block(block_index)[1]
-            self._get_data_cache_index = block_index
-
-        # add offset in first block
-        offset_in_data = data_offset % self._data_size
-        yield handle_block(self._get_data_cache, offset_in_data)
-
-        # yield blocks until done
-        while length > 0:
-            self._get_data_cache = self.load_next_block()[1]
-            self._get_data_cache_index += 1
-            yield handle_block(self._get_data_cache, 0)
 
     def _read(self, length: int) -> bytes:
         return self._app.read(length)
@@ -126,7 +99,7 @@ class AppReader:
 
         # load content
         self._init_iv(h0_hash[:16])
-        app_data = self._read(self._data_size)
+        app_data = self._read(self.data_size)
         if self._verify:
             utils.crypto.verify_sha1(app_data, h0_hash)
         self._curr_block += 1
@@ -151,10 +124,10 @@ class AppReader:
                 sha1 = hashlib.sha1()
                 sha1_bytes_left = self._tmd_app_size
 
-            num_blocks = math.ceil(self._real_app_size / self._block_size)
+            num_blocks = math.ceil(self._real_app_size / self.block_size)
             for _ in range(num_blocks):
                 # load
-                dec = self._read(self._block_size)
+                dec = self._read(self.block_size)
                 self._unhashed_data.append(dec)
 
                 # update hash
@@ -193,17 +166,33 @@ class AppReader:
         )
 
 
-class AppDecryptor(AppReader):
-    def __init__(self, titlekey_decrypted: bytes, content_index: int, h3: Optional[Union[BinaryIO, bytes]], app: BinaryIO, content_hash: bytes, real_app_size: int, tmd_app_size: int, verify: bool = True):
-        super().__init__(h3, app, content_hash, real_app_size, tmd_app_size, verify)
-        self._titlekey_decrypted = titlekey_decrypted
-        self._content_index = content_index
+class AppDataReader:
+    def __init__(self, block_reader: AppBlockReader):
+        self.block_reader = block_reader
 
-    def _read(self, length: int) -> bytes:
-        return self.__aes.decrypt(super()._read(length))
+        self.__cache = None  # type: Optional[bytes]
+        self.__cache_block_index = -1
 
-    def _init_iv(self, iv: bytes) -> None:
-        self.__aes = utils.crypto.AES.cbc(self._titlekey_decrypted, iv)
+    def get_data(self, data_offset: int, length: int) -> Iterator[bytes]:
+        def handle_block(block: bytes, start_offset: int) -> bytes:
+            nonlocal length
+            # required length or blocksize, whichever is smaller
+            slice_length = min(length, len(block) - start_offset)
+            length -= slice_length
+            return block[start_offset:start_offset + slice_length]
 
-    def _init_iv_unhashed(self) -> None:
-        self._init_iv(self._content_index.to_bytes(2, 'big') + bytes(14))
+        block_index = data_offset // self.block_reader.data_size
+        # load new block if no block is cached or index changed
+        if not self.__cache or block_index != self.__cache_block_index:
+            self.__cache = self.block_reader.load_block(block_index)[1]
+            self.__cache_block_index = block_index
+
+        # add offset in first block
+        offset_in_data = data_offset % self.block_reader.data_size
+        yield handle_block(self.__cache, offset_in_data)
+
+        # yield blocks until done
+        while length > 0:
+            self.__cache = self.block_reader.load_next_block()[1]
+            self.__cache_block_index += 1
+            yield handle_block(self.__cache, 0)

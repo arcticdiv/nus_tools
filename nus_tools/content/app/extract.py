@@ -2,16 +2,16 @@ import os
 import io
 from typing import Any, Dict
 
-from . import decrypt
+from .read import AppBlockReader, AppDataReader
 from .fstprocessor import FSTProcessor, FSTDirectory, FSTFile
-from .. import structs
+from ... import structs
 
 
 class AppExtractor:
-    def __init__(self, fst_reader: decrypt.AppReader, inputs: Dict[int, decrypt.AppReader]):
+    def __init__(self, fst_reader: AppDataReader, inputs: Dict[int, AppDataReader]):
         self.inputs = inputs
 
-        fst = self.__load_fst(fst_reader)
+        fst = self.__load_fst(fst_reader.block_reader)
         self.root = FSTProcessor(fst).get_tree()
 
     def extract(self, target_path: str) -> None:
@@ -42,7 +42,7 @@ class AppExtractor:
             for block in reader.get_data(file.offset, file.size):
                 f.write(block)
 
-    def __load_fst(self, reader: decrypt.AppReader) -> Any:
+    def __load_fst(self, reader: AppBlockReader) -> Any:
         # check first block before loading entire file
         block = reader.load_next_block()[1]
         if block[:4] != b'FST\0':
