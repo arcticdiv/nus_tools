@@ -1,11 +1,7 @@
 from construct import \
-    Struct
-from construct.core import Array, Byte, Bytes, CString, Check, Const, ExprAdapter, Flag, FlagsEnum, IfThenElse, Int16ub, Int24ub, Int32ub, Padding
-from construct.expr import this
-from constructutils import InliningStruct, InlineStruct
-from constructutils.inline import Inline
-
-from . import common
+    Struct, Array, Byte, Bytes, CString, Int16ub, Int24ub, Int32ub, \
+    Const, FlagsEnum, IfThenElse, Padding, Check, this
+from constructutils import InliningStruct, Inline
 
 
 # ref:
