@@ -29,6 +29,9 @@ class AppReader:
         self._curr_block = 0
         self._unhashed_data = None  # type: Optional[List[bytes]]
 
+        self._get_data_cache = None  # type: Optional[bytes]
+        self._get_data_cache_index = -1
+
     def write_all(self, output: BinaryIO) -> None:
         '''
         Writes the entire .app file to the provided output stream
@@ -65,8 +68,6 @@ class AppReader:
             return self.__load_next_block_unhashed()
 
     def get_data(self, data_offset: int, length: int) -> Iterator[bytes]:
-        # TODO: add buffer with previous/current block for sequential reads
-
         def handle_block(block: bytes, start_offset: int) -> bytes:
             nonlocal length
             # required length or blocksize, whichever is smaller
@@ -74,14 +75,21 @@ class AppReader:
             length -= slice_length
             return block[start_offset:start_offset + slice_length]
 
-        # add offset in first block
         block_index = data_offset // self._data_size
+        # load new block if no block is cached or index changed
+        if not self._get_data_cache or block_index != self._get_data_cache_index:
+            self._get_data_cache = self.load_block(block_index)[1]
+            self._get_data_cache_index = block_index
+
+        # add offset in first block
         offset_in_data = data_offset % self._data_size
-        yield handle_block(self.load_block(block_index)[1], offset_in_data)
+        yield handle_block(self._get_data_cache, offset_in_data)
 
         # yield blocks until done
         while length > 0:
-            yield handle_block(self.load_next_block()[1], 0)
+            self._get_data_cache = self.load_next_block()[1]
+            self._get_data_cache_index += 1
+            yield handle_block(self._get_data_cache, 0)
 
     def _read(self, length: int) -> bytes:
         return self._app.read(length)
