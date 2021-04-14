@@ -1,3 +1,4 @@
+import os
 import math
 import hashlib
 from typing import BinaryIO, Iterator, List, Optional, Tuple, Union, cast
@@ -47,10 +48,7 @@ class AppBlockReader:
         Loads a single block at the given index
         '''
 
-        # seek to block (no need to seek for unhashed files, as they're read in one go)
-        if self._is_hashed:
-            self._app.seek(block_index * self.block_size)
-        self._curr_block = block_index
+        self.__seek_to_index(block_index)
         return self.load_next_block()
 
     def load_next_block(self) -> Tuple[bytes, bytes]:
@@ -146,6 +144,38 @@ class AppBlockReader:
         data = self._unhashed_data[self._curr_block]
         self._curr_block += 1
         return (b'', data)
+
+    def __seek_to_index(self, block_index: int) -> None:
+        '''
+        Seeks the underlying stream to the specified block.
+
+        If the stream is not seekable (e.g. HTTP response streams), only
+        forward 'seeking' (by reading and discarding data) is supported
+        '''
+
+        if self._curr_block == block_index:
+            # nothing to be done
+            return
+
+        if not self._is_hashed:
+            # no need to seek for unhashed files, as they're read in one go
+            return
+
+        # seek to block
+        target_offset = block_index * self.block_size
+        if self._app.seekable():
+            # just seek to target
+            self._app.seek(target_offset, os.SEEK_SET)
+        else:
+            if self._app.tell() > target_offset:
+                raise RuntimeError('app stream is not seekable, cannot go backwards')
+            # if not seekable, read until target reached
+            while True:
+                left = target_offset - self._app.tell()
+                if left <= 0:
+                    break
+                # discard data
+                self._app.read(min(left, 32 * 1024))  # 32k, arbitrary maximum chunk size
 
     def __get_h3_table(self, h3: Optional[Union[BinaryIO, bytes]], hash: bytes) -> Optional[bytes]:
         if h3:

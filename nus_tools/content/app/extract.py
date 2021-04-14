@@ -3,7 +3,7 @@ import io
 from typing import Any, Dict
 
 from .read import AppBlockReader, AppDataReader
-from .fstprocessor import FSTProcessor, FSTDirectory, FSTFile
+from .fstprocessor import FSTProcessor
 from ... import structs
 
 
@@ -12,37 +12,43 @@ class AppExtractor:
         self.inputs = inputs
 
         fst = self.__load_fst(fst_reader.block_reader)
-        self.root = FSTProcessor(fst).get_tree()
+        self.directories, files = FSTProcessor(fst).get_flattened()
+
+        # sort files based on offset, which enables extracting non-seekable streams
+        # (sorts globally instead of per .app file (which would suffice), but that doesn't really matter)
+        self.files = sorted(files.items(), key=lambda tup: tup[1].offset)
 
     def extract(self, target_path: str) -> None:
-        self.__extract_directory(target_path, self.root)
+        '''
+        Creates directories and extracts files to the specified path
+        '''
 
-    def __extract_directory(self, outer_path: str, directory: FSTDirectory) -> None:
-        path = os.path.join(outer_path, directory.name)
-        os.makedirs(path, exist_ok=True)
-
-        for entry in directory.children:
-            if entry.deleted:
-                # deleted, skip
+        # create directories
+        for dir_path, dir in self.directories.items():
+            if dir.deleted:
                 continue
+            path = os.path.join(target_path, dir_path)
+            os.makedirs(path, exist_ok=True)
 
-            if isinstance(entry, FSTDirectory):
-                # directory
-                self.__extract_directory(path, entry)
-            else:
-                # file
-                self.__extract_file(path, entry)
+        # extract files
+        for file_path, file in self.files:
+            if file.deleted:
+                continue
+            path = os.path.join(target_path, file_path)
+            print(f'extracting {path} (source: {file.secondary_index}, offset: {file.offset}, size: {file.size})')
 
-    def __extract_file(self, outer_path: str, file: FSTFile) -> None:
-        path = os.path.join(outer_path, file.name)
-        print(f'extracting {path} (source: {file.secondary_index}, offset: {file.offset}, size: {file.size})')
-
-        with open(path, 'wb') as f:
-            reader = self.inputs[file.secondary_index]
-            for block in reader.get_data(file.offset, file.size):
-                f.write(block)
+            with open(path, 'wb') as f:
+                reader = self.inputs[file.secondary_index]
+                for block in reader.get_data(file.offset, file.size):
+                    f.write(block)
 
     def __load_fst(self, reader: AppBlockReader) -> Any:
+        '''
+        Loads the FST from the provided reader
+
+        Raises an exception if the data does not represent a valid FST
+        '''
+
         # check first block before loading entire file
         block = reader.load_next_block()[1]
         if block[:4] != b'FST\0':

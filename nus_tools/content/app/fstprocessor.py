@@ -1,5 +1,6 @@
+import os
 from dataclasses import dataclass
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Tuple, Union
 
 
 @dataclass(frozen=True)
@@ -26,6 +27,34 @@ class FSTProcessor:
         self._offset_factor = fst_struct.offset_factor
         # add root entry to list
         self._entries = (fst_struct.root, *fst_struct.entries)
+
+    def get_flattened(self) -> Tuple[Dict[str, FSTDirectory], Dict[str, FSTFile]]:
+        '''
+        Flattens the FST into two dictionaries containing complete paths
+        and entries for directories and files respectively
+        '''
+
+        directories = {}  # type: Dict[str, FSTDirectory]
+        files = {}  # type: Dict[str, FSTFile]
+
+        def process_file(entry: FSTFile, parent_path: str) -> None:
+            path = os.path.join(parent_path, entry.name)
+            assert path not in files
+            files[path] = entry
+
+        def process_directory(entry: FSTDirectory, parent_path: str) -> None:
+            path = os.path.join(parent_path, entry.name)
+            assert path not in directories
+            directories[path] = entry
+
+            for child in entry.children:
+                if isinstance(child, FSTDirectory):
+                    process_directory(child, path)
+                else:
+                    process_file(child, path)
+
+        process_directory(self.get_tree(), '')
+        return directories, files
 
     def get_tree(self) -> FSTDirectory:
         '''
