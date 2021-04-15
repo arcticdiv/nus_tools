@@ -50,9 +50,15 @@ class AppExtractor:
                     path = os.path.join(target_path, file_path)
                     print(f'extracting {path} (source: {file.secondary_index}, offset: {file.offset}, size: {file.size})')
 
-                    with open(path, 'wb') as f:
-                        for block in reader.get_data(file.offset, file.size):
-                            f.write(block)
+                    try:
+                        with open(path, 'wb') as f:
+                            for block in reader.get_data(file.offset, file.size):
+                                f.write(block)
+                    except Exception:
+                        # remove (incomplete) file if exception was raised
+                        if os.path.isfile(path):
+                            os.unlink(path)
+                        raise
 
     def __load_fst(self, reader: AppBlockReader) -> Any:
         '''
