@@ -1,7 +1,7 @@
 import os
 import math
 import hashlib
-from typing import BinaryIO, Iterator, List, Optional, Tuple, Union, cast
+from typing import BinaryIO, Iterator, List, Optional, Tuple, cast
 
 from ... import utils
 
@@ -10,7 +10,7 @@ HASH_TABLES_SIZE = 0x0400
 
 
 class AppBlockReader:
-    def __init__(self, h3: Optional[Union[BinaryIO, bytes]], app: BinaryIO, content_hash: bytes, real_app_size: int, tmd_app_size: int, verify: bool = True):
+    def __init__(self, h3: Optional[bytes], app: BinaryIO, content_hash: bytes, real_app_size: int, tmd_app_size: int, verify: bool = True):
         self._app = app
         self._content_hash = content_hash
         self._real_app_size = real_app_size
@@ -19,7 +19,9 @@ class AppBlockReader:
 
         assert self._real_app_size >= self._tmd_app_size
 
-        self._h3_table = self.__get_h3_table(h3, content_hash)
+        self._h3_table = h3
+        if self._h3_table and self._verify:
+            utils.crypto.verify_sha1(self._h3_table, content_hash)
         self._is_hashed = self._h3_table is not None
 
         self.data_size = 0xfc00  # size of data blocks
@@ -167,6 +169,7 @@ class AppBlockReader:
             # just seek to target
             self._app.seek(target_offset, os.SEEK_SET)
         else:
+            # TODO: tell() might be inaccurate for compressed HTTP response streams
             if self._app.tell() > target_offset:
                 raise RuntimeError('app stream is not seekable, cannot go backwards')
             # if not seekable, read until target reached
@@ -176,15 +179,6 @@ class AppBlockReader:
                     break
                 # discard data
                 self._app.read(min(left, 32 * 1024))  # 32k, arbitrary maximum chunk size
-
-    def __get_h3_table(self, h3: Optional[Union[BinaryIO, bytes]], hash: bytes) -> Optional[bytes]:
-        if h3:
-            h3_table = h3 if isinstance(h3, bytes) else h3.read()
-            if self._verify:
-                utils.crypto.verify_sha1(h3_table, hash)
-            return h3_table
-        else:
-            return None
 
     @staticmethod
     def __get_hash_table_indices(block_index: int) -> Tuple[int, int, int, int]:

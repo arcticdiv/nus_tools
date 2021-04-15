@@ -1,11 +1,11 @@
-from typing import BinaryIO, Optional, Union
+from typing import BinaryIO, Optional
 
 from .read import AppBlockReader
 from ... import utils
 
 
 class AppDecryptor(AppBlockReader):
-    def __init__(self, titlekey_decrypted: bytes, content_index: int, h3: Optional[Union[BinaryIO, bytes]], app: BinaryIO, content_hash: bytes, real_app_size: int, tmd_app_size: int, verify: bool = True):
+    def __init__(self, titlekey_decrypted: bytes, content_index: int, h3: Optional[bytes], app: BinaryIO, content_hash: bytes, real_app_size: int, tmd_app_size: int, verify: bool = True):
         super().__init__(h3, app, content_hash, real_app_size, tmd_app_size, verify)
         self._titlekey_decrypted = titlekey_decrypted
         self._content_index = content_index
