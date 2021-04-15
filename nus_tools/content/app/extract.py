@@ -11,11 +11,11 @@ class AppExtractor:
     def __init__(self, input_generator: Callable[[int], ContextManager[AppDataReader]], tmd_contents: List[Any]):
         self.input_generator = input_generator
 
-        with input_generator(tmd_contents[0].id) as fst_reader:
+        with input_generator(tmd_contents[0].index) as fst_reader:
             fst = self.__load_fst(fst_reader.block_reader)
         self.directories, files = FSTProcessor(fst).get_flattened()
 
-        # sorts and groups files by their secondary index (~ app file ID),
+        # groups files by their secondary index (~ app file),
         # then sorts the files in each of those groups by their offsets
         self.content_files_map = {
             secondary_index: sorted(group, key=lambda tup: tup[1].offset)
@@ -25,8 +25,8 @@ class AppExtractor:
 
         # sanity check
         for secondary_index in self.content_files_map.keys():
-            if not any(e.id == secondary_index for e in tmd_contents):
-                raise RuntimeError(f'TMD does not contain content entry for ID {secondary_index} from FST')
+            if not any(e.index == secondary_index for e in tmd_contents):
+                raise RuntimeError(f'TMD does not contain content entry for index {secondary_index} from FST')
 
     def extract(self, target_path: str) -> None:
         '''
@@ -48,7 +48,7 @@ class AppExtractor:
                     if file.deleted:
                         continue
                     path = os.path.join(target_path, file_path)
-                    print(f'extracting {path} (source: {file.secondary_index}, offset: {file.offset}, size: {file.size})')
+                    print(f'extracting {path} (source: {file.secondary_index:08x}, offset: {file.offset}, size: {file.size})')
 
                     try:
                         with open(path, 'wb') as f:
