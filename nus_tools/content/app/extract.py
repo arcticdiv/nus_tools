@@ -1,22 +1,32 @@
 import os
 import io
-from typing import Any, Dict
+from typing import Any, Callable, ContextManager, List
 
 from .read import AppBlockReader, AppDataReader
 from .fstprocessor import FSTProcessor
-from ... import structs
+from ... import structs, utils
 
 
 class AppExtractor:
-    def __init__(self, fst_reader: AppDataReader, inputs: Dict[int, AppDataReader]):
-        self.inputs = inputs
+    def __init__(self, input_generator: Callable[[int], ContextManager[AppDataReader]], tmd_contents: List[Any]):
+        self.input_generator = input_generator
 
-        fst = self.__load_fst(fst_reader.block_reader)
+        with input_generator(tmd_contents[0].id) as fst_reader:
+            fst = self.__load_fst(fst_reader.block_reader)
         self.directories, files = FSTProcessor(fst).get_flattened()
 
-        # sort files based on offset, which enables extracting non-seekable streams
-        # (sorts globally instead of per .app file (which would suffice), but that doesn't really matter)
-        self.files = sorted(files.items(), key=lambda tup: tup[1].offset)
+        # sorts and groups files by their secondary index (~ app file ID),
+        # then sorts the files in each of those groups by their offsets
+        self.content_files_map = {
+            secondary_index: sorted(group, key=lambda tup: tup[1].offset)
+            for secondary_index, group
+            in utils.misc.groupby_sorted(files.items(), key=lambda tup: tup[1].secondary_index)
+        }
+
+        # sanity check
+        for secondary_index in self.content_files_map.keys():
+            if not any(e.id == secondary_index for e in tmd_contents):
+                raise RuntimeError(f'TMD does not contain content entry for ID {secondary_index} from FST')
 
     def extract(self, target_path: str) -> None:
         '''
@@ -31,16 +41,18 @@ class AppExtractor:
             os.makedirs(path, exist_ok=True)
 
         # extract files
-        for file_path, file in self.files:
-            if file.deleted:
-                continue
-            path = os.path.join(target_path, file_path)
-            print(f'extracting {path} (source: {file.secondary_index}, offset: {file.offset}, size: {file.size})')
+        for secondary_index, files in self.content_files_map.items():
+            # open .app files one by one and close them once done, avoids timeouts with streaming HTTP responses
+            with self.input_generator(secondary_index) as reader:
+                for file_path, file in files:
+                    if file.deleted:
+                        continue
+                    path = os.path.join(target_path, file_path)
+                    print(f'extracting {path} (source: {file.secondary_index}, offset: {file.offset}, size: {file.size})')
 
-            with open(path, 'wb') as f:
-                reader = self.inputs[file.secondary_index]
-                for block in reader.get_data(file.offset, file.size):
-                    f.write(block)
+                    with open(path, 'wb') as f:
+                        for block in reader.get_data(file.offset, file.size):
+                            f.write(block)
 
     def __load_fst(self, reader: AppBlockReader) -> Any:
         '''
