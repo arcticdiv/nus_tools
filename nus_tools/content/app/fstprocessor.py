@@ -1,12 +1,17 @@
 import os
+import io
 from dataclasses import dataclass
 from typing import Any, Dict, List, Tuple, Union
+
+from .read import AppBlockReader
+from ... import structs
 
 
 @dataclass(frozen=True)
 class _FSTEntry:
     name: str
     deleted: bool
+    secondary_index: int
 
 
 @dataclass(frozen=True)
@@ -18,7 +23,6 @@ class FSTDirectory(_FSTEntry):
 class FSTFile(_FSTEntry):
     offset: int
     size: int
-    secondary_index: int
 
 
 class FSTProcessor:
@@ -28,11 +32,36 @@ class FSTProcessor:
         # add root entry to list
         self._entries = (fst_struct.root, *fst_struct.entries)
 
-    def get_flattened(self) -> Tuple[Dict[str, FSTDirectory], Dict[str, FSTFile]]:
+    @classmethod
+    def try_load(cls, reader: AppBlockReader) -> 'FSTProcessor':
+        '''
+        Loads the FST from the provided reader
+
+        Raises an exception if the data does not represent a valid FST
+        '''
+
+        # check first block before loading entire file
+        block = reader.load_next_block()[1]
+        if block[:4] != b'FST\0':
+            raise RuntimeError('first input does not contain FST')
+
+        # write previously read block to stream, then read remaining blocks
+        fst_stream = io.BytesIO()
+        fst_stream.write(block)
+        reader.write_all(fst_stream)
+        fst_stream.seek(0, os.SEEK_SET)
+
+        # parse FST from stream
+        return cls(structs.fst.parse_stream(fst_stream))
+
+    @classmethod
+    def flatten(cls, tree: FSTDirectory) -> Tuple[Dict[str, FSTDirectory], Dict[str, FSTFile]]:
         '''
         Flattens the FST into two dictionaries containing complete paths
         and entries for directories and files respectively
         '''
+
+        # TODO: this is pretty resource-intensive, especially regarding memory usage
 
         directories = {}  # type: Dict[str, FSTDirectory]
         files = {}  # type: Dict[str, FSTFile]
@@ -53,7 +82,7 @@ class FSTProcessor:
                 else:
                     process_file(child, path)
 
-        process_directory(self.get_tree(), '')
+        process_directory(tree, '')
         return directories, files
 
     def get_tree(self) -> FSTDirectory:
@@ -91,6 +120,7 @@ class FSTProcessor:
         return FSTDirectory(
             self._name_map[dir_entry.name_offset],
             dir_entry.type.deleted,
+            dir_entry.secondary_index,
             children
         )
 
@@ -110,9 +140,9 @@ class FSTProcessor:
         return FSTFile(
             self._name_map[entry.name_offset],
             entry.type.deleted,
+            entry.secondary_index,
             offset,
-            entry.size,
-            entry.secondary_index
+            entry.size
         )
 
     def __get_names(self, fst_struct: Any) -> Dict[int, str]:
