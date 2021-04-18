@@ -21,10 +21,10 @@ class _BaseContentSource(BaseSource):
         )
 
     # /<title id>/<content id>
-    def get_app(self, title_id: ids.TTitleIDInput, content_id: int, *, skip_store_to_cache: bool = True) -> UnloadableType:
+    def get_app(self, title_id: ids.TTitleIDInput, content_id: int, *, skip_cache: bool = True) -> UnloadableType:
         return self._create_type(
             ReqData(path=f'{ids.TitleID.get_str(title_id)}/{content_id:08x}'),  # TODO: uppercase/lowercase?
-            skip_store_to_cache=skip_store_to_cache
+            skip_cache=skip_cache
         )
 
     # /<title id>/<content id>.h3
