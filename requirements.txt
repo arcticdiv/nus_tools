@@ -3,5 +3,5 @@ construct
 pycryptodome
 typing-extensions
 
-git+https://github.com/shiftinv/construct-utils
-git+https://github.com/shiftinv/reqcli
+construct-utils @ git+https://github.com/shiftinv/construct-utils
+reqcli @ git+https://github.com/shiftinv/reqcli
