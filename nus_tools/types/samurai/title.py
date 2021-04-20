@@ -295,5 +295,5 @@ class SamuraiTitle(BaseTypeLoadable):
     title: SamuraiTitleElement
 
     def _read(self, reader, config):
-        title_xml = xmlutils.load_from_reader(reader, 'title')
+        title_xml = xmlutils.load_root(reader, 'title')
         self.title = SamuraiTitleElement._parse(title_xml)

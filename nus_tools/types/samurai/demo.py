@@ -12,7 +12,7 @@ class SamuraiDemo(BaseTypeLoadable):
     icon_url: Optional[str] = None
 
     def _read(self, reader, config):
-        content = xmlutils.load_from_reader(reader, 'content')
+        content = xmlutils.load_root(reader, 'content')
         assert len(content.getchildren()) == 1
         demo = content.demo
 

@@ -35,7 +35,7 @@ class SamuraiDlcsBase(Generic[_TDlc], BaseTypeLoadable):
 
 class SamuraiTitleDlcsBase(SamuraiDlcsBase[_TDlc]):
     def _read(self, reader, config):
-        title_xml = xmlutils.load_from_reader(reader, 'title')
+        title_xml = xmlutils.load_root(reader, 'title')
         self._read_title(title_xml)
 
     @abc.abstractmethod
@@ -116,7 +116,7 @@ class SamuraiDlcsWiiUBase(SamuraiDlcsBase[SamuraiDlcWiiU]):
 
 class SamuraiDlcsWiiU(SamuraiDlcsWiiUBase):
     def _read(self, reader, config):
-        aocs = xmlutils.load_from_reader(reader, 'aocs')
+        aocs = xmlutils.load_root(reader, 'aocs')
         self._read_dlcs(aocs)
 
 
@@ -124,7 +124,7 @@ class SamuraiDlcSizes(BaseTypeLoadable):
     sizes: Dict[ids.ContentID, int]
 
     def _read(self, reader, config):
-        aocs = xmlutils.load_from_reader(reader, 'aocs')
+        aocs = xmlutils.load_root(reader, 'aocs')
         xmlutils.validate_schema(aocs, {'aoc': {'data_size': None}}, False)
 
         self.sizes = {ids.ContentID(aoc.get('id')): int(aoc.data_size.text) for aoc in aocs.aoc}
@@ -141,7 +141,7 @@ class SamuraiDlcPrices(BaseTypeLoadable):
     prices: Dict[ids.ContentID, SamuraiDlcPrice]
 
     def _read(self, reader, config):
-        prices = xmlutils.load_from_reader(reader, 'online_prices')
+        prices = xmlutils.load_root(reader, 'online_prices')
         xmlutils.validate_schema(prices, {'online_price': {'aoc_id': None, 'eshop_sales_status': None, 'price': {'regular_price': {'amount': None, 'currency': None, 'raw_value': None}}}}, False)
 
         self.prices = {}

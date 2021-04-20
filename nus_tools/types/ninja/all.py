@@ -11,7 +11,7 @@ class NinjaEcInfo(BaseTypeLoadable):
     download_disabled: bool
 
     def _read(self, reader, config):
-        ec_info = xmlutils.load_from_reader(reader, 'title_ec_info')
+        ec_info = xmlutils.load_root(reader, 'title_ec_info')
         xmlutils.validate_schema(ec_info, {'title_id': None, 'content_size': None, 'title_version': None, 'disable_download': None}, False)
 
         self.title_id = ids.TitleID(ec_info.title_id.text)
@@ -25,7 +25,7 @@ class NinjaIDPair(BaseTypeLoadable):
     title_id: ids.TitleID
 
     def _read(self, reader, config):
-        pairs = xmlutils.load_from_reader(reader, 'title_id_pairs')
+        pairs = xmlutils.load_root(reader, 'title_id_pairs')
         assert len(pairs.getchildren()) == 1
         xmlutils.validate_schema(pairs, {'title_id_pair': {'ns_uid': None, 'title_id': None, 'type': None}}, False)
         pair = pairs.title_id_pair

@@ -12,7 +12,7 @@ class SamuraiListBaseType(BaseTypeLoadable, abc.ABC):
     total: int
 
     def _read(self, reader, config):
-        el = xmlutils.load_from_reader(reader)
+        el = xmlutils.load_root(reader)
         self.length = int(el.get('length'))
         self.offset = int(el.get('offset'))
         self.total = int(el.get('total'))

@@ -55,5 +55,5 @@ class SamuraiMovie(BaseTypeLoadable):
     movie: SamuraiMovieElement
 
     def _read(self, reader, config):
-        movie_xml = xmlutils.load_from_reader(reader, 'movie')
+        movie_xml = xmlutils.load_root(reader, 'movie')
         self.movie = SamuraiMovieElement._parse(movie_xml)

@@ -26,7 +26,7 @@ class SamuraiNews(BaseTypeLoadable):
     entries: List[SamuraiNewsEntry]
 
     def _read(self, reader, config):
-        news_xml = xmlutils.load_from_reader(reader, 'news')
+        news_xml = xmlutils.load_root(reader, 'news')
         xmlutils.validate_schema(news_xml, {'news_entry': {'headline': None, 'description': None, 'date': None, 'images': {'image': None}}}, True)
         self.entries = []
         for entry in news_xml.news_entry:
@@ -55,6 +55,6 @@ class SamuraiTelops(BaseTypeLoadable):
     entries: List[str]
 
     def _read(self, reader, config):
-        telops_xml = xmlutils.load_from_reader(reader, 'telops')
+        telops_xml = xmlutils.load_root(reader, 'telops')
         xmlutils.validate_schema(telops_xml, {'telop': None}, True)
         self.entries = [el.text for el in getattr(telops_xml, 'telop', [])]
