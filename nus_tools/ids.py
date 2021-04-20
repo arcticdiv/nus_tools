@@ -216,3 +216,6 @@ class ContentID:
     @staticmethod
     def get_inst(val: TContentIDInput) -> 'ContentID':
         return ContentID(val) if isinstance(val, str) else val
+
+
+AnyPlatform = Union[TitlePlatform, ContentPlatform]

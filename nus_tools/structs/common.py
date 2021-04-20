@@ -3,7 +3,7 @@ from construct import \
     Construct, Struct, Int32ub, Bytes, \
     PaddedString, Aligned, ExprAdapter, this
 from constructutils import EnumConvert, SwitchNoDefault, StrictGreedyRange
-from typing import Callable, Union
+from typing import Callable
 
 from .. import ids
 
@@ -86,7 +86,7 @@ class PlatformSpecific:
         self._3ds = func(False)
         self.wiiu = func(True)
 
-    def get(self, platform: Union[ids.TitlePlatform, ids.ContentPlatform]) -> Construct:
+    def get(self, platform: ids.AnyPlatform) -> Construct:
         return {
             ids.TitlePlatform._3DS: self._3ds,
             ids.ContentPlatform._3DS: self._3ds,
