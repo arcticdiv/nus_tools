@@ -10,8 +10,8 @@ class AppDecryptor(AppBlockReader):
         self._titlekey_decrypted = titlekey_decrypted
         self._content_index = content_index
 
-    def _read(self, length: int) -> bytes:
-        return self.__aes.decrypt(super()._read(length))
+    def _read(self, length: int, check_length: bool = True) -> bytes:
+        return self.__aes.decrypt(super()._read(length, check_length))
 
     def _init_iv(self, iv: bytes) -> None:
         self.__aes = utils.crypto.AES.cbc(self._titlekey_decrypted, iv)

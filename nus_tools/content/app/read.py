@@ -64,10 +64,13 @@ class AppBlockReader:
         else:
             return self.__load_next_block_unhashed()
 
-    def _read(self, length: int) -> bytes:
-        return self._app.read(length)
+    def _read(self, length: int, check_length: bool = True) -> bytes:
+        data = self._app.read(length)
+        if check_length:
+            assert len(data) == length
+        return data
 
-    def _init_iv(self, h0_hash: bytes) -> None:
+    def _init_iv(self, iv: bytes) -> None:
         pass
 
     def _init_iv_unhashed(self) -> None:
@@ -125,9 +128,9 @@ class AppBlockReader:
                 sha1_bytes_left = self._tmd_app_size
 
             num_blocks = math.ceil(self._real_app_size / self.block_size)
-            for _ in range(num_blocks):
+            for i in range(num_blocks):
                 # load
-                dec = self._read(self.block_size)
+                dec = self._read(self.block_size, i != num_blocks - 1)
                 self._unhashed_data.append(dec)
 
                 # update hash

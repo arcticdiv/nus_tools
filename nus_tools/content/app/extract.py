@@ -18,6 +18,14 @@ class AppExtractor:
             utils.misc.groupby_sorted(files.items(), key=lambda tup: tup[1].secondary_index)
         }
 
+    def is_required(self, content_index: int) -> bool:
+        '''
+        Returns true if the app file with the provided index contains any
+        data specified in the FST (i.e. contains relevant data for unpacking)
+        '''
+
+        return content_index in self.files
+
     def create_directories(self, target_path: str) -> None:
         '''
         Creates directories used by the content file at the given index to the specified path
