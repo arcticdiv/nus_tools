@@ -1,8 +1,8 @@
 from enum import IntEnum
 from construct import \
     Construct, Struct, Int32ub, Bytes, \
-    PaddedString, Aligned, ExprAdapter, Array
-from constructutils import InliningStruct, EnumConvert, SwitchNoDefault
+    PaddedString, Aligned, ExprAdapter, this
+from constructutils import EnumConvert, SwitchNoDefault, StrictGreedyRange
 from typing import Callable, Union
 
 from .. import ids
@@ -47,15 +47,14 @@ signature = Aligned(0x40, Struct(
     'type' / EnumConvert(Int32ub, SignatureType),
     'data' / Bytes(lambda this: this.type.signature_alg.mod_size)
 ))
-# TODO: maybe use GreedyRange instead of Array, since only CDN files contain certificates
-certificates = Array(2, Aligned(0x40, InliningStruct(
+certificates = StrictGreedyRange(Aligned(0x40, Struct(
     'signature' / signature,
     'issuer' / PaddedString(0x40, 'ascii'),
     'key_type' / EnumConvert(Int32ub, SignatureAlgorithm),
     'name' / PaddedString(0x40, 'ascii'),
     '_unk1' / Int32ub,  # might be a timestamp?
     'key' / SwitchNoDefault(
-        lambda this: this.key_type,
+        this.key_type,
         {
             SignatureAlgorithm.RSA4096: Struct(
                 'modulus' / Bytes(lambda this: this._.key_type.mod_size),
