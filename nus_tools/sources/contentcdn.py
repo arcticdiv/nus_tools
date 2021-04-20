@@ -2,15 +2,15 @@ from typing import Optional
 from reqcli.source import UnloadableType, BaseSource, SourceConfig, ReqData
 
 from .. import ids
-from ..types.contentcdn import CETK, TMD
+from ..types.contentcdn import Ticket, TMD
 
 
 class _BaseContentSource(BaseSource):
     # /<title id>/cetk
-    def get_cetk(self, title_id: ids.TTitleIDInput) -> CETK:
+    def get_cetk(self, title_id: ids.TTitleIDInput) -> Ticket:
         return self._create_type(
             ReqData(path=f'{ids.TitleID.get_str(title_id)}/cetk'),
-            CETK(title_id)
+            Ticket(title_id)
         )
 
     # /<title id>/tmd[.<version>]

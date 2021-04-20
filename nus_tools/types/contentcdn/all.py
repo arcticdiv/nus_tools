@@ -4,12 +4,12 @@ from reqcli.type import BaseTypeLoadableConstruct
 from ... import structs, ids
 
 
-class CETK(BaseTypeLoadableConstruct):
+class Ticket(BaseTypeLoadableConstruct):
     data: Any
 
     def __init__(self, title_id: ids.TTitleIDInput):
         self.__title_id = ids.TitleID.get_inst(title_id)
-        super().__init__(structs.cetk)
+        super().__init__(structs.ticket)
 
     def _read(self, reader, config):
         raw_data = reader.read()

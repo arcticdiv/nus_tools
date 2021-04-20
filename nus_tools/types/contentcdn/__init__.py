@@ -1,1 +1,1 @@
-from .all import CETK, TMD
+from .all import Ticket, TMD
