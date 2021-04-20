@@ -34,7 +34,7 @@ class AppExtractor:
         for dir_path, dir in self.directories.items():
             if dir.deleted:
                 continue
-            path = os.path.join(target_path, dir_path)
+            path = self.__join_path(target_path, dir_path)
             print(f'creating directory {path} (source index: {dir.secondary_index})')
             os.makedirs(path, exist_ok=True)
 
@@ -46,8 +46,8 @@ class AppExtractor:
         for file_path, file in self.files[content_index]:
             if file.deleted:
                 continue
-            path = os.path.join(target_path, file_path)
-            print(f'extracting {path} (source index: {file.secondary_index}, offset: {file.offset}, size: {file.size})')
+            path = self.__join_path(target_path, file_path)
+            print(f'extracting {file_path} (source index: {file.secondary_index}, offset: {file.offset}, size: {file.size})')
 
             try:
                 with open(path, 'wb') as f:
@@ -58,3 +58,13 @@ class AppExtractor:
                 if os.path.isfile(path):
                     os.unlink(path)
                 raise
+
+    @staticmethod
+    def __join_path(target_path: str, other_path: str) -> str:
+        path = os.path.join(target_path, other_path)
+
+        # make sure resulting path is inside target path
+        target_path_real = os.path.realpath(target_path)
+        assert os.path.commonprefix((os.path.realpath(path), target_path_real)) == target_path_real
+
+        return path
