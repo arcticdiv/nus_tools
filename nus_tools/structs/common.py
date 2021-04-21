@@ -24,6 +24,18 @@ class SignatureAlgorithm(IntEnum):
             SignatureAlgorithm.ECDSA: 0x3c
         }[self]
 
+    @property
+    def construct(self) -> Construct:
+        if self in (SignatureAlgorithm.RSA4096, SignatureAlgorithm.RSA2048):
+            return Struct(
+                'modulus' / Bytes(self.mod_size),
+                'exponent' / Int32ub
+            )
+        elif self == SignatureAlgorithm.ECDSA:
+            return Bytes(self.mod_size)
+        else:
+            assert False
+
 
 # ref: https://www.3dbrew.org/wiki/Certificates#Signature
 class SignatureType(IntEnum):
@@ -55,17 +67,7 @@ certificates = StrictGreedyRange(Aligned(0x40, Struct(
     '_unk1' / Int32ub,  # might be a timestamp?
     'key' / SwitchNoDefault(
         this.key_type,
-        {
-            SignatureAlgorithm.RSA4096: Struct(
-                'modulus' / Bytes(lambda this: this._.key_type.mod_size),
-                'exponent' / Int32ub
-            ),
-            SignatureAlgorithm.RSA2048: Struct(
-                'modulus' / Bytes(lambda this: this._.key_type.mod_size),
-                'exponent' / Int32ub
-            ),
-            SignatureAlgorithm.ECDSA: Bytes(lambda this: this._.key_type.mod_size)
-        }
+        {t: t.construct for t in SignatureAlgorithm}
     )
 )))
 
