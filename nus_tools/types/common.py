@@ -27,7 +27,13 @@ class SignatureHandler:
             else:
                 raise RuntimeError(msg)
 
-        utils.crypto.verify_chain(data, issuer, signature_struct, certificate_structs, root_key)
+        try:
+            utils.crypto.verify_chain(data, issuer, signature_struct, certificate_structs, root_key)
+        except utils.crypto.MissingCertError as e:
+            if verify is None:
+                print(str(e) + ' - skipping signature verification')
+            else:
+                raise
 
     @classmethod
     def get_root_key(cls) -> Optional[Any]:

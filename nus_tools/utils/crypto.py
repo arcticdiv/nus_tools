@@ -63,6 +63,10 @@ class SignatureError(Exception):
     pass
 
 
+class MissingCertError(Exception):
+    pass
+
+
 def verify_signature(data: bytes, signature_struct: Any, key_struct: Any) -> bool:
     # TODO: ecdsa
     if signature_struct.type.signature_alg not in (SignatureAlgorithm.RSA4096, SignatureAlgorithm.RSA2048):
@@ -103,7 +107,7 @@ def verify_chain(data: bytes, issuer: str, signature_struct: Any, certificate_st
         raise RuntimeError('topmost certificate in chain must be \'Root\'')
     for part in issuer_parts[1:]:
         if part not in certificates:
-            raise RuntimeError(f'missing certificate: {part!r}')
+            raise MissingCertError(f'missing certificate: {part!r}')
 
     # iterate chain
     while True:
