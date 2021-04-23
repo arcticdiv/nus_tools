@@ -11,6 +11,7 @@ from Crypto.Hash import SHA1, SHA256
 
 from .. import ids
 from ..config import Configuration
+from ..structs.common import SignatureAlgorithm
 
 
 class AES:
@@ -62,8 +63,11 @@ class SignatureError(Exception):
     pass
 
 
-# TODO: ecdsa
 def verify_signature(data: bytes, signature_struct: Any, key_struct: Any) -> bool:
+    # TODO: ecdsa
+    if signature_struct.type.signature_alg not in (SignatureAlgorithm.RSA4096, SignatureAlgorithm.RSA2048):
+        raise NotImplementedError('currently only 2048/4096-bit RSA is implemented')
+
     # create signer from public key
     signer = pkcs1_15.new(_RSA.construct((
         int.from_bytes(key_struct.modulus, byteorder='big'),
