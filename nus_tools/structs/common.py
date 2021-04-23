@@ -2,7 +2,10 @@ from enum import IntEnum
 from construct import \
     Construct, Struct, Int32ub, Bytes, \
     PaddedString, Aligned, ExprAdapter, this
-from constructutils import EnumConvert, SwitchNoDefault, StrictGreedyRange
+from constructutils import \
+    EnumConvert, SwitchNoDefault, StrictGreedyRange, \
+    InliningStruct, InlineStruct, \
+    AttributeRawCopy
 from typing import Callable
 
 from .. import ids
@@ -25,7 +28,7 @@ class SignatureAlgorithm(IntEnum):
         }[self]
 
     @property
-    def construct(self) -> Construct:
+    def key_construct(self) -> Construct:
         if self in (SignatureAlgorithm.RSA4096, SignatureAlgorithm.RSA2048):
             return Struct(
                 'modulus' / Bytes(self.mod_size),
@@ -59,17 +62,19 @@ signature = Aligned(0x40, Struct(
     'type' / EnumConvert(Int32ub, SignatureType),
     'data' / Bytes(lambda this: this.type.signature_alg.mod_size)
 ))
-certificates = StrictGreedyRange(Aligned(0x40, Struct(
+certificates = StrictGreedyRange(InliningStruct(
     'signature' / signature,
-    'issuer' / PaddedString(0x40, 'ascii'),
-    'key_type' / EnumConvert(Int32ub, SignatureAlgorithm),
-    'name' / PaddedString(0x40, 'ascii'),
-    '_unk1' / Int32ub,  # might be a timestamp?
-    'key' / SwitchNoDefault(
-        this.key_type,
-        {t: t.construct for t in SignatureAlgorithm}
-    )
-)))
+    '__raw_cert__' @ AttributeRawCopy(Aligned(0x40, InlineStruct(
+        'issuer' / PaddedString(0x40, 'ascii'),
+        'key_type' / EnumConvert(Int32ub, SignatureAlgorithm),
+        'name' / PaddedString(0x40, 'ascii'),
+        '_unk1' / Int32ub,  # might be a timestamp?
+        'key' / SwitchNoDefault(
+            this.key_type,
+            {t: t.key_construct for t in SignatureAlgorithm}
+        )
+    )))
+))
 
 
 TitleID = ExprAdapter(
