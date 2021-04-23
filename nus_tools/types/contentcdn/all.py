@@ -1,6 +1,7 @@
 from typing import Any, Optional, Union, overload
 from reqcli.type import BaseTypeLoadableConstruct
 
+from .. import common
 from ... import structs, ids
 
 
@@ -53,3 +54,11 @@ class TMD(BaseTypeLoadableConstruct):
         if self.__title_id:
             # sanity check
             assert self.data.title_id == self.__title_id
+
+        common.SignatureHandler.maybe_verify(
+            config,
+            self.data.__raw_header__,
+            self.data.issuer,
+            self.data.signature,
+            self.data.certificates
+        )

@@ -60,6 +60,7 @@ class _Keys:
 
 class _Configuration:
     keys: _Keys = _Keys()
+    root_signature_key_file: Optional[str] = None
 
     @property
     def reqcli_config(self):

@@ -2,7 +2,9 @@ import hashlib
 from construct import \
     Struct, Int64ub, Int32ub, Int16ub, Bytes, Byte, Array, \
     Hex, PaddedString, Padding, Padded, FlagsEnum, IfThenElse, Terminated, this
-from constructutils import ChecksumRaw, ChecksumValue, ChecksumSourceData, VerifyOrWriteChecksums
+from constructutils import \
+    ChecksumRaw, ChecksumValue, ChecksumSourceData, VerifyOrWriteChecksums, \
+    InliningStruct, InlineStruct, AttributeRawCopy
 
 from . import common
 
@@ -21,24 +23,26 @@ def __get_struct(is_wiiu: bool) -> Struct:
         system_version = Hex(Bytes(8))
         app_type = ['_unk2' / Bytes(0x3e)]
 
-    return Struct(
+    return InliningStruct(
         'signature' / common.signature,
-        'issuer' / PaddedString(0x40, 'ascii'),
-        'version' / Byte,
-        'ca_crl_version' / Byte,
-        'signer_crl_version' / Byte,
-        '_unk1' / Bytes(1),
-        'system_version' / system_version,
-        'title_id' / common.TitleID,
-        'title_type' / Hex(Bytes(4)),
-        'group_id' / Hex(Bytes(2)),
-        *app_type,
-        'access_rights' / Hex(Bytes(4)),
-        'title_version' / Int16ub,
-        'content_count' / Int16ub,
-        'boot_index' / Int16ub,
-        Padding(2),
-        'content_info_sha256' / ChecksumValue(hashlib.sha256, this.content_info),
+        '__raw_header__' @ AttributeRawCopy(InlineStruct(
+            'issuer' / PaddedString(0x40, 'ascii'),
+            'version' / Byte,
+            'ca_crl_version' / Byte,
+            'signer_crl_version' / Byte,
+            '_unk1' / Bytes(1),
+            'system_version' / system_version,
+            'title_id' / common.TitleID,
+            'title_type' / Hex(Bytes(4)),
+            'group_id' / Hex(Bytes(2)),
+            *app_type,
+            'access_rights' / Hex(Bytes(4)),
+            'title_version' / Int16ub,
+            'content_count' / Int16ub,
+            'boot_index' / Int16ub,
+            Padding(2),
+            'content_info_sha256' / ChecksumValue(hashlib.sha256, this._.content_info)
+        )),
         'content_info' / ChecksumSourceData(Array(64, Struct(
             'content_index' / Int16ub,
             'content_count' / Int16ub,

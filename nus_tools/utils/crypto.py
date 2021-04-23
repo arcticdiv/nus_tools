@@ -116,7 +116,7 @@ def verify_chain(data: bytes, issuer: str, signature_struct: Any, certificate_st
 
         # do the thing
         if not verify_signature(data, signature_struct, issuer_key):
-            raise SignatureError(f'invalid signature for data {data[:32]!r}[...] by {issuer_cert.name}')
+            raise SignatureError(f'invalid signature for data {data[:32]!r}[...] by {issuer_part}')
 
         # if issuer is 'Root' and the signature is valid, we're done
         if issuer_part == 'Root':
