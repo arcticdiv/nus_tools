@@ -20,6 +20,14 @@ class Ticket(BaseTypeLoadableConstruct):
             # sanity check
             assert self.data.title_id == self.__title_id
 
+        common.SignatureHandler.maybe_verify(
+            config,
+            self.data.__raw_signed__,
+            self.data.issuer,
+            self.data.signature,
+            self.data.certificates
+        )
+
 
 class TMD(BaseTypeLoadableConstruct):
     data: Any
@@ -57,7 +65,7 @@ class TMD(BaseTypeLoadableConstruct):
 
         common.SignatureHandler.maybe_verify(
             config,
-            self.data.__raw_header__,
+            self.data.__raw_header_signed__,
             self.data.issuer,
             self.data.signature,
             self.data.certificates
