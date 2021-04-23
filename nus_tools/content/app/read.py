@@ -87,18 +87,17 @@ class AppBlockReader:
         # split into tables
         h0_table, h1_table, h2_table = utils.misc.chunk(hash_table_data[:20 * 16 * 3], 20 * 16)
 
-        # obtain current hashes from tables
-        # TODO: no need to extract h1/h2/h3 if not verifying
-        h0_hash, h1_hash, h2_hash, h3_hash = (
-            utils.misc.get_chunk(table, index, 20) for table, index in
-            zip((h0_table, h1_table, h2_table, cast(bytes, self._h3_table)), self.__get_hash_table_indices(self._curr_block))
-        )
-
-        # verify tree
+        # obtain current hashes from tables, verify tree
         if self._verify:
+            h3_table = cast(bytes, self._h3_table)
+            h3_hash = utils.misc.get_chunk(h3_table, self._curr_block >> 12 & 0xf, 20)
+            h2_hash = utils.misc.get_chunk(h2_table, self._curr_block >> 8 & 0xf, 20)
+            h1_hash = utils.misc.get_chunk(h1_table, self._curr_block >> 4 & 0xf, 20)
             utils.crypto.verify_sha1(h2_table, h3_hash)
             utils.crypto.verify_sha1(h1_table, h2_hash)
             utils.crypto.verify_sha1(h0_table, h1_hash)
+
+        h0_hash = utils.misc.get_chunk(h0_table, self._curr_block & 0xf, 20)
 
         # load content
         self._init_iv(h0_hash[:16])
@@ -182,15 +181,6 @@ class AppBlockReader:
                     break
                 # discard data
                 self._app.read(min(left, 32 * 1024))  # 32k, arbitrary maximum chunk size
-
-    @staticmethod
-    def __get_hash_table_indices(block_index: int) -> Tuple[int, int, int, int]:
-        return (
-            block_index >> 0 & 0xf,
-            block_index >> 4 & 0xf,
-            block_index >> 8 & 0xf,
-            block_index >> 12 & 0xf
-        )
 
 
 class AppDataReader:

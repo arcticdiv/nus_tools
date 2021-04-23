@@ -61,8 +61,6 @@ class FSTProcessor:
         and entries for directories and files respectively
         '''
 
-        # TODO: this is pretty resource-intensive, especially regarding memory usage
-
         directories = {}  # type: Dict[str, FSTDirectory]
         files = {}  # type: Dict[str, FSTFile]
 

@@ -11,8 +11,6 @@ from typing import Callable
 from .. import ids
 
 
-# TODO: verify signatures?
-
 # ref: https://www.3dbrew.org/wiki/Certificates#Public_Key
 class SignatureAlgorithm(IntEnum):
     RSA4096 = 0
