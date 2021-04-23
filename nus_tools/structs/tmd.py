@@ -16,11 +16,9 @@ from . import common
 def __get_struct(is_wiiu: bool) -> Struct:
     if is_wiiu:
         content_hash = 'sha1' / Padded(0x20, ChecksumRaw(hashlib.sha1))
-        system_version = common.TitleID
         app_type = ['app_type' / Hex(Bytes(4)), '_unk2' / Bytes(0x3a)]
     else:
         content_hash = 'sha256' / ChecksumRaw(hashlib.sha256)
-        system_version = Hex(Bytes(8))
         app_type = ['_unk2' / Bytes(0x3e)]
 
     return InliningStruct(
@@ -31,7 +29,7 @@ def __get_struct(is_wiiu: bool) -> Struct:
             'ca_crl_version' / Byte,
             'signer_crl_version' / Byte,
             '_unk1' / Bytes(1),
-            'system_version' / system_version,
+            'system_version' / Hex(Bytes(8)),
             'title_id' / common.TitleID,
             'title_type' / Hex(Bytes(4)),
             'group_id' / Hex(Bytes(2)),
