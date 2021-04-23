@@ -99,7 +99,10 @@ def verify_signature(data: bytes, signature_struct: Any, key_struct: Any) -> boo
 
 
 def verify_chain(data: bytes, issuer: str, signature_struct: Any, certificate_structs: List[Any], root_key: Any) -> None:
-    certificates = {cert.name: cert for cert in certificate_structs}
+    certificates = {
+        **{cert.name: cert for cert in certificate_structs},
+        **Configuration.certificate_structs
+    }
 
     # split a string like 'Root-CA00000003-CP0000000b' into parts
     issuer_parts = issuer.split('-')

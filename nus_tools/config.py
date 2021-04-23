@@ -1,6 +1,6 @@
 import hashlib
 from configparser import ConfigParser
-from typing import Any, Optional
+from typing import Any, Dict, Optional
 
 
 class IniKey:
@@ -58,8 +58,12 @@ class _Keys:
 
 
 class Configuration:
+    # encryption/decryption keys
     keys: _Keys = _Keys()
-    root_signature_key_file: Optional[str] = None
+    # 'Root' public key used to sign other certificates
+    root_key_struct: Optional[Any] = None
+    # any certificates that may be used for verifying signatures
+    certificate_structs: Dict[str, Any] = {}
 
     def __init__(self):
         raise AssertionError
