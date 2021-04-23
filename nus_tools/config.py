@@ -1,7 +1,6 @@
 import hashlib
 from configparser import ConfigParser
 from typing import Any, Optional
-from reqcli.config import Configuration as ReqCliConfig
 
 
 class IniKey:
@@ -58,14 +57,9 @@ class _Keys:
                         key[i] = bytes.fromhex(ini_value)
 
 
-class _Configuration:
+class Configuration:
     keys: _Keys = _Keys()
     root_signature_key_file: Optional[str] = None
 
-    @property
-    def reqcli_config(self):
-        return ReqCliConfig
-
-
-Configuration = _Configuration()
-# TODO: set user agent
+    def __init__(self):
+        raise AssertionError
