@@ -58,13 +58,27 @@ class _Keys:
                         key[i] = bytes.fromhex(ini_value)
 
 
-class Configuration:
+class _Configuration:
     # encryption/decryption keys
     keys: _Keys = _Keys()
-    # 'Root' public key used to sign other certificates (type: `structs.common.SignatureAlgorithm.RSA4096.key_construct`)
-    root_key_struct: Optional[Container] = None
     # any certificates that may be used for verifying signatures (type: elements of `structs.common.certificates`)
     certificate_structs: Dict[str, Container] = {}
 
     def __init__(self):
-        raise AssertionError
+        self.__root_key_struct = None
+
+    # 'Root' public key used to sign other certificates (type: `structs.rootkey`)
+    @property
+    def root_key_struct(self) -> Optional[Container]:
+        return self.__root_key_struct
+
+    @root_key_struct.setter
+    def root_key_struct(self, value: Optional[Container]) -> None:
+        if value:
+            data = value.modulus + int.to_bytes(value.exponent, 4, 'big')
+            if hashlib.sha1(data).hexdigest() != '076bed301a9bcf40706330213470f53c78ff67f2':
+                raise RuntimeError('unexpected hash for \'Root\' publickey')
+        self.__root_key_struct = value
+
+
+Configuration = _Configuration()
