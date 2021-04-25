@@ -1,10 +1,11 @@
 import hashlib
+from construct import Container
 from configparser import ConfigParser
 from typing import Any, Dict, Optional
 
 
 class IniKey:
-    def __init__(self, section, name, sha1):
+    def __init__(self, section: str, name: str, sha1: str):
         self.section = section
         self.name = name
         self.sha1 = bytes.fromhex(sha1)
@@ -60,10 +61,10 @@ class _Keys:
 class Configuration:
     # encryption/decryption keys
     keys: _Keys = _Keys()
-    # 'Root' public key used to sign other certificates
-    root_key_struct: Optional[Any] = None
-    # any certificates that may be used for verifying signatures
-    certificate_structs: Dict[str, Any] = {}
+    # 'Root' public key used to sign other certificates (type: `structs.common.SignatureAlgorithm.RSA4096.key_construct`)
+    root_key_struct: Optional[Container] = None
+    # any certificates that may be used for verifying signatures (type: elements of `structs.common.certificates`)
+    certificate_structs: Dict[str, Container] = {}
 
     def __init__(self):
         raise AssertionError

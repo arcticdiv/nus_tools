@@ -1,4 +1,4 @@
-from typing import Any
+from construct import Container
 from reqcli.type import BaseTypeLoadableConstruct
 
 from ... import utils, ids, structs
@@ -7,7 +7,7 @@ from ...config import Configuration
 
 class IDBE(BaseTypeLoadableConstruct):
     key_index: int
-    data: Any
+    data: Container
 
     def __init__(self, title_id: ids.TTitleIDInput):
         self.__title_id = ids.TitleID.get_inst(title_id)

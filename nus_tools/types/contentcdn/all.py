@@ -1,4 +1,5 @@
-from typing import Any, Optional, Union, overload
+from construct import Container
+from typing import Optional, Union, overload
 from reqcli.type import BaseTypeLoadableConstruct
 
 from .. import common
@@ -6,7 +7,7 @@ from ... import structs, ids
 
 
 class Ticket(BaseTypeLoadableConstruct):
-    data: Any
+    data: Container
 
     def __init__(self, title_id: Optional[ids.TTitleIDInput] = None):
         self.__title_id = ids.TitleID.get_inst(title_id) if title_id else None
@@ -30,7 +31,7 @@ class Ticket(BaseTypeLoadableConstruct):
 
 
 class TMD(BaseTypeLoadableConstruct):
-    data: Any
+    data: Container
 
     @overload
     def __init__(self, title_id: ids.TTitleIDInput):
