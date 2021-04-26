@@ -1,3 +1,4 @@
+import logging
 import hashlib
 from typing import Any, Callable, List, Optional, Union, cast
 from constructutils.checksum import ChecksumVerifyError
@@ -12,6 +13,9 @@ from Crypto.Hash import SHA1, SHA256
 from .. import ids
 from ..config import Configuration
 from ..structs.common import SignatureAlgorithm
+
+
+_logger = logging.getLogger(__name__)
 
 
 class AES:
@@ -99,6 +103,8 @@ def verify_signature(data: bytes, signature_struct: Any, key_struct: Any) -> boo
 
 
 def verify_chain(data: bytes, issuer: str, signature_struct: Any, certificate_structs: List[Any], root_key: Any) -> None:
+    _logger.debug(f'Verifying signature of {len(data)} data bytes by {issuer}')
+
     certificates = {
         **{cert.name: cert for cert in certificate_structs},
         **Configuration.certificate_structs
@@ -128,9 +134,11 @@ def verify_chain(data: bytes, issuer: str, signature_struct: Any, certificate_st
         # do the thing
         if not verify_signature(data, signature_struct, issuer_key):
             raise SignatureError(f'invalid signature for data {data[:32]!r}[...] by {issuer_part}')
+        _logger.debug(f'Valid {signature_struct.type.name} signature for data {data[:32]!r}[...] by {issuer_part}')
 
         # if issuer is 'Root' and the signature is valid, we're done
         if issuer_part == 'Root':
+            _logger.debug('Successfully verified signatures')
             break
 
         # otherwise, check signature of current certificate:

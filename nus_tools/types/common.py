@@ -1,9 +1,12 @@
-import sys
+import logging
 from typing import Any, List
 
 from .config import NUSTypeLoadConfig
 from .. import utils
 from ..config import Configuration
+
+
+_logger = logging.getLogger(__name__)
 
 
 class SignatureHandler:
@@ -19,7 +22,7 @@ class SignatureHandler:
             msg = 'no root key set, can\'t verify signatures'
             if verify is None:
                 # only print warning
-                print(msg, file=sys.stderr)
+                _logger.warning(msg)
                 return
             else:
                 raise RuntimeError(msg)
@@ -28,6 +31,6 @@ class SignatureHandler:
             utils.crypto.verify_chain(data, issuer, signature_struct, certificate_structs, root_key)
         except utils.crypto.MissingCertError as e:
             if verify is None:
-                print(str(e) + ' - skipping signature verification', file=sys.stderr)
+                _logger.warning(str(e) + ' - skipping signature verification')
             else:
                 raise

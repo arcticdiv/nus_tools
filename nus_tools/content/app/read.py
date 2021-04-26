@@ -171,7 +171,6 @@ class AppBlockReader:
             # just seek to target
             self._app.seek(target_offset, os.SEEK_SET)
         else:
-            # TODO: tell() might be inaccurate for compressed HTTP response streams
             if self._app.tell() > target_offset:
                 raise RuntimeError('app stream is not seekable, cannot go backwards')
             # if not seekable, read until target reached

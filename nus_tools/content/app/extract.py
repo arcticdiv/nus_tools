@@ -1,9 +1,13 @@
 import os
+import logging
 from typing import Dict, Tuple
 
 from .read import AppDataReader
 from .fstprocessor import FSTDirectory, FSTFile
 from ... import utils
+
+
+_logger = logging.getLogger(__name__)
 
 
 class AppExtractor:
@@ -35,7 +39,7 @@ class AppExtractor:
             if dir.deleted:
                 continue
             path = self.__join_path(target_path, dir_path)
-            print(f'creating directory {path} (source index: {dir.secondary_index})')
+            _logger.info(f'creating directory {path} (source index: {dir.secondary_index})')
             os.makedirs(path, exist_ok=True)
 
     def extract_files(self, content_index: int, reader: AppDataReader, target_path: str) -> None:
@@ -47,7 +51,7 @@ class AppExtractor:
             if file.deleted:
                 continue
             path = self.__join_path(target_path, file_path)
-            print(f'extracting {file_path} (source index: {file.secondary_index}, offset: {file.offset}, size: {file.size})')
+            _logger.info(f'extracting {file_path} (source index: {file.secondary_index}, offset: {file.offset}, size: {file.size})')
 
             try:
                 with open(path, 'wb') as f:
