@@ -5,7 +5,7 @@ from .. import ids
 from ..types.contentcdn import Ticket, TMD
 
 
-class _BaseContentSource(BaseSource):
+class _ContentServerBase(BaseSource):
     # /<title id>/cetk
     def get_cetk(self, title_id: ids.TTitleIDInput) -> Ticket:
         return self._create_type(
@@ -51,7 +51,7 @@ class _BaseContentSource(BaseSource):
 #   - nus.wup.shop.nintendo.net (unavailable)
 #   - ccs.wup.shop.nintendo.net
 
-class CachedContentServer(_BaseContentSource):
+class ContentServerCached(_ContentServerBase):
     def __init__(self, config: Optional[SourceConfig] = None):
         super().__init__(
             ReqData(
@@ -61,7 +61,7 @@ class CachedContentServer(_BaseContentSource):
         )
 
 
-class UncachedContentServer(_BaseContentSource):
+class ContentServerUncached(_ContentServerBase):
     def __init__(self, config: Optional[SourceConfig] = None):
         super().__init__(
             ReqData(
