@@ -26,8 +26,8 @@ class NinjaIDPair(BaseTypeLoadable):
 
     def _read(self, reader, config):
         pairs = xmlutils.load_root(reader, 'title_id_pairs')
-        assert len(pairs.getchildren()) == 1
         xmlutils.validate_schema(pairs, {'title_id_pair': {'ns_uid': None, 'title_id': None, 'type': None}}, False)
+        assert len(pairs.getchildren()) == 1
         pair = pairs.title_id_pair
 
         assert pair.type.text == 'T'  # not sure if there are any other types

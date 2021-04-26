@@ -95,6 +95,8 @@ class Samurai(BaseSource):
         )
 
     def get_dlcs_for_title(self, title: Union[ids.TContentIDInput, SamuraiListTitle, SamuraiTitleElement]) -> Union[SamuraiTitleDlcsWiiU, SamuraiTitleDlcs3DS]:
+        # note: this endpoint doesn't seem to be reliable for all titles,
+        #        some titles have aoc/iap but this response is empty
         if isinstance(title, (SamuraiListTitle, SamuraiTitleElement)):
             content_id = title.content_id
         else:
