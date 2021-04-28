@@ -11,11 +11,17 @@ TContentIDInput = Union['ContentID', str]
 
 
 class TitlePlatform(IntEnum):
+    WII = 0x0001
     _3DS = 0x0004
     WIIU = 0x0005
 
 
 class TitleType(IntEnum):
+    GAME_DISC_WII = 0x00010000
+    GAME_DL_WII = 0x00010001
+    SYSTEM_APP_WII = 0x00010002
+    DLC_WII = 0x00010005
+
     GAME_3DS = 0x00040000
     DEMO_3DS = 0x00040002
     UPDATE_3DS = 0x0004000e
@@ -79,7 +85,7 @@ class TitleID:
 
     @property
     def is_game(self):
-        return self.type in (TitleType.GAME_3DS, TitleType.GAME_WIIU)
+        return self.type in (TitleType.GAME_DISC_WII, TitleType.GAME_DL_WII, TitleType.GAME_3DS, TitleType.GAME_WIIU)
 
     @property
     def is_update(self):
@@ -87,7 +93,7 @@ class TitleID:
 
     @property
     def is_dlc(self):
-        return self.type in (TitleType.DLC_3DS, TitleType.DLC_WIIU)
+        return self.type in (TitleType.DLC_WII, TitleType.DLC_3DS, TitleType.DLC_WIIU)
 
     @property
     def game(self):
@@ -110,7 +116,9 @@ class TitleID:
         if self.is_dlc:
             return self
         if self.is_game or self.is_update:
-            if self.type.platform == TitlePlatform._3DS:
+            if self.type.platform == TitlePlatform.WII:
+                return TitleID(TitleType.from_platform_category(self.type.platform, 0x0005), self.uid)
+            elif self.type.platform == TitlePlatform._3DS:
                 return TitleID(TitleType.from_platform_category(self.type.platform, 0x008c), self.uid)
             else:
                 return TitleID(TitleType.from_platform_category(self.type.platform, 0x000c), self.uid)
