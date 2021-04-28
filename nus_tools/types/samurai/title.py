@@ -27,7 +27,7 @@ class SamuraiTitleStars(common.SamuraiStars):
 class SamuraiTitleFeature(XmlBaseType):
     required: bool
     type: int
-    id: str
+    id: int
     name: str
 
     @classmethod
@@ -40,7 +40,7 @@ class SamuraiTitleFeature(XmlBaseType):
         return {
             'required': utils.misc.get_bool(xml.get('required')),
             'type': int(xml.get('type')),
-            'id': xml.id.text,
+            'id': int(xml.id.text),
             'name': xml.name.text
         }
 
@@ -55,7 +55,7 @@ class SamuraiTitleLanguage:
 class SamuraiTitleController:
     required: bool
     type: int
-    id: str
+    id: int
     name: str
 
 
@@ -197,7 +197,7 @@ class _SamuraiTitleOptionalMixin(title_list._SamuraiListTitleOptionalMixin[commo
                     SamuraiTitleController(
                         utils.misc.get_bool(controller.get('required')),
                         int(controller.get('type')),
-                        controller.id.text,
+                        int(controller.id.text),
                         controller.name.text
                     )
                     for controller in play_style.controllers.controller

@@ -33,7 +33,7 @@ class IDName:
 @dataclass(frozen=True)
 class SamuraiRating(XmlBaseType):
     system: IDName
-    id: str
+    id: int
     name: str
     age: str
 
@@ -49,7 +49,7 @@ class SamuraiRating(XmlBaseType):
         # TODO: rating.icons unhandled
         return {
             'system': IDName(xml.rating_system.get('id'), xml.rating_system.name.text),
-            'id': xml.rating.get('id'),
+            'id': int(xml.rating.get('id')),
             'name': xml.rating.name.text,
             'age': xml.rating.age.text
         }
@@ -74,7 +74,7 @@ class SamuraiRatingDetailed(SamuraiRating):
 
 @dataclass(frozen=True)
 class SamuraiPlatform(XmlBaseType):
-    id: str
+    id: int
     device: str
     category: str
     name: str
@@ -86,7 +86,7 @@ class SamuraiPlatform(XmlBaseType):
     @classmethod
     def _parse_internal(cls, xml):
         return {
-            'id': xml.get('id'),
+            'id': int(xml.get('id')),
             'device': xml.get('device'),
             'category': xml.get('category'),
             'name': xml.name.text
