@@ -1,5 +1,5 @@
 from .samurai import Samurai
 from .ninja import Ninja, CertType
-from .contentcdn import ContentServerCached, ContentServerUncached
+from .contentcdn import ContentServerCDN, ContentServerNoCDN
 from .idbe import IDBEServer
-from .tagaya import TagayaCached, TagayaUncached
+from .tagaya import TagayaCDN, TagayaNoCDN

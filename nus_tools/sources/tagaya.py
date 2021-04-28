@@ -24,7 +24,7 @@ class _TagayaBase(BaseSource):
 
 # region does not matter, lists are identical
 
-class TagayaCached(_TagayaBase):
+class TagayaCDN(_TagayaBase):
     def __init__(self, config: Optional[SourceConfig] = None):
         super().__init__(
             ReqData(
@@ -36,7 +36,7 @@ class TagayaCached(_TagayaBase):
         )
 
 
-class TagayaUncached(_TagayaBase):
+class TagayaNoCDN(_TagayaBase):
     def __init__(self, config: Optional[SourceConfig] = None):
         super().__init__(
             ReqData(

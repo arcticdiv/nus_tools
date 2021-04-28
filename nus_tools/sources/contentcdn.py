@@ -51,7 +51,7 @@ class _ContentServerBase(BaseSource):
 #   - nus.wup.shop.nintendo.net (unavailable)
 #   - ccs.wup.shop.nintendo.net
 
-class ContentServerCached(_ContentServerBase):
+class ContentServerCDN(_ContentServerBase):
     def __init__(self, config: Optional[SourceConfig] = None):
         super().__init__(
             ReqData(
@@ -61,7 +61,7 @@ class ContentServerCached(_ContentServerBase):
         )
 
 
-class ContentServerUncached(_ContentServerBase):
+class ContentServerNoCDN(_ContentServerBase):
     def __init__(self, config: Optional[SourceConfig] = None):
         super().__init__(
             ReqData(
