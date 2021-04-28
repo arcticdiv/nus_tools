@@ -54,7 +54,7 @@ class SamuraiMovieFile:
 
 @dataclass(frozen=True)
 class SamuraiMovieLinkedTitle:
-    id: str
+    id: ids.ContentID
     name: str
     icon_url: Optional[str]
     banner_url: Optional[str]
@@ -102,7 +102,7 @@ class _SamuraiListMovieOptionalMixin(Generic[_TRating]):
         elif tag == 'title':
             xmlutils.validate_schema(child, {'name': None, 'icon_url': None, 'banner_url': None}, True)
             vals.title = SamuraiMovieLinkedTitle(
-                child.get('id'),
+                ids.ContentID(child.get('id')),
                 child.name.text,
                 xmlutils.get_text(child, 'icon_url'),
                 xmlutils.get_text(child, 'banner_url')
