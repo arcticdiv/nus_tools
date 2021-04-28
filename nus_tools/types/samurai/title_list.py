@@ -108,7 +108,7 @@ class _SamuraiListTitleOptionalMixin(Generic[_TRating, _TStars]):
         elif tag == 'price_on_retail_detail':
             xmlutils.validate_schema(child, {'amount': None, 'currency': None, 'raw_value': None}, True)
             vals.price_retail = common.SamuraiPrice(
-                float(child.raw_value.text) if 'TBD' not in child.amount.text else -1.0,
+                float(child.raw_value.text) if hasattr(child, 'raw_value') else None,
                 child.currency
             )
         else:

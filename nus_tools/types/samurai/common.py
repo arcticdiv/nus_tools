@@ -114,7 +114,7 @@ class SamuraiStars(XmlBaseType):
 
 @dataclass(frozen=True)
 class SamuraiPrice:
-    amount: float
+    amount: Optional[float]
     currency: str
 
 
