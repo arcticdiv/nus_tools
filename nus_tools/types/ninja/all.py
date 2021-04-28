@@ -1,3 +1,4 @@
+from typing import Optional
 import reqcli.utils.xml as xmlutils
 from reqcli.type import BaseTypeLoadable
 
@@ -10,14 +11,24 @@ class NinjaEcInfo(BaseTypeLoadable):
     version: int
     download_disabled: bool
 
+    # 3DS only
+    seed_published: Optional[bool]
+    external_seed: Optional[str]
+    playable_date: Optional[str]
+
     def _read(self, reader, config):
         ec_info = xmlutils.load_root(reader, 'title_ec_info')
-        xmlutils.validate_schema(ec_info, {'title_id': None, 'content_size': None, 'title_version': None, 'disable_download': None}, False)
+        xmlutils.validate_schema(ec_info, {'title_id': None, 'content_size': None, 'title_version': None, 'disable_download': None, 'content_lock': {'seed_published': None, 'external_seed': None, 'playable_date': None}}, True)
 
         self.title_id = ids.TitleID(ec_info.title_id.text)
         self.content_size = int(ec_info.content_size.text)
         self.version = int(ec_info.title_version.text)
         self.download_disabled = utils.misc.get_bool(ec_info.disable_download.text)
+
+        if hasattr(ec_info, 'content_lock'):
+            self.seed_published = utils.misc.get_bool(ec_info.content_lock.seed_published.text)
+            self.external_seed = xmlutils.get_text(ec_info.content_lock, 'external_seed')
+            self.playable_date = xmlutils.get_text(ec_info.content_lock, 'playable_date')
 
 
 class NinjaIDPair(BaseTypeLoadable):
