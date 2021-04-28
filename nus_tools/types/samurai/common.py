@@ -26,7 +26,7 @@ class SamuraiListBaseType(BaseTypeLoadable, abc.ABC):
 
 @dataclass
 class IDName:
-    id: str
+    id: int
     name: str
 
 
@@ -48,7 +48,7 @@ class SamuraiRating(XmlBaseType):
     def _parse_internal(cls, xml):
         # TODO: rating.icons unhandled
         return {
-            'system': IDName(xml.rating_system.get('id'), xml.rating_system.name.text),
+            'system': IDName(int(xml.rating_system.get('id')), xml.rating_system.name.text),
             'id': int(xml.rating.get('id')),
             'name': xml.rating.name.text,
             'age': xml.rating.age.text

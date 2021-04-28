@@ -51,7 +51,7 @@ class _SamuraiListTitleBaseMixin:
             vals.platform = common.SamuraiPlatform._parse(child)
         elif tag == 'publisher':
             xmlutils.validate_schema(child, {'name': None}, False)
-            vals.publisher = common.IDName(child.get('id'), child.name.text)
+            vals.publisher = common.IDName(int(child.get('id')), child.name.text)
         elif tag == 'display_genre':
             vals.genre = text
         elif tag == 'retail_sales':

@@ -137,7 +137,7 @@ class _SamuraiTitleBaseMixin(title_list._SamuraiListTitleBaseMixin):
             vals.genres = []
             for genre in child.genre:
                 xmlutils.validate_schema(genre, {'name': None}, False)
-                vals.genres.append(common.IDName(genre.get('id'), genre.name.text))
+                vals.genres.append(common.IDName(int(genre.get('id')), genre.name.text))
         elif tag == 'keywords':
             vals.keywords = [keyword.text for keyword in getattr(child, 'keyword', [])]
         elif tag == 'ticket_available':
