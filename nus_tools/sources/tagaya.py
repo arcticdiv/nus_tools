@@ -7,10 +7,11 @@ from ..types.tagaya import UpdateListVersion, UpdateList
 
 class _TagayaBase(BaseSource):
     # /latest_version
-    def get_latest_updatelist_version(self) -> UpdateListVersion:
+    def get_latest_updatelist_version(self, *, skip_cache: bool = True) -> UpdateListVersion:
         return self._create_type(
             ReqData(path='latest_version'),
-            UpdateListVersion()
+            UpdateListVersion(),
+            skip_cache=skip_cache
         )
 
     # /list/<version>.versionlist
