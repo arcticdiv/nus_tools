@@ -3,6 +3,7 @@ from reqcli.source import BaseSource, SourceConfig, ReqData
 from reqcli.utils.typing import RequestDict
 
 from .. import ids
+from ..region import Region
 from ..types.samurai import \
     SamuraiContentsList, \
     SamuraiMovie, SamuraiMoviesList, \
@@ -19,16 +20,23 @@ _TList = TypeVar('_TList', bound=SamuraiListBaseType)
 
 
 class Samurai(BaseSource):
-    def __init__(self, region: str, shop_id: int, lang: str, config: Optional[SourceConfig] = None):
+    def __init__(self, region: Union[str, Region], shop_id: int, lang: Optional[str], config: Optional[SourceConfig] = None):
+        params: RequestDict = {'shop_id': shop_id}
+        if lang:
+            params['lang'] = lang
+
+        region = region.country_code if isinstance(region, Region) else region
+
         super().__init__(
             ReqData(
                 path=f'https://samurai.wup.shop.nintendo.net/samurai/ws/{region}/',
-                params={'shop_id': shop_id, 'lang': lang}
+                params=params
             ),
             config,
             verify_tls=False,
             require_fingerprint='C6:6E:7D:66:D0:73:62:2F:A3:28:7F:A6:2F:F5:73:5C:71:EE:EB:3D:93:AC:B3:14:7A:8F:85:B4:07:D4:CE:ED'
         )
+
         self.region = region
         self.shop_id = shop_id
         self.lang = lang

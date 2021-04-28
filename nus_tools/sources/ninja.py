@@ -1,12 +1,13 @@
-from typing import Optional, cast
+from typing import Optional, Union, cast
 from reqcli.source import BaseSource, SourceConfig, CertType, ReqData
 
 from .. import ids
+from ..region import Region
 from ..types.ninja import NinjaEcInfo, NinjaIDPair
 
 
 class Ninja(BaseSource):
-    def __init__(self, region: str, cert: CertType, config: Optional[SourceConfig] = None):
+    def __init__(self, region: Union[str, Region], cert: CertType, config: Optional[SourceConfig] = None):
         super().__init__(
             ReqData(
                 path='https://ninja.wup.shop.nintendo.net/ninja/ws/',
@@ -16,7 +17,8 @@ class Ninja(BaseSource):
             verify_tls=False,
             require_fingerprint='C6:6E:7D:66:D0:73:62:2F:A3:28:7F:A6:2F:F5:73:5C:71:EE:EB:3D:93:AC:B3:14:7A:8F:85:B4:07:D4:CE:ED'
         )
-        self.region = region
+
+        self.region = region.country_code if isinstance(region, Region) else region
 
     # /<region>/title/<id>/ec_info
     def get_ec_info(self, content_id: ids.TContentIDInput) -> NinjaEcInfo:
