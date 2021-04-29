@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Optional
 from reqcli.source import BaseSource, SourceConfig, ReqData
 
 from .. import ids
@@ -22,11 +22,12 @@ class IDBEServer(BaseSource):
         self.platform = platform
 
     # /<id>/<title id>.idbe
-    def get_idbe(self, title_id: ids.TTitleIDInput, version: Optional[int] = None) -> IDBE:
+    def get_idbe(self, title_id: ids.TTitleIDInput, version: Optional[int] = None, **kwargs: Any) -> IDBE:
         tid_str = ids.TitleID.get_str(title_id)
         return self._create_type(
             # server seems to ignore first value, it probably doesn't matter what is supplied here
             # based on nn_idbe.rpl .text+0x1d0
             ReqData(path=f'{tid_str[12:14]}/{tid_str}' + (f'-{version}' if version is not None else '') + '.idbe'),
-            IDBE(title_id)
+            IDBE(title_id),
+            **kwargs
         )

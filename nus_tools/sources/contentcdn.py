@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Optional
 from reqcli.source import UnloadableType, BaseSource, SourceConfig, ReqData
 
 from .. import ids
@@ -7,30 +7,34 @@ from ..types.contentcdn import Ticket, TMD
 
 class _ContentServerBase(BaseSource):
     # /<title id>/cetk
-    def get_cetk(self, title_id: ids.TTitleIDInput) -> Ticket:
+    def get_cetk(self, title_id: ids.TTitleIDInput, **kwargs: Any) -> Ticket:
         return self._create_type(
             ReqData(path=f'{ids.TitleID.get_str(title_id)}/cetk'),
-            Ticket(title_id)
+            Ticket(title_id),
+            **kwargs
         )
 
     # /<title id>/tmd[.<version>]
-    def get_tmd(self, title_id: ids.TTitleIDInput, version: Optional[int] = None) -> TMD:
+    def get_tmd(self, title_id: ids.TTitleIDInput, version: Optional[int] = None, **kwargs: Any) -> TMD:
         return self._create_type(
             ReqData(path=f'{ids.TitleID.get_str(title_id)}/tmd' + (f'.{version}' if version is not None else '')),
-            TMD(title_id)
+            TMD(title_id),
+            **kwargs
         )
 
     # /<title id>/<content id>
-    def get_app(self, title_id: ids.TTitleIDInput, content_id: int, *, skip_cache: bool = True) -> UnloadableType:
+    def get_app(self, title_id: ids.TTitleIDInput, content_id: int, *, skip_cache: bool = True, **kwargs: Any) -> UnloadableType:
         return self._create_type(
             ReqData(path=f'{ids.TitleID.get_str(title_id)}/{content_id:08x}'),  # TODO: uppercase/lowercase?
-            skip_cache=skip_cache
+            skip_cache=skip_cache,
+            **kwargs
         )
 
     # /<title id>/<content id>.h3
-    def get_h3(self, title_id: ids.TTitleIDInput, content_id: int) -> UnloadableType:
+    def get_h3(self, title_id: ids.TTitleIDInput, content_id: int, **kwargs: Any) -> UnloadableType:
         return self._create_type(
-            ReqData(path=f'{ids.TitleID.get_str(title_id)}/{content_id:08x}.h3')
+            ReqData(path=f'{ids.TitleID.get_str(title_id)}/{content_id:08x}.h3'),
+            **kwargs
         )
 
 

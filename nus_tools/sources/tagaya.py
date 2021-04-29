@@ -1,24 +1,25 @@
-from typing import Optional
+from typing import Any, Optional
 from reqcli.source import BaseSource, SourceConfig, ReqData
 
-from .. import ids
 from ..types.tagaya import UpdateListVersion, UpdateList
 
 
 class _TagayaBase(BaseSource):
     # /latest_version
-    def get_latest_updatelist_version(self, *, skip_cache: bool = True) -> UpdateListVersion:
+    def get_latest_updatelist_version(self, *, skip_cache: bool = True, **kwargs: Any) -> UpdateListVersion:
         return self._create_type(
             ReqData(path='latest_version'),
             UpdateListVersion(),
-            skip_cache=skip_cache
+            skip_cache=skip_cache,
+            **kwargs
         )
 
     # /list/<version>.versionlist
-    def get_updatelist(self, version: int) -> UpdateList:
+    def get_updatelist(self, version: int, **kwargs: Any) -> UpdateList:
         return self._create_type(
             ReqData(path=f'list/{version}.versionlist'),
-            UpdateList()
+            UpdateList(),
+            **kwargs
         )
 
 
