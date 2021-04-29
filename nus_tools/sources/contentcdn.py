@@ -45,21 +45,21 @@ class _ContentServerBase(BaseSource):
 #   - ccs.cdn.c.shop.nintendowifi.net
 #   - nus.cdn.t.shop.nintendowifi.net
 #   - ccs.cdn.t.shop.nintendowifi.net
-#   - nus.cdn.wup.shop.nintendo.net
-#   - ccs.cdn.wup.shop.nintendo.net
+#   - nus.cdn.wup.shop.nintendo.net (WiiU: 'SystemContentPrefixURL')
+#   - ccs.cdn.wup.shop.nintendo.net (WiiU: 'ContentPrefixURL')
 # - uncached:
 #   - nus.c.shop.nintendowifi.net (unavailable)
 #   - ccs.c.shop.nintendowifi.net (unavailable)
 #   - nus.t.shop.nintendowifi.net (unavailable)
 #   - ccs.t.shop.nintendowifi.net
 #   - nus.wup.shop.nintendo.net (unavailable)
-#   - ccs.wup.shop.nintendo.net
+#   - ccs.wup.shop.nintendo.net (WiiU: 'UncachedContentPrefixURL'/'SystemUncachedContentPrefixURL')
 
 class ContentServerCDN(_ContentServerBase):
     def __init__(self, config: Optional[SourceConfig] = None):
         super().__init__(
             ReqData(
-                path='http://ccs.cdn.c.shop.nintendowifi.net/ccs/download/'
+                path='http://ccs.cdn.wup.shop.nintendo.net/ccs/download/'
             ),
             config
         )

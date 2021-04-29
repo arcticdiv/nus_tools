@@ -161,6 +161,7 @@ class ContentType(IntEnum):
     TITLE_3DS = 5001
     DEMO_3DS = 5003
     MOVIE_3DS = 5004
+
     TITLE_WIIU = 2001
     DEMO_WIIU = 2003
     MOVIE_WIIU = 2004

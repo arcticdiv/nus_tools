@@ -29,7 +29,7 @@ class TagayaCDN(_TagayaBase):
     def __init__(self, config: Optional[SourceConfig] = None):
         super().__init__(
             ReqData(
-                path='https://tagaya-wup.cdn.nintendo.net/tagaya/versionlist/EUR/EU/'
+                path='https://tagaya-wup.cdn.nintendo.net/tagaya/versionlist/EUR/GB/'
             ),
             config,
             verify_tls=False,
@@ -41,7 +41,7 @@ class TagayaNoCDN(_TagayaBase):
     def __init__(self, config: Optional[SourceConfig] = None):
         super().__init__(
             ReqData(
-                path='https://tagaya.wup.shop.nintendo.net/tagaya/versionlist/EUR/EU/'
+                path='https://tagaya.wup.shop.nintendo.net/tagaya/versionlist/EUR/GB/'
             ),
             config,
             verify_tls=False,
