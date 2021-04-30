@@ -1,6 +1,6 @@
 from construct import \
     Struct, Array, Byte, Bytes, CString, Int16ub, Int24ub, Int32ub, \
-    Const, FlagsEnum, IfThenElse, Padding, Check, Aligned, FocusedSeq, Terminated, this
+    Const, GreedyBytes, FlagsEnum, IfThenElse, Padding, Check, this, sum_
 from constructutils import InliningStruct, Inline
 
 
@@ -25,25 +25,25 @@ _entry = InliningStruct(
     'secondary_index' / Int16ub
 )
 
-struct = FocusedSeq(
-    'fst',
-    'fst' / Aligned(0x8000, Struct(
-        Const(b'FST\0'),
-        'offset_factor' / Int32ub,
-        'num_secondary' / Int32ub,
-        '_unk1' / Bytes(0x14),
-        'secondary' / Array(this.num_secondary, Struct(
-            'offset_sectors' / Int32ub,
-            'size_sectors' / Int32ub,
-            'title_id' / Bytes(8),
-            'group_id' / Bytes(4),
-            'flags' / FlagsEnum(Int16ub, hash_tmd=0x100, hash_tree=0x200),
-            Padding(0x0a)
-        )),
-        'root' / _entry,
-        Check(this.root.type.directory),
-        'entries' / Array(this.root.next_entry_index - 1, _entry),
-        'names' / Array(this.root.next_entry_index, CString('ascii'))
+struct = Struct(
+    Const(b'FST\0'),
+    'offset_factor' / Int32ub,
+    'num_secondary' / Int32ub,
+    '_unk1' / Bytes(0x14),
+    'secondary' / Array(this.num_secondary, Struct(
+        'offset_sectors' / Int32ub,
+        'size_sectors' / Int32ub,
+        'title_id' / Bytes(8),
+        'group_id' / Bytes(4),
+        'flags' / FlagsEnum(Int16ub, hash_tmd=0x100, hash_tree=0x200),
+        Padding(0x0a)
     )),
-    Terminated
+    'root' / _entry,
+    Check(this.root.type.directory),
+    'entries' / Array(this.root.next_entry_index - 1, _entry),
+    'names' / Array(this.root.next_entry_index, CString('ascii')),
+    # usually FSTs are aligned to 0x8000 bytes, but for some reason a few aren't
+    # this basically just ensures that all names were read (i.e. only null bytes remain), since the real padding is unknown
+    '_end' / GreedyBytes,
+    Check(sum_(this._end) == 0)
 )
