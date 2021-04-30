@@ -144,6 +144,7 @@ venv*/
 cache/
 requests_cache.db
 *.crt
+*.pem
 *.key
 __test__.py
 keys.ini

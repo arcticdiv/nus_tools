@@ -12,7 +12,7 @@ def read(filename):
 setup(
     name='nus_tools',
     version='0.0.1',
-    description='',  # TODO
+    description='Framework for interfacing with eShop servers and processing data',
     long_description=read('README.md'),
     author='arcticdiv',
     url='https://github.com/arcticdiv/nus_tools',
