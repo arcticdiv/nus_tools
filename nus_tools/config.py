@@ -36,9 +36,9 @@ class _Keys:
         IniKey('idbe', 'key3', '0bd3a8b30b8416afecd58dce4669c0e3e82a4ee7')
     ]
 
-    def __init__(self):
+    def load_ini(self, path: str) -> None:
         p = ConfigParser()
-        if not p.read('keys.ini'):
+        if not p.read(path):
             return
 
         for name, key in list(type(self).__dict__.items()):
@@ -65,7 +65,19 @@ class _Configuration:
     certificate_structs: Dict[str, Container] = {}
 
     def __init__(self):
+        self.__keys_file = 'keys.ini'
         self.__root_key_struct = None
+
+    # path to keys.ini
+    @property
+    def keys_file(self) -> str:
+        return self.__keys_file
+
+    @keys_file.setter
+    def keys_file(self, value: str) -> None:
+        self.__keys_file = value
+        # reload ini
+        self.keys.load_ini(self.__keys_file)
 
     # 'Root' public key used to sign other certificates (type: `structs.rootkey`)
     @property
@@ -82,3 +94,5 @@ class _Configuration:
 
 
 Configuration = _Configuration()
+# initialize keys
+Configuration.keys.load_ini(Configuration.keys_file)
