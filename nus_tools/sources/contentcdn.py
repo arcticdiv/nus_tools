@@ -25,7 +25,7 @@ class _ContentServerBase(BaseSource):
     # /<title id>/<content id>
     def get_app(self, title_id: ids.TTitleIDInput, content_id: int, *, skip_cache: bool = True, **kwargs: Any) -> UnloadableType:
         return self._create_type(
-            ReqData(path=f'{ids.TitleID.get_str(title_id)}/{content_id:08x}'),  # TODO: uppercase/lowercase?
+            ReqData(path=f'{ids.TitleID.get_str(title_id)}/{content_id:08X}'),
             skip_cache=skip_cache,
             **kwargs
         )
@@ -33,7 +33,7 @@ class _ContentServerBase(BaseSource):
     # /<title id>/<content id>.h3
     def get_h3(self, title_id: ids.TTitleIDInput, content_id: int, **kwargs: Any) -> UnloadableType:
         return self._create_type(
-            ReqData(path=f'{ids.TitleID.get_str(title_id)}/{content_id:08x}.h3'),
+            ReqData(path=f'{ids.TitleID.get_str(title_id)}/{content_id:08X}.h3'),
             **kwargs
         )
 
