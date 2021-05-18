@@ -155,6 +155,7 @@ class _SamuraiTitleBaseMixin(title_list._SamuraiListTitleBaseMixin):
 
 @dataclass(frozen=True)
 class _SamuraiTitleOptionalMixin(title_list._SamuraiListTitleOptionalMixin[common.SamuraiRatingDetailed, SamuraiTitleStars]):
+    package_url: Optional[str] = None
     sales_web: Optional[bool] = None
     top_image_type: Optional[str] = None
     top_image_url: Optional[str] = None
@@ -168,17 +169,25 @@ class _SamuraiTitleOptionalMixin(title_list._SamuraiListTitleOptionalMixin[commo
     disclaimer: Optional[str] = None
     copyright: Optional[str] = None
     screenshots: Optional[List[common.SamuraiScreenshot]] = None
+    main_images: Optional[List[common.SamuraiScreenshot]] = None
     preferences: Optional[SamuraiTitlePreference] = None
     websites: Optional[List[SamuraiTitleWebsite]] = None
     movies: Optional[List[movie.SamuraiMovieElement]] = None
     demos: Optional[List[SamuraiTitleLinkedDemo]] = None
     peripheral_description: Optional[str] = None
     network_feature_description: Optional[str] = None
+    spec_description: Optional[str] = None
     size: Optional[int] = None
+    save_data_count: Optional[str] = None
+    save_data_volume: Optional[str] = None
+    catch_copy: Optional[str] = None
+    title_metas: Optional[List[Tuple[str, str]]] = None
 
     @classmethod
     def _try_parse_value(cls, vals: utils.misc.dotdict, child: lxml.objectify.ObjectifiedElement, tag: str, text: str, custom_types: title_list.CustomTypes) -> bool:
-        if tag == 'web_sales':
+        if tag == 'package_url':
+            vals.package_url = text
+        elif tag == 'web_sales':
             vals.sales_web = utils.misc.get_bool(text)
         elif tag == 'top_image':
             xmlutils.validate_schema(child, {'type': None, 'url': None}, False)
@@ -237,6 +246,8 @@ class _SamuraiTitleOptionalMixin(title_list._SamuraiListTitleOptionalMixin[commo
             vals.copyright = child.find('text').text
         elif tag == 'screenshots':
             vals.screenshots = [SamuraiTitleScreenshot._parse(screenshot) for screenshot in child.screenshot]
+        elif tag == 'main_images':
+            vals.main_images = [SamuraiTitleScreenshot._parse(image) for image in child.image]
         elif tag == 'preference':
             target = child.find('target_player')
             style = child.find('play_style')
@@ -268,8 +279,19 @@ class _SamuraiTitleOptionalMixin(title_list._SamuraiListTitleOptionalMixin[commo
             vals.peripheral_description = text
         elif tag == 'network_feature_description':
             vals.network_feature_description = text
+        elif tag == 'spec_description':
+            vals.spec_description = text
         elif tag == 'data_size':
             vals.size = int(text)
+        elif tag == 'save_data_count':
+            vals.save_data_count = text
+        elif tag == 'save_data_volume':
+            vals.save_data_volume = text
+        elif tag == 'catch_copy':
+            vals.catch_copy = text
+        elif tag == 'title_metas':
+            xmlutils.validate_schema(child, {'title_meta': {'value': None}}, False)
+            vals.title_metas = [(m.get('type'), m.value.text) for m in child.title_meta]
         else:
             return super()._try_parse_value(vals, child, tag, text, custom_types)
         return True
