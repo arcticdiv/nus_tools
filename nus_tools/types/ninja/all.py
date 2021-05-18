@@ -41,6 +41,6 @@ class NinjaIDPair(BaseTypeLoadable):
         assert len(pairs.getchildren()) == 1
         pair = pairs.title_id_pair
 
-        assert pair.type.text == 'T'  # not sure if there are any other types
+        assert pair.type.text in ('T', 'D')  # 'Title'/'Demo'?  # not sure if there are any other types
         self.content_id = ids.ContentID(pair.ns_uid.text)
         self.title_id = ids.TitleID(pair.title_id.text)
