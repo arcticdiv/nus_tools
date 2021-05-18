@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Tuple
 
 
 class Region(Enum):
@@ -16,3 +17,7 @@ class Region(Enum):
             }[self]
         except KeyError:
             raise RuntimeError(f'{self} does not have a country code')
+
+    @staticmethod
+    def all_regions() -> Tuple['Region', ...]:
+        return tuple(r for r in Region if r != Region.ALL)
