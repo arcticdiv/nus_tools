@@ -57,6 +57,7 @@ class SamuraiTitleController:
     type: int
     id: int
     name: str
+    icons: List[str]
 
 
 @dataclass(frozen=True)
@@ -190,18 +191,25 @@ class _SamuraiTitleOptionalMixin(title_list._SamuraiListTitleOptionalMixin[commo
         elif tag == 'features':
             vals.features = [SamuraiTitleFeature._parse(feature) for feature in child.feature]
         elif tag == 'play_styles':
-            xmlutils.validate_schema(child, {'play_style': {'controllers': {'controller': {'id': None, 'name': None}}, 'features': {'feature': SamuraiTitleFeature._get_schema()[0]}}}, True)
+            xmlutils.validate_schema(child, {'play_style': {
+                'controllers': {'controller': {'id': None, 'name': None, 'icons': {'icon': None}}},
+                'features': {'feature': SamuraiTitleFeature._get_schema()[0]}}
+            }, True)
             vals.play_styles = []
             for play_style in child.play_style:
-                controllers = [
-                    SamuraiTitleController(
-                        utils.misc.get_bool(controller.get('required')),
-                        int(controller.get('type')),
-                        int(controller.id.text),
-                        controller.name.text
-                    )
-                    for controller in play_style.controllers.controller
-                ]
+                if hasattr(play_style, 'controllers'):
+                    controllers = [
+                        SamuraiTitleController(
+                            utils.misc.get_bool(controller.get('required')),
+                            int(controller.get('type')),
+                            int(controller.id.text),
+                            controller.name.text,
+                            [icon.get('url') for icon in controller.icons.icon] if hasattr(controller, 'icons') else []
+                        )
+                        for controller in play_style.controllers.controller
+                    ]
+                else:
+                    controllers = []
                 if hasattr(play_style, 'features'):
                     features = [SamuraiTitleFeature._parse(feature) for feature in play_style.features.feature]
                 else:
