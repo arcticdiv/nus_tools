@@ -56,19 +56,33 @@ class SamuraiRating(XmlBaseType):
 
 
 @dataclass(frozen=True)
+class SamuraiRatingDescriptor:
+    name: Optional[str] = None
+    icons: Optional[List[str]] = None
+
+
+@dataclass(frozen=True)
 class SamuraiRatingDetailed(SamuraiRating):
     descriptors: List[str]
 
     @classmethod
     def _get_schema(cls):
         schema, _ = super()._get_schema()
-        return {**schema, 'descriptors': {'descriptor': {'name': None}}}, True
+        return {**schema, 'descriptors': {'descriptor': {'name': None, 'icons': {'icon': None}}}}, True
 
     @classmethod
     def _parse_internal(cls, xml):
+        descriptors = []
+        if hasattr(xml, 'descriptors') and hasattr(xml.descriptors, 'descriptor'):
+            for d in xml.descriptors.descriptor:
+                descriptors.append(SamuraiRatingDescriptor(
+                    xmlutils.get_text(d, 'name'),
+                    [icon.get('url') for icon in d.icons.icon] if hasattr(d, 'icons') else None
+                ))
+
         return {
             **super()._parse_internal(xml),
-            'descriptors': [d.name.text for d in xml.descriptors.descriptor] if hasattr(xml, 'descriptors') and hasattr(xml.descriptors, 'descriptor') else []
+            'descriptors': descriptors
         }
 
 
