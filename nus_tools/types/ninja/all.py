@@ -5,6 +5,10 @@ from reqcli.type import BaseTypeLoadable
 from ... import utils, ids
 
 
+class NoIDPairMatchError(Exception):
+    pass
+
+
 class NinjaEcInfo(BaseTypeLoadable):
     title_id: ids.TitleID
     content_size: int
@@ -37,6 +41,9 @@ class NinjaIDPair(BaseTypeLoadable):
 
     def _read(self, reader, config):
         pairs = xmlutils.load_root(reader, 'title_id_pairs')
+        if len(pairs.getchildren()) == 0:
+            raise NoIDPairMatchError
+
         xmlutils.validate_schema(pairs, {'title_id_pair': {'ns_uid': None, 'title_id': None, 'type': None}}, False)
         assert len(pairs.getchildren()) == 1
         pair = pairs.title_id_pair
