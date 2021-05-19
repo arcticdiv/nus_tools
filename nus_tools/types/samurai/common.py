@@ -24,16 +24,32 @@ class SamuraiListBaseType(BaseTypeLoadable, abc.ABC):
         pass
 
 
-@dataclass
+@dataclass(frozen=True)
 class IDName:
     id: int
     name: str
 
 
 @dataclass(frozen=True)
+class SamuraiIcon:
+    url: str
+    type: str
+
+    @classmethod
+    def _parse(cls, xml):
+        assert set(xml.attrib.keys()) == {'url', 'type'}
+        assert not xml.text
+        return cls(
+            xml.get('url'),
+            xml.get('type')
+        )
+
+
+@dataclass(frozen=True)
 class SamuraiRating(XmlBaseType):
     system: IDName
     id: int
+    icons: List[SamuraiIcon]
     name: str
     age: str
 
@@ -46,10 +62,10 @@ class SamuraiRating(XmlBaseType):
 
     @classmethod
     def _parse_internal(cls, xml):
-        # TODO: rating.icons unhandled
         return {
             'system': IDName(int(xml.rating_system.get('id')), xml.rating_system.name.text),
             'id': int(xml.rating.get('id')),
+            'icons': [SamuraiIcon._parse(icon) for icon in xml.rating.icons.icon],
             'name': xml.rating.name.text,
             'age': xml.rating.age.text
         }
@@ -58,12 +74,12 @@ class SamuraiRating(XmlBaseType):
 @dataclass(frozen=True)
 class SamuraiRatingDescriptor:
     name: Optional[str] = None
-    icons: Optional[List[str]] = None
+    icons: Optional[List[SamuraiIcon]] = None
 
 
 @dataclass(frozen=True)
 class SamuraiRatingDetailed(SamuraiRating):
-    descriptors: List[str]
+    descriptors: List[SamuraiRatingDescriptor]
 
     @classmethod
     def _get_schema(cls):
@@ -77,7 +93,7 @@ class SamuraiRatingDetailed(SamuraiRating):
             for d in xml.descriptors.descriptor:
                 descriptors.append(SamuraiRatingDescriptor(
                     xmlutils.get_text(d, 'name'),
-                    [icon.get('url') for icon in d.icons.icon] if hasattr(d, 'icons') else None
+                    [SamuraiIcon._parse(icon) for icon in d.icons.icon] if hasattr(d, 'icons') else None
                 ))
 
         return {

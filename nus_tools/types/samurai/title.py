@@ -29,6 +29,8 @@ class SamuraiTitleFeature(XmlBaseType):
     type: int
     id: int
     name: str
+    icons: Optional[List[common.SamuraiIcon]]
+    description: Optional[str]
 
     @classmethod
     def _get_schema(cls):
@@ -36,12 +38,13 @@ class SamuraiTitleFeature(XmlBaseType):
 
     @classmethod
     def _parse_internal(cls, xml):
-        # TODO: icons, description unhandled
         return {
             'required': utils.misc.get_bool(xml.get('required')),
             'type': int(xml.get('type')),
             'id': int(xml.id.text),
-            'name': xml.name.text
+            'name': xml.name.text,
+            'icons': [common.SamuraiIcon._parse(icon) for icon in xml.icons.icon] if hasattr(xml, 'icons') else None,
+            'description': xmlutils.get_text(xml, 'description')
         }
 
 
@@ -57,7 +60,7 @@ class SamuraiTitleController:
     type: int
     id: int
     name: str
-    icons: List[str]
+    icons: Optional[List[common.SamuraiIcon]]
 
 
 @dataclass(frozen=True)
@@ -213,7 +216,7 @@ class _SamuraiTitleOptionalMixin(title_list._SamuraiListTitleOptionalMixin[commo
                             int(controller.get('type')),
                             int(controller.id.text),
                             controller.name.text,
-                            [icon.get('url') for icon in controller.icons.icon] if hasattr(controller, 'icons') else []
+                            [common.SamuraiIcon._parse(icon) for icon in controller.icons.icon] if hasattr(controller, 'icons') else None
                         )
                         for controller in play_style.controllers.controller
                     ]
