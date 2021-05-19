@@ -6,7 +6,7 @@ from typing import List, Optional, Tuple
 import reqcli.utils.xml as xmlutils
 from reqcli.type import BaseTypeLoadable, XmlBaseType
 
-from . import common, movie, title_list
+from . import common, movie_list, title_list
 from ... import utils, ids
 
 
@@ -172,7 +172,7 @@ class _SamuraiTitleOptionalMixin(title_list._SamuraiListTitleOptionalMixin[commo
     main_images: Optional[List[common.SamuraiScreenshot]] = None
     preferences: Optional[SamuraiTitlePreference] = None
     websites: Optional[List[SamuraiTitleWebsite]] = None
-    movies: Optional[List[movie.SamuraiMovieElement]] = None
+    movies: Optional[List[movie_list.SamuraiListMovie]] = None
     demos: Optional[List[SamuraiTitleLinkedDemo]] = None
     peripheral_description: Optional[str] = None
     network_feature_description: Optional[str] = None
@@ -265,7 +265,7 @@ class _SamuraiTitleOptionalMixin(title_list._SamuraiListTitleOptionalMixin[commo
                     utils.misc.get_bool(website.official.text)
                 ))
         elif tag == 'movies':
-            vals.movies = [movie.SamuraiMovieElement._parse(m) for m in child.movie]
+            vals.movies = [movie_list.SamuraiListMovie._parse(m) for m in child.movie]
         elif tag == 'demo_titles':
             vals.demos = [
                 SamuraiTitleLinkedDemo(
