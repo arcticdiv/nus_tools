@@ -1,5 +1,5 @@
 from typing import Any, Optional
-from reqcli.source import UnloadableType, BaseSource, SourceConfig, ReqData
+from reqcli.source import UnloadableType, BaseSource, SourceConfig, ReqData, CertType
 
 from .. import ids
 from ..types.contentcdn import Ticket, TMD
@@ -49,27 +49,41 @@ class _ContentServerBase(BaseSource):
 #   - ccs.cdn.wup.shop.nintendo.net (WiiU: 'ContentPrefixURL')
 # - uncached:
 #   - nus.c.shop.nintendowifi.net (unavailable)
-#   - ccs.c.shop.nintendowifi.net (unavailable)
+#   - ccs.c.shop.nintendowifi.net (https only)
 #   - nus.t.shop.nintendowifi.net (unavailable)
 #   - ccs.t.shop.nintendowifi.net
 #   - nus.wup.shop.nintendo.net (unavailable)
 #   - ccs.wup.shop.nintendo.net (WiiU: 'UncachedContentPrefixURL'/'SystemUncachedContentPrefixURL')
 
-class ContentServerCDN(_ContentServerBase):
+class ContentServerWiiUCDN(_ContentServerBase):
     def __init__(self, config: Optional[SourceConfig] = None):
         super().__init__(
-            ReqData(
-                path='http://ccs.cdn.wup.shop.nintendo.net/ccs/download/'
-            ),
+            ReqData(path='http://ccs.cdn.wup.shop.nintendo.net/ccs/download/'),
             config
         )
 
 
-class ContentServerNoCDN(_ContentServerBase):
+class ContentServerWiiUNoCDN(_ContentServerBase):
     def __init__(self, config: Optional[SourceConfig] = None):
         super().__init__(
-            ReqData(
-                path='http://ccs.wup.shop.nintendo.net/ccs/download/'
-            ),
+            ReqData(path='http://ccs.wup.shop.nintendo.net/ccs/download/'),
             config
+        )
+
+
+class ContentServer3DSCDN(_ContentServerBase):
+    def __init__(self, config: Optional[SourceConfig] = None):
+        super().__init__(
+            ReqData(path='http://ccs.cdn.c.shop.nintendowifi.net/ccs/download/'),
+            config
+        )
+
+
+class ContentServer3DSNoCDN(_ContentServerBase):
+    def __init__(self, cert: CertType, config: Optional[SourceConfig] = None):
+        super().__init__(
+            ReqData(path='https://ccs.c.shop.nintendowifi.net/ccs/download/', cert=cert),
+            config,
+            verify_tls=False,
+            require_fingerprint='E9:74:4D:71:E3:06:6A:84:80:1D:0B:52:5E:26:8E:80:70:41:F4:20'
         )
