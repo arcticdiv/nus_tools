@@ -31,10 +31,11 @@ class SamuraiTitleFeature(XmlBaseType):
     name: str
     icons: Optional[List[common.SamuraiIcon]]
     description: Optional[str]
+    ext_info: Optional[str]
 
     @classmethod
     def _get_schema(cls):
-        return {'id': None, 'name': None, 'icons': {'icon': None}, 'description': None}, True
+        return {'id': None, 'name': None, 'icons': {'icon': None}, 'description': None, 'ext_info': None}, True
 
     @classmethod
     def _parse_internal(cls, xml):
@@ -44,7 +45,8 @@ class SamuraiTitleFeature(XmlBaseType):
             'id': int(xml.id.text),
             'name': xml.name.text,
             'icons': [common.SamuraiIcon._parse(icon) for icon in xml.icons.icon] if hasattr(xml, 'icons') else None,
-            'description': xmlutils.get_text(xml, 'description')
+            'description': xmlutils.get_text(xml, 'description'),
+            'ext_info': xmlutils.get_text(xml, 'ext_info')
         }
 
 
@@ -120,6 +122,53 @@ class SamuraiTitleScreenshot(common.SamuraiScreenshot):
 
 
 @dataclass(frozen=True)
+class SamuraiSharedMovie(XmlBaseType):
+    name: str
+    url: str  # not a real url, at least not with `shared_site = 'youtube'` (in which case it's actually the video ID)
+    official: bool
+    shared_site: str
+
+    @classmethod
+    def _get_schema(cls):
+        return {'name': None, 'url': None, 'official': None, 'shared_site': None}, False
+
+    @classmethod
+    def _parse_internal(cls, xml):
+        return {
+            'name': xml.name.text,
+            'url': xml.url.text,
+            'official': utils.misc.get_bool(xml.official.text),
+            'shared_site': xml.shared_site.text
+        }
+
+
+@dataclass(frozen=True)
+class SamuraiTitleNotice:
+    type: str
+    url: str
+    display_name: str
+    description: str
+
+
+@dataclass(frozen=True)
+class SamuraiDigitalManual:
+    name: str
+    url: str
+
+
+@dataclass(frozen=True)
+class SamuraiDownloadCardSales:
+    available: bool
+    image_url: Optional[str]
+
+
+@dataclass(frozen=True)
+class SamuraiTitleCopyright:
+    text: str
+    image_url: str
+
+
+@dataclass(frozen=True)
 class _SamuraiTitleBaseMixin(title_list._SamuraiListTitleBaseMixin):
     is_public: bool
     formal_name: str
@@ -127,7 +176,7 @@ class _SamuraiTitleBaseMixin(title_list._SamuraiListTitleBaseMixin):
     keywords: List[str]
     has_ticket: bool
     sales_download_code: bool
-    sales_download_card: bool
+    sales_download_card: SamuraiDownloadCardSales
 
     @classmethod
     def _try_parse_value(cls, vals: utils.misc.dotdict, child: lxml.objectify.ObjectifiedElement, tag: str, text: str, custom_types: title_list.CustomTypes) -> bool:
@@ -149,8 +198,11 @@ class _SamuraiTitleBaseMixin(title_list._SamuraiListTitleBaseMixin):
         elif tag == 'download_code_sales':
             vals.sales_download_code = utils.misc.get_bool(text)
         elif tag == 'download_card_sales':
-            xmlutils.validate_schema(child, None, False)
-            vals.sales_download_card = utils.misc.get_bool(child.get('available'))
+            xmlutils.validate_schema(child, {'image_url': None}, True)
+            vals.sales_download_card = SamuraiDownloadCardSales(
+                utils.misc.get_bool(child.get('available')),
+                xmlutils.get_text(child, 'image_url')
+            )
         else:
             return super()._try_parse_value(vals, child, tag, text, custom_types)
         return True
@@ -159,6 +211,7 @@ class _SamuraiTitleBaseMixin(title_list._SamuraiListTitleBaseMixin):
 @dataclass(frozen=True)
 class _SamuraiTitleOptionalMixin(title_list._SamuraiListTitleOptionalMixin[common.SamuraiRatingDetailed, SamuraiTitleStars]):
     package_url: Optional[str] = None
+    hero_banner_url: Optional[str] = None
     sales_web: Optional[bool] = None
     top_image_type: Optional[str] = None
     top_image_url: Optional[str] = None
@@ -170,7 +223,7 @@ class _SamuraiTitleOptionalMixin(title_list._SamuraiListTitleOptionalMixin[commo
     num_players: Optional[Tuple[int, int]] = None
     num_players_raw: Optional[str] = None
     disclaimer: Optional[str] = None
-    copyright: Optional[str] = None
+    copyright: Optional[SamuraiTitleCopyright] = None
     screenshots: Optional[List[common.SamuraiScreenshot]] = None
     main_images: Optional[List[common.SamuraiScreenshot]] = None
     preferences: Optional[SamuraiTitlePreference] = None
@@ -184,12 +237,18 @@ class _SamuraiTitleOptionalMixin(title_list._SamuraiListTitleOptionalMixin[commo
     save_data_count: Optional[str] = None
     save_data_volume: Optional[str] = None
     catch_copy: Optional[str] = None
+    shared_movies: Optional[List[SamuraiSharedMovie]] = None
+    title_notices: Optional[List[SamuraiTitleNotice]] = None
     title_metas: Optional[List[Tuple[str, str]]] = None
+    digital_manuals: Optional[List[SamuraiDigitalManual]] = None
+    aoc_infos: Optional[str] = None
 
     @classmethod
     def _try_parse_value(cls, vals: utils.misc.dotdict, child: lxml.objectify.ObjectifiedElement, tag: str, text: str, custom_types: title_list.CustomTypes) -> bool:
         if tag == 'package_url':
             vals.package_url = text
+        elif tag == 'hero_banner_url':
+            vals.hero_banner_url = text
         elif tag == 'web_sales':
             vals.sales_web = utils.misc.get_bool(text)
         elif tag == 'top_image':
@@ -245,8 +304,8 @@ class _SamuraiTitleOptionalMixin(title_list._SamuraiListTitleOptionalMixin[commo
         elif tag == 'disclaimer':
             vals.disclaimer = text
         elif tag == 'copyright':
-            xmlutils.validate_schema(child, {'text': None}, False)
-            vals.copyright = child.find('text').text
+            xmlutils.validate_schema(child, {'text': None, 'image_url': None}, True)
+            vals.copyright = SamuraiTitleCopyright(child.find('text').text, xmlutils.get_text(child, 'image_url'))
         elif tag == 'screenshots':
             vals.screenshots = [SamuraiTitleScreenshot._parse(screenshot) for screenshot in child.screenshot]
         elif tag == 'main_images':
@@ -292,9 +351,27 @@ class _SamuraiTitleOptionalMixin(title_list._SamuraiListTitleOptionalMixin[commo
             vals.save_data_volume = text
         elif tag == 'catch_copy':
             vals.catch_copy = text
+        elif tag == 'shared_movies':
+            vals.shared_movies = [SamuraiSharedMovie._parse(movie) for movie in child.shared_movie]
+        elif tag == 'title_notices':
+            xmlutils.validate_schema(child, {'title_notice': {'url': None, 'display_name': None, 'description': None}}, False)
+            vals.title_notices = [
+                SamuraiTitleNotice(
+                    notice.get('type'),
+                    notice.url.text,
+                    notice.display_name.text,
+                    notice.description.text
+                )
+                for notice in child.title_notice
+            ]
         elif tag == 'title_metas':
             xmlutils.validate_schema(child, {'title_meta': {'value': None}}, False)
             vals.title_metas = [(m.get('type'), m.value.text) for m in child.title_meta]
+        elif tag == 'digital_manuals':
+            xmlutils.validate_schema(child, {'digital_manual': {'name': None, 'url': None}}, False)
+            vals.digital_manuals = [SamuraiDigitalManual(manual.name.text, manual.url.text) for manual in child.digital_manual]
+        elif tag == 'aoc_infos':
+            vals.aoc_infos = text
         else:
             return super()._try_parse_value(vals, child, tag, text, custom_types)
         return True

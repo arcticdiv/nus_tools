@@ -108,10 +108,11 @@ class SamuraiPlatform(XmlBaseType):
     device: str
     category: str
     name: str
+    icon_url: Optional[str]
 
     @classmethod
     def _get_schema(cls):
-        return {'name': None}, False
+        return {'name': None, 'icon_url': None}, True
 
     @classmethod
     def _parse_internal(cls, xml):
@@ -119,7 +120,8 @@ class SamuraiPlatform(XmlBaseType):
             'id': int(xml.get('id')),
             'device': xml.get('device'),
             'category': xml.get('category'),
-            'name': xml.name.text
+            'name': xml.name.text,
+            'icon_url': xmlutils.get_text(xml, 'icon_url')
         }
 
 

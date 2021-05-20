@@ -8,7 +8,7 @@ from . import common
 
 class SamuraiDemo(BaseTypeLoadable):
     name: str
-    rating_info: common.SamuraiRatingDetailed
+    rating_info: Optional[common.SamuraiRatingDetailed] = None
     icon_url: Optional[str] = None
 
     def _read(self, reader, config):
