@@ -292,14 +292,17 @@ class _SamuraiTitleOptionalMixin(title_list._SamuraiListTitleOptionalMixin[commo
                 xmlutils.validate_schema(language, {'iso_code': None, 'name': None}, False)
                 vals.languages.append(SamuraiTitleLanguage(language.iso_code.text, language.name.text))
         elif tag == 'number_of_players':
-            cleaned_text = text.split('\n', 2)[0]  # sometimes this field contains additional text in a second line, discard it for now
-            matches = re.search(r'^(\d+)(?:\s*-\s*(\d+))?(?:\s+players?)?', cleaned_text)
+            # sometimes this field contains additional text in a second line, discard it for now and use the first non-empty line
+            cleaned_text = next(line for line in text.replace('<br>', '\n').split('\n') if line)
+            matches = re.search(r'(\d+)(?:\s*-\s*(\d+))?', cleaned_text)
             if matches:
                 vals.num_players = (int(matches[1]), int(matches[2] or matches[1]))
             elif cleaned_text.startswith('*'):  # disclaimer instead of specific player numbers (example: 50010000037675)
                 vals.num_players = None
+            elif re.search(r'[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff66-\uff9f]', cleaned_text):  # ignore errors if text contains japanese/chinese/korean characters
+                vals.num_players = None
             else:
-                raise RuntimeError(f'Could not parse player details: {cleaned_text}')
+                raise RuntimeError(f'Could not parse player details: {text}')
             vals.num_players_raw = text
         elif tag == 'disclaimer':
             vals.disclaimer = text
