@@ -224,8 +224,8 @@ class _SamuraiTitleOptionalMixin(title_list._SamuraiListTitleOptionalMixin[commo
     num_players_raw: Optional[str] = None
     disclaimer: Optional[str] = None
     copyright: Optional[SamuraiTitleCopyright] = None
-    screenshots: Optional[List[common.SamuraiScreenshot]] = None
-    main_images: Optional[List[common.SamuraiScreenshot]] = None
+    screenshots: Optional[List[SamuraiTitleScreenshot]] = None
+    main_images: Optional[List[SamuraiTitleScreenshot]] = None
     preferences: Optional[SamuraiTitlePreference] = None
     websites: Optional[List[SamuraiTitleWebsite]] = None
     movies: Optional[List[movie_list.SamuraiListMovie]] = None
