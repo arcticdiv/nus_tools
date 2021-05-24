@@ -29,7 +29,7 @@ class SamuraiNews(BaseTypeLoadable):
         news_xml = xmlutils.load_root(reader, 'news')
         xmlutils.validate_schema(news_xml, {'news_entry': {'headline': None, 'description': None, 'date': None, 'images': {'image': None}}}, True)
         self.entries = []
-        for entry in news_xml.news_entry:
+        for entry in getattr(news_xml, 'news_entry', []):
             if hasattr(entry, 'images'):
                 images = [
                     SamuraiNewsImage(
