@@ -58,6 +58,7 @@ class SamuraiMovieLinkedTitle:
     name: str
     icon_url: Optional[str]
     banner_url: Optional[str]
+    thumbnails: List[common.SamuraiThumbnail]  # shop ID 1 only (?)
 
 
 @dataclass(frozen=True)
@@ -90,6 +91,7 @@ _TRating = TypeVar('_TRating', bound=common.SamuraiRating)
 class _SamuraiListMovieOptionalMixin(Generic[_TRating]):
     icon_url: Optional[str] = None
     banner_url: Optional[str] = None
+    thumbnail_url: Optional[str] = None  # shop ID 1 only (?)
     title: Optional[SamuraiMovieLinkedTitle] = None
     rating_info: Optional[_TRating] = None
 
@@ -99,13 +101,20 @@ class _SamuraiListMovieOptionalMixin(Generic[_TRating]):
             vals.icon_url = text
         elif tag == 'banner_url':
             vals.banner_url = text
+        elif tag == 'thumbnail_url':
+            vals.thumbnail_url = text
         elif tag == 'title':
-            xmlutils.validate_schema(child, {'name': None, 'icon_url': None, 'banner_url': None}, True)
+            xmlutils.validate_schema(child, {'name': None, 'icon_url': None, 'banner_url': None, 'thumbnails': {'thumbnail': None}}, True)
+            if hasattr(child, 'thumbnails'):
+                thumbnails = [common.SamuraiThumbnail._parse(t) for t in child.thumbnails.thumbnail]
+            else:
+                thumbnails = []
             vals.title = SamuraiMovieLinkedTitle(
                 ids.ContentID(child.get('id')),
                 child.name.text,
                 xmlutils.get_text(child, 'icon_url'),
-                xmlutils.get_text(child, 'banner_url')
+                xmlutils.get_text(child, 'banner_url'),
+                thumbnails
             )
         elif tag == 'rating_info':
             vals.rating_info = custom_types['rating_info']._parse(child)

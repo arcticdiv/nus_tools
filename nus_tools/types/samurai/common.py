@@ -179,3 +179,21 @@ class SamuraiScreenshot(XmlBaseType):
         return {
             'image_urls': [SamuraiScreenshotUrl._parse(image_url) for image_url in xml.image_url]
         }
+
+
+@dataclass
+class SamuraiThumbnail:
+    url: str
+    type: str
+    width: int
+    height: int
+
+    @classmethod
+    def _parse(cls, xml):
+        assert set(xml.attrib.keys()) == {'url', 'height', 'width', 'type'}
+        return cls(
+            xml.get('url'),
+            xml.get('type'),
+            int(xml.get('width')),
+            int(xml.get('height'))
+        )

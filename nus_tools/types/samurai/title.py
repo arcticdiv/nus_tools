@@ -211,6 +211,7 @@ class _SamuraiTitleBaseMixin(title_list._SamuraiListTitleBaseMixin):
 @dataclass(frozen=True)
 class _SamuraiTitleOptionalMixin(title_list._SamuraiListTitleOptionalMixin[common.SamuraiRatingDetailed, SamuraiTitleStars]):
     package_url: Optional[str] = None
+    thumbnails: Optional[List[common.SamuraiThumbnail]] = None  # shop ID 1 only (?)
     hero_banner_url: Optional[str] = None
     sales_web: Optional[bool] = None
     top_image_type: Optional[str] = None
@@ -234,6 +235,7 @@ class _SamuraiTitleOptionalMixin(title_list._SamuraiListTitleOptionalMixin[commo
     network_feature_description: Optional[str] = None
     spec_description: Optional[str] = None
     size: Optional[int] = None
+    rating_info_alternate_image_url: Optional[str] = None  # shop ID 1 only (?)
     save_data_count: Optional[str] = None
     save_data_volume: Optional[str] = None
     catch_copy: Optional[str] = None
@@ -247,6 +249,8 @@ class _SamuraiTitleOptionalMixin(title_list._SamuraiListTitleOptionalMixin[commo
     def _try_parse_value(cls, vals: utils.misc.dotdict, child: lxml.objectify.ObjectifiedElement, tag: str, text: str, custom_types: title_list.CustomTypes) -> bool:
         if tag == 'package_url':
             vals.package_url = text
+        elif tag == 'thumbnails':
+            vals.thumbnails = [common.SamuraiThumbnail._parse(t) for t in child.thumbnail]
         elif tag == 'hero_banner_url':
             vals.hero_banner_url = text
         elif tag == 'web_sales':
@@ -348,6 +352,8 @@ class _SamuraiTitleOptionalMixin(title_list._SamuraiListTitleOptionalMixin[commo
             vals.spec_description = text
         elif tag == 'data_size':
             vals.size = int(text)
+        elif tag == 'alternate_rating_image_url':
+            vals.rating_info_alternate_image_url = text
         elif tag == 'save_data_count':
             vals.save_data_count = text
         elif tag == 'save_data_volume':
