@@ -26,21 +26,27 @@ class ListFunc(Protocol[_TList]):
 
 
 class Samurai(BaseSource):
-    def __init__(self, region: Union[str, Region], shop_id: int, lang: Optional[str], config: Optional[SourceConfig] = None):
+    def __init__(self, region: Union[str, Region], shop_id: int, *, lang: Optional[str] = None, cdn: Optional[bool] = False, config: Optional[SourceConfig] = None):
         params: RequestDict = {'shop_id': shop_id}
         if lang:
             params['lang'] = lang
 
         region = region.country_code if isinstance(region, Region) else region
 
+        if cdn:
+            host = 'samurai-wup.cdn.nintendo.net'
+            fingerprint = '43:8D:A9:4A:60:CB:00:DF:F2:B3:EB:17:A7:A2:1C:98:BD:11:FC:4A:A6:49:62:C1:2C:EF:41:BB:1F:28:88:95'
+        else:
+            host = 'samurai.wup.shop.nintendo.net'
+            fingerprint = 'C6:6E:7D:66:D0:73:62:2F:A3:28:7F:A6:2F:F5:73:5C:71:EE:EB:3D:93:AC:B3:14:7A:8F:85:B4:07:D4:CE:ED'
         super().__init__(
             ReqData(
-                path=f'https://samurai.wup.shop.nintendo.net/samurai/ws/{region}/',
+                path=f'https://{host}/samurai/ws/{region}/',
                 params=params
             ),
             config,
             verify_tls=False,
-            require_fingerprint='C6:6E:7D:66:D0:73:62:2F:A3:28:7F:A6:2F:F5:73:5C:71:EE:EB:3D:93:AC:B3:14:7A:8F:85:B4:07:D4:CE:ED'
+            require_fingerprint=fingerprint
         )
 
         self.region = region
