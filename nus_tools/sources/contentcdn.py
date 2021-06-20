@@ -22,6 +22,16 @@ class _ContentServerBase(BaseSource):
             **kwargs
         )
 
+    # /<title id>/<special id>
+    # see https://dsibrew.org/wiki/Nintendo_CDN_Files#FFFEFFFF
+    def get_tmd_special(self, title_id: ids.TTitleIDInput, content_id: int, **kwargs: Any) -> TMD:
+        assert (content_id >> 16) == 0xfffe
+        return self._create_type(
+            ReqData(path=f'{ids.TitleID.get_str(title_id)}/{content_id:08X}'),
+            TMD(title_id),
+            **kwargs
+        )
+
     # /<title id>/<content id>
     def get_app(self, title_id: ids.TTitleIDInput, content_id: int, *, skip_cache: bool = True, **kwargs: Any) -> UnloadableType:
         return self._create_type(
