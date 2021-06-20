@@ -25,7 +25,7 @@ def __get_struct(is_wiiu: bool) -> Struct:
         'signature' / common.signature,
         '__raw_header_signed__' @ AttributeRawCopy(InlineStruct(
             'issuer' / PaddedString(0x40, 'ascii'),
-            'version' / Byte,
+            'format_version' / Byte,
             'ca_crl_version' / Byte,
             'signer_crl_version' / Byte,
             '_unk1' / Bytes(1),
