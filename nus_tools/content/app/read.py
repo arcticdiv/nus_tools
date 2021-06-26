@@ -9,6 +9,10 @@ from ... import utils
 HASH_TABLES_SIZE = 0x0400
 
 
+class EndOfInputError(Exception):
+    pass
+
+
 class AppBlockReader:
     def __init__(self, h3: Optional[bytes], app: BinaryIO, content_hash: bytes, real_app_size: int, tmd_app_size: int, verify: bool = True):
         self._app = app
@@ -67,7 +71,8 @@ class AppBlockReader:
     def _read(self, length: int, check_length: bool = True) -> bytes:
         data = self._app.read(length)
         if check_length:
-            assert len(data) == length
+            if len(data) != length:
+                raise EndOfInputError(self._curr_block)
         return data
 
     def _init_iv(self, iv: bytes) -> None:
@@ -145,6 +150,8 @@ class AppBlockReader:
                     raise utils.crypto.ChecksumVerifyError('hash mismatch', self._content_hash, digest)
 
         # if loaded, return chunk from cache
+        if self._curr_block >= len(self._unhashed_data):
+            raise EndOfInputError(self._curr_block)
         data = self._unhashed_data[self._curr_block]
         self._curr_block += 1
         return (b'', data)
