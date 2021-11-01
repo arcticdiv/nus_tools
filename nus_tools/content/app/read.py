@@ -184,9 +184,11 @@ class AppBlockReader:
             while True:
                 left = target_offset - self._app.tell()
                 if left <= 0:
+                    assert left == 0
                     break
-                # discard data
-                self._app.read(min(left, 32 * 1024))  # 32k, arbitrary maximum chunk size
+                # discard data (not using `self._read` since that gets overridden in subclasses, and we don't need to decrypt)
+                AppBlockReader._read(self, min(left, self.block_size))
+        self._curr_block = block_index
 
 
 class AppDataReader:
