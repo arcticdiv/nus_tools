@@ -21,7 +21,7 @@ class AppBlockReader:
         self._tmd_app_size = tmd_app_size
         self._verify = verify
 
-        assert self._real_app_size >= self._tmd_app_size
+        assert self._real_app_size >= self._tmd_app_size and self._tmd_app_size > 0
 
         self._h3_table = h3
         if self._h3_table and self._verify:

@@ -14,7 +14,7 @@ class AppExtractor:
     def __init__(self, fst_entries: Tuple[Dict[str, FSTDirectory], Dict[str, FSTFile]]):
         self.directories, files = fst_entries
 
-        # group files by their secondary index (~ app file index),
+        # group files by their secondary index (= app file index),
         # then sort the files in each of those groups by their offsets
         self.files = {
             index: sorted(group, key=lambda tup: tup[1].offset)

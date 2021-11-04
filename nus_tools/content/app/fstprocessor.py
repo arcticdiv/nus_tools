@@ -54,8 +54,7 @@ class FSTProcessor:
         # parse FST from stream
         return cls(structs.fst.parse_stream(fst_stream))
 
-    @classmethod
-    def flatten(cls, tree: FSTDirectory) -> Tuple[Dict[str, FSTDirectory], Dict[str, FSTFile]]:
+    def flatten(self) -> Tuple[Dict[str, FSTDirectory], Dict[str, FSTFile]]:
         '''
         Flattens the FST into two dictionaries containing complete paths
         and entries for directories and files respectively
@@ -80,7 +79,7 @@ class FSTProcessor:
                 else:
                     process_file(child, path)
 
-        process_directory(tree, '')
+        process_directory(self.get_tree(), '')
         return directories, files
 
     def get_tree(self) -> FSTDirectory:
